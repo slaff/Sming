@@ -42,6 +42,10 @@ void checkMQTTDisconnect(TcpClient& client, bool flag){
 	procTimer.initializeMs(2 * 1000, startMqttClient).start(); // every 2 seconds
 }
 
+void onMessageDelivered(uint16_t msgId, int type) {
+	Serial.printf("Message with id %d and QoS %d was delivered successfully.", msgId, (type==MQTT_MSG_PUBREC? 2: 1));
+}
+
 // Publish our message
 void publishMessage()
 {
@@ -50,6 +54,7 @@ void publishMessage()
 
 	Serial.println("Let's publish message now!");
 	mqtt.publish("main/frameworks/sming", "Hello friends, from Internet of things :)"); // or publishWithQoS
+	mqtt.publishWithQoS("important/frameworks/sming", "Request Return Delivery", 1, false, onMessageDelivered);
 }
 
 // Callback for messages, arrived from MQTT server
