@@ -133,6 +133,11 @@ FW_MEMINFO_SAVED = out/fwMeminfo
 # name for the target project
 TARGET		= app
 
+LIBSMING = sming
+ifeq ($(ENABLE_SSL),1)
+	LIBSMING = smingssl
+endif
+
 # which modules (subdirectories) of the project to include in compiling
 # define your custom directories in the project's own Makefile before including this one
 MODULES      ?= app     # default to app if not set by user
@@ -141,7 +146,7 @@ EXTRA_INCDIR += $(SMING_HOME)/include $(SMING_HOME)/ $(SMING_HOME)/system/includ
 
 # libraries used in this project, mainly provided by the SDK
 USER_LIBDIR = $(SMING_HOME)/compiler/lib/
-LIBS		= microc microgcc hal phy pp net80211 lwip wpa main sming crypto pwm smartconfig $(EXTRA_LIBS)
+LIBS		= microc microgcc hal phy pp net80211 lwip wpa main $(LIBSMING) crypto pwm smartconfig $(EXTRA_LIBS)
 
 # compiler flags using during compilation of source files
 CFLAGS		= -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 $(USER_CFLAGS)
@@ -158,7 +163,7 @@ CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -felide-constructors
 ifeq ($(ENABLE_SSL),1)
 	LIBS += axtls	
 	EXTRA_INCDIR += $(SMING_HOME)/axtls-8266 $(SMING_HOME)/axtls-8266/ssl $(SMING_HOME)/axtls-8266/crypto 
-	AXTLS_FLAGS = -DESP8266 -DLWIP_RAW=1 -DENABLE_SSL=1
+	AXTLS_FLAGS = -DLWIP_RAW=1 -DENABLE_SSL=1
 	ifeq ($(SSL_DEBUG),1) # 
 		AXTLS_FLAGS += -DSSL_DEBUG=1 -DDEBUG_TLS_MEM=1
 	endif
@@ -320,12 +325,20 @@ $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
 	$(Q) $(AR) cru $@ $^
 	
+
+sming-ssl: $(USER_LIBDIR)/lib$(LIBSMING).a
+
+$(USER_LIBDIR)/lib$(LIBSMING).a:
+	$(vecho) "Recompiling Sming with SSL support. This may take some time"
+	$(Q) cd $(SMING_HOME) && $(MAKE) clean V=$(V) ENABLE_SSL=$(ENABLE_SSL)
+	$(Q) cd $(SMING_HOME) && $(MAKE) V=$(V) ENABLE_SSL=$(ENABLE_SSL)
+
 include/ssl/private_key.h:
 	$(vecho) "Generating unique certificate and key. This may take some time"
 	$(Q) mkdir -p $(CURRENT_DIR)/include/ssl/
 	$(Q) AXDIR=$(CURRENT_DIR)/include/ssl/  $(SMING_HOME)/axtls-8266/tools/make_certs.sh 
 
-prepare-ssl: include/ssl/private_key.h
+prepare-ssl: sming-ssl include/ssl/private_key.h
 
 ifeq ($(ENABLE_SSL), 1)
 checkdirs: prepare-ssl $(BUILD_DIR) $(FW_BASE)
