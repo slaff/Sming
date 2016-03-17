@@ -60,6 +60,7 @@ ESPTOOL2_SDK_ARGS	?= -quiet -lib
 # MacOS / Linux:
 # COM_PORT = /dev/tty.usbserial
 
+
 ifeq ($(OS),Windows_NT)
   # Windows detected
   UNAME := Windows
@@ -330,8 +331,8 @@ sming-ssl: $(USER_LIBDIR)/lib$(LIBSMING).a
 
 $(USER_LIBDIR)/lib$(LIBSMING).a:
 	$(vecho) "Recompiling Sming with SSL support. This may take some time"
-	$(Q) cd $(SMING_HOME) && $(MAKE) clean V=$(V) ENABLE_SSL=$(ENABLE_SSL)
-	$(Q) cd $(SMING_HOME) && $(MAKE) V=$(V) ENABLE_SSL=$(ENABLE_SSL)
+	$(Q) $(MAKE) -C $(SMING_HOME) clean V=$(V) ENABLE_SSL=$(ENABLE_SSL) SMING_HOME=$(SMING_HOME)
+	$(Q) $(MAKE) -C $(SMING_HOME) V=$(V) ENABLE_SSL=$(ENABLE_SSL) SMING_HOME=$(SMING_HOME)
 
 include/ssl/private_key.h:
 	$(vecho) "Generating unique certificate and key. This may take some time"
