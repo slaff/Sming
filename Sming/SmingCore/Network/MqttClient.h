@@ -47,6 +47,9 @@ public:
 	bool unsubscribe(String topic);
 
 	using TcpClient::addSslOptions;
+	using TcpClient::setSslFingerprint;
+	using TcpClient::setSslClientKeyCert;
+	using TcpClient::freeSslClientKeyCert;
 #ifdef ENABLE_SSL
 	using TcpClient::getSsl;
 #endif
