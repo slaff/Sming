@@ -56,7 +56,7 @@ are called when the flash is disabled (eg due to a Ctrl-C at the wrong time), th
 likely crash.
 */
 #define ATTR_GDBINIT	ICACHE_FLASH_ATTR
-#define ATTR_GDBFN		
+#define ATTR_GDBFN		IRAM_ATTR
 
 #endif
 
