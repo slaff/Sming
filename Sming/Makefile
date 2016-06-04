@@ -46,6 +46,11 @@ ifeq ($(OS),Windows_NT)
   # Making proper path adjustments - replace back slashes, remove colon and add forward slash.
   SMING_HOME := $(subst \,/,$(addprefix /,$(subst :,,$(SMING_HOME))))
   ESP_HOME := $(subst \,/,$(addprefix /,$(subst :,,$(ESP_HOME))))
+  
+  # Remove possible double escaping...
+  SMING_HOME := $(subst //,/, $(SMING_HOME))
+  ESP_HOME   := $(subst //,/, $(ESP_HOME))
+
   include Makefile-windows.mk  
 else
   UNAME := $(shell uname -s)
@@ -99,6 +104,12 @@ SPIFF_FILES = files
 BUILD_BASE	= out/build
 FW_BASE		= out/firmware
 
+LIBSMING = libsming
+ifeq ($(ENABLE_SSL),1)
+	LIBSMING= libsmingssl
+endif
+
+
 # name for the target project
 TARGET		= app
 
@@ -148,6 +159,19 @@ SDK_LDDIR	= ld
 SDK_INCDIR	= include include/json
 
 CFLAGS += -DENABLE_CUSTOM_HEAP=$(ENABLE_CUSTOM_HEAP)
+# SSL support using axTLS
+ifeq ($(ENABLE_SSL),1)
+	LIBS += axtls
+	MODULES		 += axtls-8266/compat axtls-8266/replacements
+	EXTRA_INCDIR += axtls-8266 axtls-8266/ssl axtls-8266/crypto 
+	AXTLS_FLAGS = -DLWIP_RAW=1 -DENABLE_SSL=1
+	ifeq ($(SSL_DEBUG),1) # 
+		AXTLS_FLAGS += -DSSL_DEBUG=1 -DDEBUG_TLS_MEM=1 -DAXL_DEBUG=1
+	endif 
+endif
+
+CFLAGS += $(AXTLS_FLAGS)  
+CXXFLAGS += $(AXTLS_FLAGS)
 
 # select which tools to use as compiler, librarian and linker
 AS		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
@@ -249,15 +273,24 @@ spiffy/spiffy:
 $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
 	$(Q) $(AR) cru $@ $^
-	$(vecho) "Installing libsming"
-	$(Q) cp -r $(APP_AR) $(USER_LIBDIR)/libsming.a  
+	$(vecho) "Installing $(LIBSMING)"
+ifeq ($(ENABLE_SSL), 1)
+	$(vecho) "+ SSL support is enabled"
+else
+	$(vecho) "(!) SSL support is not enabled. To enable it type: 'make clean; make ENABLE_SSL=1'"
+endif
+	$(Q) cp -r $(APP_AR) $(USER_LIBDIR)/$(LIBSMING).a  
 	$(vecho) "Done"
 
-ifeq ($(ENABLE_GDB), 1)	
-checkdirs: gdbstub/Makefile $(BUILD_DIR) $(FW_BASE)
+compile-ssl: 
+ifeq ($(ENABLE_SSL), 1)
+	$(Q) $(MAKE) --no-print-directory -C axtls-8266 -e V=$(V) BIN_DIR="$(SMING_HOME)/$(USER_LIBDIR)" ESP_HOME="$(ESP_HOME)"
 else
-checkdirs: $(BUILD_DIR) $(FW_BASE)
-endif
+	$(vecho) "(!) SSL support is not enabled. To enable it type: 'make clean; make ENABLE_SSL=1'"
+endif	
+
+
+checkdirs: compile-ssl spiffy $(BUILD_DIR) $(FW_BASE)
 
 $(BUILD_DIR):
 	$(Q) mkdir -p $@
@@ -274,8 +307,11 @@ clean:
 	$(Q) rm -rf $(BUILD_DIR)
 	$(Q) rm -rf $(BUILD_BASE)
 	$(Q) rm -rf $(FW_BASE)
+ifeq ($(ENABLE_SSL), 1)
+	$(Q) $(MAKE) --no-print-directory -C axtls-8266 clean -e V=$(V) BIN_DIR="$(SMING_HOME)/$(USER_LIBDIR)"
+else
 	$(Q) $(MAKE) --no-print-directory -C spiffy clean V=$(V)
-
+endif	
 
 test: all spiffy samples
 
