@@ -47,7 +47,7 @@ void rBootHttpUpdate::updateFailed() {
 	timer.stop();
 	items.clear();
 	debugf("\r\nFirmware download failed..");
-	if (updateDelegate) updateDelegate(false);
+	if (updateDelegate) updateDelegate(*this, false);
 }
 
 void rBootHttpUpdate::onTimer() {
@@ -103,7 +103,7 @@ void rBootHttpUpdate::applyUpdate() {
 	items.clear();
 	if (romSlot == NO_ROM_SWITCH) {
 		debugf("Firmware updated.");
-		if (updateDelegate) updateDelegate(true);
+		if (updateDelegate) updateDelegate(*this, true);
 	} else {
 		// set to boot new rom and then reboot
 		debugf("Firmware updated, rebooting to rom %d...\r\n", romSlot);
@@ -111,4 +111,8 @@ void rBootHttpUpdate::applyUpdate() {
 		System.restart();
 	}
 	return;
+}
+
+rBootHttpUpdateItem rBootHttpUpdate::getItem(unsigned int index) {
+	return items.elementAt(index);
 }
