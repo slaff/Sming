@@ -128,6 +128,8 @@ public:
 	 */
 	static void delegateTask (os_event_t *inputEvent);
 
+	using Stream::write;
+
 private:
 	int uart;
 	static HWSerialMemberData memberData[NUMBER_UARTS];
