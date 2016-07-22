@@ -45,9 +45,9 @@ void rBootHttpUpdate::setDelegate(otaUpdateDelegate reqUpdateDelegate) {
 
 void rBootHttpUpdate::updateFailed() {
 	timer.stop();
-	items.clear();
 	debugf("\r\nFirmware download failed..");
 	if (updateDelegate) updateDelegate(*this, false);
+	items.clear();
 }
 
 void rBootHttpUpdate::onTimer() {
@@ -100,10 +100,10 @@ void rBootHttpUpdate::writeRawData(pbuf* buf, int startPos) {
 
 void rBootHttpUpdate::applyUpdate() {
 	timer.stop();
-	items.clear();
 	if (romSlot == NO_ROM_SWITCH) {
 		debugf("Firmware updated.");
 		if (updateDelegate) updateDelegate(*this, true);
+		items.clear();
 	} else {
 		// set to boot new rom and then reboot
 		debugf("Firmware updated, rebooting to rom %d...\r\n", romSlot);
