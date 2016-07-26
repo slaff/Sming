@@ -366,7 +366,25 @@ uint32 NOINLINE find_image(void) {
 		romconf->version = BOOT_CONFIG_VERSION;
 		romconf->count = 2;
 		romconf->roms[0] = SECTOR_SIZE * (BOOT_CONFIG_SECTOR + 1);
+#ifdef BOOT_ROM1_ADDR
+		romconf->roms[1] = BOOT_ROM1_ADDR;
+#else
 		romconf->roms[1] = (flashsize / 2) + (SECTOR_SIZE * (BOOT_CONFIG_SECTOR + 1));
+#endif
+
+
+#if defined(BOOT_BIG_FLASH) && defined(BOOT_GPIO_ENABLED)
+		if(flashsize > 0x200000) {
+#ifdef BOOT_ROM2_ADDR
+			romconf->roms[2] = BOOT_ROM2_ADDR;
+#else
+			romconf->roms[2] = 0x310000;
+#endif
+			romconf->gpio_rom = 2;
+		}
+#endif
+
+
 #ifdef BOOT_CONFIG_CHKSUM
 		romconf->chksum = calc_chksum((uint8*)romconf, (uint8*)&romconf->chksum);
 #endif
