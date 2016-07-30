@@ -44,9 +44,9 @@ LDFLAGS  += 	-L$(XTENSA_LIBS)/lib \
 		-L$(XTENSA_LIBS)/arch/lib \
 
 
-CFLAGS+=-std=c99 -DESP8266
+CFLAGS+=-std=c99 -DESP8266 -DCONFIG_STORE_CONST_IN_ROM
 
-CFLAGS += -Wall -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
+CFLAGS += -Wall -Os -g -O2 -Wpointer-arith -Wno-implicit-function-declaration -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mforce-l32 -mno-text-section-literals  -D__ets__ -DICACHE_FLASH
 BIN_DIR := bin
 AXTLS_AR := $(BIN_DIR)/libaxtls.a
 
