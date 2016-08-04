@@ -144,6 +144,14 @@ FW_BASE		= out/firmware
 RBOOT_ROM_0  := $(addprefix $(FW_BASE)/,$(RBOOT_ROM_0).bin)
 RBOOT_ROM_1  := $(addprefix $(FW_BASE)/,$(RBOOT_ROM_1).bin)
 
+MEM_USAGE = \
+  'while (<>) { \
+      $$r += $$1 if /^\.(?:data|rodata|bss)\s+(\d+)/;\
+		  $$f += $$1 if /^\.(?:irom0\.text|text|data|rodata)\s+(\d+)/;\
+	 }\
+	 print "\nMemory usage\n";\
+	 print sprintf("  %-6s %6d bytes\n" x 2 ."\n", "Ram:", $$r, "Flash:", $$f);'
+
 # name for the target project
 TARGET		= app
 
@@ -274,6 +282,7 @@ AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
 LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
 OBJCOPY := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objcopy
 OBJDUMP := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objdump
+SIZE    := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-size
 
 SRC_DIR		:= $(MODULES)
 BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(MODULES))
@@ -383,10 +392,12 @@ $(RBOOT_ROM_1): $(TARGET_OUT_1)
 $(TARGET_OUT_0): $(APP_AR)
 	$(vecho) "LD $@"
 	$(Q) $(LD) -L$(USER_LIBDIR) -L$(SDK_LIBDIR) -L$(BUILD_BASE) $(RBOOT_LD_0) $(LDFLAGS) -Wl,--start-group $(APP_AR) $(LIBS) -Wl,--end-group -o $@
+	$(Q) $(SIZE) -A $(TARGET_OUT_0) | perl -e $(MEM_USAGE)
 
 $(TARGET_OUT_1): $(APP_AR)
 	$(vecho) "LD $@"
 	$(Q) $(LD) -L$(USER_LIBDIR) -L$(SDK_LIBDIR) -L$(BUILD_BASE) $(RBOOT_LD_1) $(LDFLAGS) -Wl,--start-group $(APP_AR) $(LIBS) -Wl,--end-group -o $@
+	$(Q) $(SIZE) -A $(TARGET_OUT_1) | perl -e $(MEM_USAGE)
 
 $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
