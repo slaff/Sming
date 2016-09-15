@@ -8,6 +8,20 @@ Sming - Open Source framework for high efficiency WiFi SoC ESP8266 native develo
 [![Download](https://img.shields.io/badge/download-~1.7M-orange.svg)](https://github.com/SmingHub/Sming/releases/latest)
 [![Build](https://travis-ci.org/SmingHub/Sming.svg?branch=develop)](https://travis-ci.org/SmingHub/Sming)
 
+## "Tasty" branch
+This branch contains all "tasty" features that are not merged into the official Sming develop branch.
+For the moment these include:
+- Fix for loosing final bytes when using rBoot Over-The-Air. ( [PR 769](https://github.com/SmingHub/Sming/pull/769) ) 
+- Allow setting the wifi station configuration without persisting it in flash. ( [PR 734](https://github.com/SmingHub/Sming/pull/734) )
+- Better Heap Allocation. ( [PR 696](https://github.com/SmingHub/Sming/pull/696) )
+- SSL with the help of [AXTLS-8266](https://github.com/igrr/axtls-8266) ( [PR 596](https://github.com/SmingHub/Sming/pull/596))
+- MQTT callback on delivering a message with QoS 1 or 2. ( [PR 617](https://github.com/SmingHub/Sming/pull/617) )
+- ~~MQTT: Better memory usage and no limits for username, password and clientid.~~ Merged 
+- ~~Fix for slow booting.~~ Merged
+- ~~rBoot Makefile switch to enable the switch temp functions.~~ Merged
+- ~~Debug support with the help of [ESPGDBStub](https://github.com/espressif/esp-gdbstub)~~ Merged
+- ~~rBoot with support for temporary switching to a ROM.~~ Merged
+
 ## Summary
 * Fast & user friendly development
 * Work with GPIO in Arduino style
@@ -25,19 +39,6 @@ Sming - Open Source framework for high efficiency WiFi SoC ESP8266 native develo
 
 ## Latest Release
 - [Sming V2.1.0](https://github.com/SmingHub/Sming/releases/tag/2.1.0)
-
-## "Tasty" branch
-This branch contains all "tasty" features that are not merged into the official Sming develop branch.
-For the moment these include:
-- Allow setting the wifi station configuration without persisting it in flash. ( [PR 734](https://github.com/SmingHub/Sming/pull/734) )
-- Better Heap Allocation. ( [PR 696](https://github.com/SmingHub/Sming/pull/696) )
-- SSL with the help of [AXTLS-8266](https://github.com/igrr/axtls-8266) ( [PR 596](https://github.com/SmingHub/Sming/pull/596))
-- MQTT callback on delivering a message with QoS 1 or 2. ( [PR 617](https://github.com/SmingHub/Sming/pull/617) )
-- ~~MQTT: Better memory usage and no limits for username, password and clientid.~~ Merged 
-- ~~Fix for slow booting.~~ Merged
-- ~~rBoot Makefile switch to enable the switch temp functions.~~ Merged
-- ~~Debug support with the help of [ESPGDBStub](https://github.com/espressif/esp-gdbstub)~~ Merged
-- ~~rBoot with support for temporary switching to a ROM.~~ Merged
 
 ## Getting started
 - [Windows](https://github.com/SmingHub/Sming/wiki/Windows-Quickstart)
