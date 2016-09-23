@@ -178,7 +178,7 @@ else
 endif
 CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -felide-constructors
 
-ENABLE_CUSTOM_HEAP ?= 1
+ENABLE_CUSTOM_HEAP ?= 0 
 
 USER_LIBDIR = $(SMING_HOME)/compiler/lib/
 

@@ -120,7 +120,7 @@ EXTRA_INCDIR    = include system/include Wiring Libraries SmingCore rboot rboot/
 # libraries used in this project, mainly provided by the SDK
 USER_LIBDIR = compiler/lib
 
-ENABLE_CUSTOM_HEAP ?= 1
+ENABLE_CUSTOM_HEAP ?= 0 
 ifeq ($(ENABLE_CUSTOM_HEAP),1)
 	MODULES		 += custom_heap custom_heap/umm_malloc
 	EXTRA_INCDIR += custom_heap

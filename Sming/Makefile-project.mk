@@ -153,7 +153,7 @@ MODULES      ?= app     # default to app if not set by user
 EXTRA_INCDIR ?= include # default to include if not set by user
 EXTRA_INCDIR += $(SMING_HOME)/include $(SMING_HOME)/ $(SMING_HOME)/system/include $(SMING_HOME)/Wiring $(SMING_HOME)/Libraries $(SMING_HOME)/SmingCore $(SDK_BASE)/../include $(SMING_HOME)/rboot $(SMING_HOME)/rboot/appcode
 
-ENABLE_CUSTOM_HEAP ?= 1
+ENABLE_CUSTOM_HEAP ?= 0 
 
 LIBMAIN = main
 ifeq ($(ENABLE_CUSTOM_HEAP),1)
