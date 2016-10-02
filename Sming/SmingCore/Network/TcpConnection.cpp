@@ -300,8 +300,14 @@ void TcpConnection::initialize(tcp_pcb* pcb)
 	tcp = pcb;
 	sleep = 0;
 	canSend = true;
+	
 #ifdef ENABLE_SSL
-	axl_init(10);
+	static bool axl_initialized = false;
+	if (!axl_initialized)
+	{
+		axl_init(10);
+		axl_initialized = true;
+	}
 #endif
 
 	tcp_nagle_disable(tcp);
