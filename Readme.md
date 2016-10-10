@@ -11,6 +11,7 @@ Sming - Open Source framework for high efficiency WiFi SoC ESP8266 native develo
 ## "Tasty" branch
 This branch contains all "tasty" features that are not merged into the official Sming develop branch.
 For the moment these include:
+- Faster interrupts so that there is less flickering. ( [PR 774](https://github.com/SmingHub/Sming/pull/774) )
 - Fix for loosing final bytes when using rBoot Over-The-Air. ( [PR 769](https://github.com/SmingHub/Sming/pull/769) ) 
 - Allow setting the wifi station configuration without persisting it in flash. ( [PR 734](https://github.com/SmingHub/Sming/pull/734) )
 - Better Heap Allocation. ( [PR 696](https://github.com/SmingHub/Sming/pull/696) )
