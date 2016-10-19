@@ -324,7 +324,7 @@ endif
 
 test: all spiffy samples
 
-samples: Basic_Blink HttpServer_Bootstrap Basic_rBoot
+samples: Basic_Blink HttpServer_Bootstrap Basic_rBoot Basic_Ssl
 
 recurse-samples: $(SAMPLES_DIRS)
 
