@@ -23,7 +23,8 @@
 #endif
 
 #ifndef SERVER_IP
-#warning "Make sure to define the server IP in the code"
+        // Make sure to define the server IP in the code"
+        #define SERVER_IP "127.0.0.1"
 #endif
 
 Timer procTimer;
