@@ -96,6 +96,15 @@ export COMPILE := gcc
 export PATH := $(ESP_HOME)/xtensa-lx106-elf/bin:$(PATH)
 XTENSA_TOOLS_ROOT := $(ESP_HOME)/xtensa-lx106-elf/bin
 
+# select which tools to use as compiler, librarian and linker
+AS		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+CXX		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
+AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
+LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
+OBJCOPY := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objcopy
+OBJDUMP := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objdump
+
 # Sming Framework Path
 SMF = $(SMING_HOME)
 
@@ -120,6 +129,8 @@ EXTRA_INCDIR    = include system/include Wiring Libraries SmingCore rboot rboot/
 # libraries used in this project, mainly provided by the SDK
 USER_LIBDIR = compiler/lib
 
+MFORCE32 := $(shell $(CC) --help=target | grep mforce-l32)
+
 ENABLE_CUSTOM_HEAP ?= 0 
 ifeq ($(ENABLE_CUSTOM_HEAP),1)
 	MODULES		 += custom_heap custom_heap/umm_malloc
@@ -136,7 +147,14 @@ endif
 LIBS		= microc microgcc hal phy pp net80211 lwip wpa $(LIBMAIN)
 
 # compiler flags using during compilation of source files. Add '-pg' for debugging
-CFLAGS		= -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mforce-l32 -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 -DCOM_SPEED_SERIAL=$(COM_SPEED_SERIAL)
+CFLAGS		= -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-section-literals -finline-functions -fdata-sections -ffunction-sections -D__ets__ -DICACHE_FLASH -DARDUINO=106 -DCOM_SPEED_SERIAL=$(COM_SPEED_SERIAL)
+ifneq ($(MFORCE32),)
+    # Your compiler supports the -mforce-l32 flag which means that 
+    # constants can be stored in flash (program) memory instead of SRAM.
+    # See: https://www.arduino.cc/en/Reference/PROGMEM
+    CFLAGS += -DPROGMEM="__attribute__((aligned(4))) __attribute__((section(\".irom.text\")))" -mforce-l32 
+endif
+
 ifeq ($(ENABLE_GDB), 1)
 	CFLAGS += -Og -ggdb -DGDBSTUB_FREERTOS=0 -DENABLE_GDB=1
 	MODULES		 += gdbstub
@@ -172,15 +190,6 @@ endif
 
 CFLAGS += $(AXTLS_FLAGS)  
 CXXFLAGS += $(AXTLS_FLAGS)
-
-# select which tools to use as compiler, librarian and linker
-AS		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-CC		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-CXX		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-g++
-AR		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-ar
-LD		:= $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-gcc
-OBJCOPY := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objcopy
-OBJDUMP := $(XTENSA_TOOLS_ROOT)/xtensa-lx106-elf-objdump
 
 SRC_DIR		:= $(MODULES)
 BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(MODULES))

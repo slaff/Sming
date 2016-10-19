@@ -254,16 +254,8 @@ void exit_now(const char *format, ...);
 #define SSL_CTX_UNLOCK(A)
 #endif
 
-#ifdef CONFIG_STORE_CONST_IN_ROM
-#ifndef ICACHE_RODATA_ATTR
-#define ICACHE_RODATA_ATTR  __attribute__((section(".irom.text")))
-#endif
-#ifndef STORE_ATTR
-#define STORE_ATTR __attribute__((aligned(4)))
-#endif
-#define STORE_IN_ROM ICACHE_RODATA_ATTR STORE_ATTR
-#else
-#define STORE_IN_ROM
+#ifndef PROGMEM
+#define PROGMEM
 #endif
 
 #ifdef __cplusplus
