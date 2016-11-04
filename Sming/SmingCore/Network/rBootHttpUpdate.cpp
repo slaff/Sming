@@ -51,19 +51,8 @@ void rBootHttpUpdate::updateFailed() {
 }
 
 void rBootHttpUpdate::onItemDownloadCompleted(HttpClient& client, bool successful) {
-	int index = currentItem;
-	if(rBootWriteStatus.extra_count) {
-		// there are some final bytes left - go save them too.
-		uint32_t start_addr = items[index].targetOffset + items[index].size - rBootWriteStatus.extra_count; // the addr should be 4 bytes aligned
-		uint8 buffer[4] = {0xff};
-
-		memcpy(buffer, rBootWriteStatus.extra_bytes, rBootWriteStatus.extra_count);
-
-		if (spi_flash_write(start_addr, (uint32 *)((void*)buffer), 4) != SPI_FLASH_RESULT_OK) {
-			debugf("Error writing the final rest bytes!");
-		}
-
-		rBootWriteStatus.extra_count = 0;
+	if(successful) {
+		rboot_write_end(&rBootWriteStatus);
 	}
 }
 
