@@ -20,6 +20,11 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 		return;
 	}
 
+	if(state == eAtError) {
+		// discard input at error state
+		return;
+	}
+
 	if(currentCommand.callback) {
 		currentCommand.callback(*this, source, arrivedChar, availableCharsCount);
 	}
@@ -29,7 +34,7 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 	}
 
 	commandTimer.stop();
-	debugf("%s: %d ms", currentCommand.name.substring(0, 20).c_str(), millis());
+	debugf("Processing: %d ms, %s", millis(), currentCommand.name.substring(0, 20).c_str());
 
 	char response[availableCharsCount];
 	for (int i = 0; i < availableCharsCount; i++) {
@@ -42,7 +47,7 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 	debugf("Got response: %s", response);
 
 	String reply(response);
-	if(reply.indexOf(currentCommand.response1) + reply.indexOf(currentCommand.response2) == -2) {
+	if(reply.indexOf(AT_REPLY_OK) + reply.indexOf(currentCommand.response2) == -2) {
 		// we did not get what we wanted. Check if we should repeat.
 		if(--currentCommand.retries > 0) {
 			sendDirect(currentCommand);
@@ -60,10 +65,9 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 
 // Low Level  Communication Functions
 
-void AtClient::send(String name, String expectedResponse1, String expectedResponse2 /* = "OK" */, uint32_t timeoutMs /* = 1000 */, int retries /* = 0 */) {
+void AtClient::send(String name, String expectedResponse2 /* = "OK" */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
 	AtCommand atCommand;
 	atCommand.name = name;
-	atCommand.response1 = expectedResponse1;
 	atCommand.response2 = expectedResponse2;
 	atCommand.timeout = timeoutMs;
 	atCommand.retries = retries;
@@ -71,7 +75,7 @@ void AtClient::send(String name, String expectedResponse1, String expectedRespon
 	send(atCommand);
 }
 
-void AtClient::send(String name, AtCallback onResponse, void *data /* =NULL */, uint32_t timeoutMs /* = 1000 */, int retries /* = 0 */) {
+void AtClient::send(String name, AtCallback onResponse, void *data /* =NULL */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
 	AtCommand atCommand;
 	atCommand.name = name;
 	atCommand.timeout = timeoutMs;
@@ -96,7 +100,7 @@ void AtClient::sendDirect(AtCommand command) {
 	commandTimer.stop();
 	currentCommand = command;
 	stream->print(command.name);
-	debugf("%s: %d ms", command.name.substring(0, 20).c_str(), millis());
+	debugf("Sent: timeout: %d, current %d ms, name: %s", currentCommand.timeout, millis(), command.name.substring(0, 20).c_str());
 	commandTimer.initializeMs(currentCommand.timeout, TimerDelegate(&AtClient::ticker, this)).startOnce();
 }
 
@@ -112,6 +116,11 @@ void AtClient::resend() {
 }
 
 void AtClient::next() {
+	if(state == eAtError) {
+		debugf("We are at error state! No next");
+		return;
+	}
+
 	state = eAtOK;
 	currentCommand.name = "";
 	if(queue.count() > 0) {
@@ -120,14 +129,22 @@ void AtClient::next() {
 }
 
 void AtClient::ticker() {
+	debugf("Ticker =================> ");
 	if(!currentCommand.name.length()) {
 		commandTimer.stop();
 		debugf("Error: Timeout without command?!");
 		return;
 	}
 
-	commandTimer.restart();
-	if(--currentCommand.retries > 0) {
+	currentCommand.retries--;
+	debugf("Retries: %d", currentCommand.retries);
+	if(currentCommand.retries > 0) {
+		commandTimer.restart();
 		sendDirect(currentCommand);
+		return;
 	}
+
+	state = eAtError;
+
+	debugf("Timeout: %d ms, %s", millis(), currentCommand.name.c_str());
 }

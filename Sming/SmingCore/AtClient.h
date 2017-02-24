@@ -13,13 +13,17 @@
 #include "../SmingCore/Delegate.h"
 #include "../SmingCore/Timer.h"
 
+#define AT_REPLY_OK "OK"
+#ifndef AT_TIMEOUT
+#define AT_TIMEOUT 2000
+#endif
+
 class AtClient;
 
 typedef Delegate<void(AtClient& atClient, Stream& source, char arrivedChar, uint16_t availableCharsCount)> AtCallback;
 
 typedef struct {
 	String name; // << the actual AT command
-	String response1; // << successful response text
 	String response2; // << alternative successful response
 	int timeout; // << timeout in milliseconds
 	int retries; // << number of retries before giving up
@@ -52,13 +56,11 @@ public:
 	/**
 	 * @brief Sends AT command
 	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param expectedResponse1 String Expected response on success
+	 * @param expectedResponse2 String Expected response on success // The default on that will be checked is OK
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, String expectedResponse1 = "OK", uint32_t timeoutMs = 1000, int retries = 0) {
-		send(name, expectedResponse1, "YxZa", timeoutMs, retries);
-	}
+	void send(String name, String expectedResponse2 = "OK", uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	/**
 	 * @brief Sends AT command
@@ -68,17 +70,7 @@ public:
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, String expectedResponse1, String expectedResponse2 = "OK", uint32_t timeoutMs = 1000, int retries = 0);
-
-	/**
-	 * @brief Sends AT command
-	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param expectedResponse1 String Expected response on success
-	 * @param expectedResponse2 String Alternative expected response on success
-	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
-	 * @param retries int Retries on error
-	 */
-	void send(String name, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = 1000, int retries = 0);
+	void send(String name, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	// Low Level Functions
 
