@@ -56,11 +56,22 @@ public:
 	/**
 	 * @brief Sends AT command
 	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param expectedResponse2 String Expected response on success // The default on that will be checked is OK
+	 * @param expectedResponse2 String Expected response on success in addition to the default one which is OK
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, String expectedResponse2 = "OK", uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
+	void send(String name, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
+
+	/**
+	 * @brief Sends AT command
+	 * @param name String The actual AT command text. For example AT+CAMSTOP
+	 * @param AtCallback onResponse
+	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
+	 * @param retries int Retries on error
+	 */
+	void send(String name, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0) {
+		send(name, "OK", onResponse, data, timeoutMs, retries);
+	}
 
 	/**
 	 * @brief Sends AT command
@@ -70,7 +81,7 @@ public:
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
+	void send(String name, String expectedResponse2, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	// Low Level Functions
 

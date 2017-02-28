@@ -65,23 +65,23 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 
 // Low Level  Communication Functions
 
-void AtClient::send(String name, String expectedResponse2 /* = "OK" */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
+void AtClient::send(String name, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
 	AtCommand atCommand;
 	atCommand.name = name;
-	atCommand.response2 = expectedResponse2;
 	atCommand.timeout = timeoutMs;
 	atCommand.retries = retries;
 
 	send(atCommand);
 }
 
-void AtClient::send(String name, AtCallback onResponse, void *data /* =NULL */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
+void AtClient::send(String name, String expectedResponse2, AtCallback onResponse, void *data /* =NULL */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
 	AtCommand atCommand;
 	atCommand.name = name;
-	atCommand.timeout = timeoutMs;
-	atCommand.retries = retries;
+	atCommand.response2 = expectedResponse2;
 	atCommand.callback = onResponse;
 	atCommand.data = data;
+	atCommand.timeout = timeoutMs;
+	atCommand.retries = retries;
 
 	send(atCommand);
 }
