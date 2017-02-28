@@ -16,7 +16,7 @@ AtClient::AtClient(HardwareSerial* stream) : stream(stream) {
 }
 
 void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCharsCount) {
-	if(!currentCommand.name.length()) {
+	if(!currentCommand.text.length()) {
 		return;
 	}
 
@@ -25,8 +25,11 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 		return;
 	}
 
-	if(currentCommand.callback) {
-		currentCommand.callback(*this, source, arrivedChar, availableCharsCount);
+	if(currentCommand.onReceive) {
+		if(currentCommand.onReceive(*this, source)) {
+			next();
+		}
+		return;
 	}
 
 	if(arrivedChar != '\n') {
@@ -34,7 +37,7 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 	}
 
 	commandTimer.stop();
-	debugf("Processing: %d ms, %s", millis(), currentCommand.name.substring(0, 20).c_str());
+	debugf("Processing: %d ms, %s", millis(), currentCommand.text.substring(0, 20).c_str());
 
 	char response[availableCharsCount];
 	for (int i = 0; i < availableCharsCount; i++) {
@@ -60,34 +63,49 @@ void AtClient::processor(Stream &source, char arrivedChar, uint16_t availableCha
 		}
 	}
 
+	if(currentCommand.onComplete) {
+		if(!currentCommand.onComplete(*this, reply)) {
+			return;
+		}
+	}
+
 	next();
+}
+
+void AtClient::send(String text, String altResponse /* ="" */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
+	AtCommand atCommand;
+	atCommand.text = text;
+	atCommand.response2 = altResponse;
+	atCommand.timeout = timeoutMs;
+	atCommand.retries = retries;
+
+	send(atCommand);
+}
+
+void AtClient::send(String text, AtReceiveCallback onReceive, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
+	AtCommand atCommand;
+	atCommand.text = text;
+	atCommand.onReceive = onReceive;
+	atCommand.timeout = timeoutMs;
+	atCommand.retries = retries;
+
+	send(atCommand);
+}
+
+void AtClient::send(String text, AtCompleteCallback onComplete, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
+	AtCommand atCommand;
+	atCommand.text = text;
+	atCommand.onComplete = onComplete;
+	atCommand.timeout = timeoutMs;
+	atCommand.retries = retries;
+
+	send(atCommand);
 }
 
 // Low Level  Communication Functions
 
-void AtClient::send(String name, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
-	AtCommand atCommand;
-	atCommand.name = name;
-	atCommand.timeout = timeoutMs;
-	atCommand.retries = retries;
-
-	send(atCommand);
-}
-
-void AtClient::send(String name, String expectedResponse2, AtCallback onResponse, void *data /* =NULL */, uint32_t timeoutMs /* = AT_TIMEOUT */, int retries /* = 0 */) {
-	AtCommand atCommand;
-	atCommand.name = name;
-	atCommand.response2 = expectedResponse2;
-	atCommand.callback = onResponse;
-	atCommand.data = data;
-	atCommand.timeout = timeoutMs;
-	atCommand.retries = retries;
-
-	send(atCommand);
-}
-
 void AtClient::send(AtCommand command) {
-	if(currentCommand.name.length()) {
+	if(currentCommand.text.length()) {
 		queue.enqueue(command);
 		return;
 	}
@@ -99,15 +117,15 @@ void AtClient::sendDirect(AtCommand command) {
 	state = eAtRunning;
 	commandTimer.stop();
 	currentCommand = command;
-	stream->print(command.name);
-	debugf("Sent: timeout: %d, current %d ms, name: %s", currentCommand.timeout, millis(), command.name.substring(0, 20).c_str());
+	stream->print(command.text);
+	debugf("Sent: timeout: %d, current %d ms, name: %s", currentCommand.timeout, millis(), command.text.substring(0, 20).c_str());
 	commandTimer.initializeMs(currentCommand.timeout, TimerDelegate(&AtClient::ticker, this)).startOnce();
 }
 
 // Low Level Queue Functions
 void AtClient::resend() {
 	state = eAtOK;
-	if(currentCommand.name.length()) {
+	if(currentCommand.text.length()) {
 		sendDirect(currentCommand);
 		return;
 	}
@@ -122,7 +140,7 @@ void AtClient::next() {
 	}
 
 	state = eAtOK;
-	currentCommand.name = "";
+	currentCommand.text = "";
 	if(queue.count() > 0) {
 		send(queue.dequeue());
 	}
@@ -130,7 +148,7 @@ void AtClient::next() {
 
 void AtClient::ticker() {
 	debugf("Ticker =================> ");
-	if(!currentCommand.name.length()) {
+	if(!currentCommand.text.length()) {
 		commandTimer.stop();
 		debugf("Error: Timeout without command?!");
 		return;
@@ -146,5 +164,5 @@ void AtClient::ticker() {
 
 	state = eAtError;
 
-	debugf("Timeout: %d ms, %s", millis(), currentCommand.name.c_str());
+	debugf("Timeout: %d ms, %s", millis(), currentCommand.text.c_str());
 }

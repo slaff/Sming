@@ -30,7 +30,7 @@ public:
 	bool takePicture(Stream* outputStream, eResolution resolution = eResVGA);
 
 private:
-	void responseToStream(AtClient &camera, Stream &source, char arrivedChar, uint16_t availableCharsCount);
+	bool onReceive(AtClient &camera, Stream &source);
 };
 
 #endif /* LIBRARIES_A6_H_ */

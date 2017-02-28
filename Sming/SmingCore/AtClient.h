@@ -20,16 +20,19 @@
 
 class AtClient;
 
-typedef Delegate<void(AtClient& atClient, Stream& source, char arrivedChar, uint16_t availableCharsCount)> AtCallback;
+typedef Delegate<bool(AtClient& atClient, Stream& source)> AtReceiveCallback; // << If the callback returns true then this means that we have
+																			  //     finished successfully processing the command
+typedef Delegate<bool(AtClient& atClient, String& reply)> AtCompleteCallback; // << If the callback returns true then this means that we have
+																			  //     finished successfully processing the command
 
 typedef struct {
-	String name; // << the actual AT command
+	String text; // << the actual AT command
 	String response2; // << alternative successful response
 	int timeout; // << timeout in milliseconds
 	int retries; // << number of retries before giving up
-	bool breakOnError = true; // << stop excuting next command if that one has failed
-	AtCallback callback=0; // << if that is set you can process manually all incoming data in a callback
-	void *data=0; // << additional information to pass. Useful to pass information to the callback
+	bool breakOnError = true; // << stop executing next command if that one has failed
+	AtReceiveCallback onReceive   = 0; // << if set you can process manually all incoming data in a callback
+	AtCompleteCallback onComplete = 0; // if set then you can process the complete response manually
 } AtCommand;
 
 typedef enum {
@@ -55,40 +58,37 @@ public:
 
 	/**
 	 * @brief Sends AT command
-	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param expectedResponse2 String Expected response on success in addition to the default one which is OK
+	 * @param text String The actual AT command text. For example AT+CAMSTOP
+	 * @param altResponse String Expected response on success in addition to the default one which is OK
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
+	void send(String text, String altResponse = "",  uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	/**
 	 * @brief Sends AT command
-	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param AtCallback onResponse
+	 * @param text String The actual AT command text. For example AT+CAMSTOP
+	 * @param AtReceiveCallback onReceive
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0) {
-		send(name, "OK", onResponse, data, timeoutMs, retries);
-	}
+	void send(String text, AtReceiveCallback onReceive, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	/**
 	 * @brief Sends AT command
-	 * @param name String The actual AT command text. For example AT+CAMSTOP
-	 * @param expectedResponse1 String Expected response on success
-	 * @param expectedResponse2 String Alternative expected response on success
+	 * @param text String The actual AT command text. For example AT+CAMSTOP
+	 * @param AtCompleteCallback onComplete
 	 * @param timeoutMs uint32_t Time in milliseconds to wait for response
 	 * @param retries int Retries on error
 	 */
-	void send(String name, String expectedResponse2, AtCallback onResponse, void *data = NULL, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
+	void send(String text, AtCompleteCallback onComplete, uint32_t timeoutMs = AT_TIMEOUT, int retries = 0);
 
 	// Low Level Functions
 
 	/**
 	 * @brief Adds a command to the queue.
 	 * 		  If you need all the flexibility then use that command
-	 * 		  and mannually set your AtCommand arguments.
+	 * 		  and manually set your AtCommand arguments.
 	 * @param command AtCommand
 	 */
 	void send(AtCommand command);
