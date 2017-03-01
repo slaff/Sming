@@ -1,11 +1,12 @@
 #include <user_config.h>
 #include <SmingCore/SmingCore.h>
-#include "../Libraries/A6/A6.h"
+#include "../Libraries/A6/A6C.h"
+#include "../../Services/WebHelpers/base64.h"
+
 #include "../SmingCore/ProducerConsumer.h"
 
-
 HardwareSerial Serial1(UART1);
-A6* a6;
+A6C* camera;
 
 HttpServer server;
 
@@ -32,16 +33,35 @@ void onFile(HttpRequest &request, HttpResponse &response)
 	Content-Length: ....
 
 	*/
+	char boundary[33];
+	char bin[16];
 
+	for (int i = 0; i < 16; ++i) {
+		bin[i] = 1 + os_random() % 255;
+	}
 
+	base64_encode(16, (const unsigned char*)bin, 32, (char*)boundary);
+	boundary[32] = '\0';
 
-  a6->takePicture(&producer);
-  response.setHeader("Cache-Control","no-cache");
-  Consumer *consumer = producer.getConsumer();
-  response.sendDataStream(consumer, "multipart/x-mixed-replace;boundary=--7b3cc56e5f51db803f790dad720ed50a");
+	bool connected = true;
+
+	response.setContentType("multipart/x-mixed-replace;boundary=--"+String(boundary));
+	response.setHeader("Cache-Control","no-cache");
+
+	do {
+		PictureDataStream pictureStream;
+		camera->takePicture(&pictureStream);
+		response.sendString("--"+String(boundary)+"\r\n");
+		response.sendString("Content-Type: image/jpg\r\n");
+		response.sendString("\r\n");
+		response.sendDataStream(&pictureStream);
+	} while(connected);
 }
 
-void onConnected() {
+void ready() {
+	camera = new A6C(&Serial);
+	camera->startCamera();
+
 	server.listen(80);
 	server.setDefaultHandler(onFile);
 }
@@ -51,9 +71,9 @@ void init()
 {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	/* Toggle UART0 to use pins GPIO13/GPIO15 as RX and TX */
+#if 0
 	Serial.swap();
-
-	a6 = new A6(&Serial);
+#endif
 
 	/**
 	 * Serial1 uses UART1, TX pin is GPIO2.
@@ -68,5 +88,10 @@ void init()
 	Serial1.begin(SERIAL_BAUD_RATE);
 	Serial1.systemDebugOutput(true); // UART1 will be used to log debug information
 
-	debugf("Starting...");
+	// Set system ready callback method
+	System.onReady(ready);
+
+	// Soft access point
+	WifiAccessPoint.enable(true);
+	WifiAccessPoint.config("SmingAP", "", AUTH_OPEN);
 }
