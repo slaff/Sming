@@ -119,6 +119,8 @@ DEBUG_VERBOSE_LEVEL ?= 2
 # Disable CommandExecutor functionality if not used and save some ROM and RAM
 ENABLE_CMD_EXECUTOR ?= 1
 
+ENABLE_COOP_DELAY ?= 1
+
 RELOAD_MKFILE = 0
 
 # Sming Framework Path
@@ -215,6 +217,10 @@ endif
 
 #Append debug options
 CFLAGS += -DCUST_FILE_BASE=$$* -DDEBUG_VERBOSE_LEVEL=$(DEBUG_VERBOSE_LEVEL) -DDEBUG_PRINT_FILENAME_AND_LINE=$(DEBUG_PRINT_FILENAME_AND_LINE)
+
+ifeq ($(ENABLE_COOP_DELAY),1)
+	CFLAGS += -DENABLE_COOP_DELAY=1
+endif
 
 CXXFLAGS	= $(CFLAGS) -fno-rtti -fno-exceptions -std=c++11 -felide-constructors
 
@@ -359,6 +365,11 @@ spiffy/spiffy: third-party/spiffs/makefile
 $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
 	$(Q) $(AR) cru $@ $^
+ifeq ($(ENABLE_COOP_DELAY),1)
+	$(Q) $(AR) x ${XTENSA_TOOLS_ROOT}/../xtensa-lx106-elf/sysroot/lib/libcirom.a lib_a-setjmp.o
+	$(Q) $(AR) r $@ lib_a-setjmp.o
+	$(Q) rm lib_a-setjmp.o
+endif
 	$(vecho) "Installing $(LIBSMING)"
 ifeq ($(ENABLE_SSL), 1)
 	$(vecho) "+ SSL support is enabled"

@@ -187,9 +187,17 @@ void init() {
 #endif
 	WifiAccessPoint.enable(false);
 	
-	Serial.printf("\r\nCurrently running rom %d.\r\n", slot);
+	debugf("Delay TEST =====");
+	debugf("Before Delay1(2000): %d", micros());
+	delay(2000);
+	debugf("After Delay1(2000): %d", micros());
+	debugf("Before Delay2(10000): %d", micros());
+	delay(10000);
+	debugf("After Delay2(10000): %d", micros());
+
+	Serial.printf("\r\nCurrently running rom XYZ %d.\r\n", slot);
 	Serial.println("Type 'help' and press enter for instructions.");
 	Serial.println();
-	
+
 	Serial.setCallback(serialCallBack);
 }
