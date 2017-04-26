@@ -365,11 +365,6 @@ spiffy/spiffy: third-party/spiffs/makefile
 $(APP_AR): $(OBJ)
 	$(vecho) "AR $@"
 	$(Q) $(AR) cru $@ $^
-ifeq ($(ENABLE_COOP_DELAY),1)
-	$(Q) $(AR) x ${XTENSA_TOOLS_ROOT}/../xtensa-lx106-elf/sysroot/lib/libcirom.a lib_a-setjmp.o
-	$(Q) $(AR) r $@ lib_a-setjmp.o
-	$(Q) rm lib_a-setjmp.o
-endif
 	$(vecho) "Installing $(LIBSMING)"
 ifeq ($(ENABLE_SSL), 1)
 	$(vecho) "+ SSL support is enabled"
