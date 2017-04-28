@@ -210,7 +210,7 @@ CFLAGS		= -Wpointer-arith -Wundef -Werror -Wl,-EL -nostdlib -mlongcalls -mtext-s
 ifeq ($(SMING_RELEASE),1)
 	# See: https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
 	#      for full list of optimization options
-	CFLAGS += -Os -DSMING_RELEASE=1
+	CFLAGS += -Os -DSMING_RELEASE=1 -flto
 else ifeq ($(ENABLE_GDB), 1)
 	CFLAGS += -Og -ggdb -DGDBSTUB_FREERTOS=0 -DENABLE_GDB=1
 	MODULES		 += $(THIRD_PARTY_DIR)/gdbstub
