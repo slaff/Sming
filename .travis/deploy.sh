@@ -16,6 +16,7 @@ cd $SMING_HOME
 make docs
 cd ..
 
+git fetch origin gh-pages:gh-pages
 git checkout gh-pages
 
 DOCS_DIR=$SMING_HOME/../api
@@ -25,4 +26,4 @@ cp -r $SMING_HOME/../docs/api/sming/ $DOCS_DIR
 git add -A $DOCS_DIR 
 git commit -m "Updated the API docs to version $TAG."
 
-git push https://${GH_TOKEN}@$github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+git push https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
