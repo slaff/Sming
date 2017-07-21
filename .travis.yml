@@ -19,6 +19,11 @@ addons:
     - ubuntu-toolchain-r-test
     packages:     
       - bsdtar
+      - doxygen
+      - doxygen-doc
+      - doxygen-latex
+      - doxygen-gui
+      - graphviz
 
 install:
   - if [ "$SDK_VERSION" != "2.0.0" ] && [ "$TRAVIS_OS_NAME" == "osx" ]; then export SDK_FILE_NAME="esp-alt-sdk-v${SDK_VERSION}.${SDK_BUILD}-macos-x86_64.zip"; fi
@@ -39,7 +44,7 @@ script:
 
 deploy:
   provider: script
-  script: .travis/deploy.sh $TRAVIS_TAG
+  script: sh $TRAVIS_BUILD_DIR/.travis/deploy.sh $TRAVIS_TAG
   skip_cleanup: true
   on:
     tags: true
