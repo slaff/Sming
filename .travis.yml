@@ -39,7 +39,7 @@ script:
 
 deploy:
   provider: script
-  script: .travis/deploy.sh $TRAVIS_TAG
+  script: sh $TRAVIS_BUILD_DIR/.travis/deploy.sh $TRAVIS_TAG
   skip_cleanup: true
   on:
     tags: true
