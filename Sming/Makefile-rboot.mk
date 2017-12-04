@@ -569,6 +569,26 @@ else
 	$(ESPTOOL) -p $(COM_PORT) -b $(COM_SPEED_ESPTOOL) write_flash $(flashimageoptions) 0x00000 $(RBOOT_BIN) 0x01000 $(SDK_BASE)/bin/blank.bin 0x02000 $(RBOOT_ROM_0) $(RBOOT_SPIFFS_0) $(SPIFF_BIN_OUT)
 endif
 	$(TERMINAL)
+	
+$(TARGET_OUT_0).kernel: all
+ifeq ($(DISABLE_SPIFFS), 1)
+	$(Q) cat   $(RBOOT_BIN)  /dev/zero | head -c $$((0x01000)) |	\
+		 cat - $(SDK_BASE)/bin/blank.bin /dev/zero | head -c $$((0x02000)) |	\
+		 cat - $(RBOOT_ROM_0) > $@
+else
+	$(Q) cat   $(RBOOT_BIN)  /dev/zero | head -c $$((0x01000)) |	\
+		 cat - $(SDK_BASE)/bin/blank.bin /dev/zero | head -c $$((0x02000)) |	\
+		 cat - $(RBOOT_ROM_0) | head -c $$(($(RBOOT_SPIFFS_0))) |	\
+		 cat - $(SPIFF_BIN_OUT) > $@
+endif
+
+simulate: $(TARGET_OUT_0).kernel
+	$(Q) qemu-system-xtensa -M esp8266	\
+		-nographic		\
+		-serial tcp::4444,server	\
+		-monitor none		\
+		-s			\
+		-kernel $<
 
 terminal:
 	$(vecho) "Killing Terminal to free $(COM_PORT)"

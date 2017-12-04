@@ -515,6 +515,24 @@ else
 endif
 	$(TERMINAL)
 
+$(TARGET_OUT).kernel: all
+ifeq ($(DISABLE_SPIFFS), 1)
+	$(Q) cat   $(FW_BASE)/$(IMAGE_MAIN)  /dev/zero | head -c $$(($(IMAGE_SDK_OFFSET))) | \
+	     cat - $(FW_BASE)/$(IMAGE_SDK) > $@
+else
+	$(Q) cat   $(FW_BASE)/$(IMAGE_MAIN)  /dev/zero | head -c $$(($(IMAGE_SDK_OFFSET))) | \
+		 cat - $(FW_BASE)/$(IMAGE_SDK) /dev/zero | head -c $$(($(SPIFF_START_OFFSET))) | \
+	     cat - $(SPIFF_BIN_OUT) > $@
+endif
+
+simulate: $(TARGET_OUT).kernel
+	$(Q) qemu-system-xtensa -M esp8266	\
+		-nographic		\
+		-serial tcp::4444,server	\
+		-monitor none		\
+		-s			\
+		-kernel $<
+
 terminal:
 	$(vecho) "Killing Terminal to free $(COM_PORT)"
 	-$(Q) $(KILL_TERM)
