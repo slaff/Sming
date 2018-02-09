@@ -2,6 +2,7 @@
 Sming - Open Source framework for high efficiency WiFi SoC ESP8266 native development with C++ language.
 
 [![ESP8266 C++ development framework](https://github.com/SmingHub/Sming/wiki/images/small/combine.png)](https://github.com/SmingHub/Sming/wiki/examples)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fslaff%2FSming.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fslaff%2FSming?ref=badge_shield)
 
 [![Gitter (chat)](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SmingHub/Sming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Donate](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=WAQ8XDHCKU3PL&lc=US&item_name=Sming%20Framework%20development&item_number=sming&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted)
@@ -165,3 +166,7 @@ void onFile(HttpRequest &request, HttpResponse &response)
   response.sendFile(file);
 }
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fslaff%2FSming.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fslaff%2FSming?ref=badge_large)
