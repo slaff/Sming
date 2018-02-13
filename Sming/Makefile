@@ -174,7 +174,7 @@ ARDUINO_LIBRARIES = $(shell git submodule status Libraries | cut -c2- | cut -f2 
 MODULES     = system system/helpers Wiring appinit \
               $(sort $(dir $(wildcard SmingCore/*/ SmingCore/*/*/ SmingCore/*/*/*/))) \
               $(filter %/, $(wildcard Services/*/)) \
-              $(filter %/, $(wildcard Libraries/*/)) $(wildcard Libraries/*/src/)
+              $(filter %/, $(wildcard Libraries/*/)) $(shell find Libraries/*/src/ -type d)
 EXTRA_INCDIR    = include system/include Wiring Libraries SmingCore $(SDK_BASE)/../include
 
 # Place a file that should exist in a submodule that is fetched separately
