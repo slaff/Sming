@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#define F(A) (A)
+
 void yield();
 
 #ifdef __cplusplus

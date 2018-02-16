@@ -161,7 +161,7 @@ void init()
     Serial.systemDebugOutput(false);
     WifiAccessPoint.enable(false);
 
-    WifiStation.config(WIFI_SSID, WIFI_PWD);
+    //WifiStation.config(WIFI_SSID, WIFI_PWD);
     WifiStation.enable(true);
 
     WifiEvents.onStationGotIP(STAGotIP);
