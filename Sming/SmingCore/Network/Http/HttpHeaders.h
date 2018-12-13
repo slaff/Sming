@@ -40,6 +40,7 @@
 	XX(CONNECTION, "Connection", "Indicates sender's desired control options")                                         \
 	XX(CONTENT_DISPOSITION, "Content-Disposition", "Additional information about how to process response payload")     \
 	XX(CONTENT_ENCODING, "Content-Encoding", "Applied encodings in addition to content type")                          \
+	XX(ACCEPT_ENCODING, "Accept-Encoding", "Lists supported content encodings")						                   \
 	XX(CONTENT_LENGTH, "Content-Length", "Anticipated size for payload when not using transfer encoding")              \
 	XX(CONTENT_TYPE, "Content-Type",                                                                                   \
 	   "Payload media type indicating both data format and intended manner of processing by recipient")                \

@@ -1,0 +1,46 @@
+diff --git a/miniz.h b/miniz.h
+index ad7e357..9e812ad 100644
+--- a/miniz.h
++++ b/miniz.h
+@@ -192,7 +192,7 @@ extern "C" {
+ /* ------------------- zlib-style API Definitions. */
+ 
+ /* For more compatibility with zlib, miniz.c uses unsigned long for some parameters/struct members. Beware: mz_ulong can be either 32 or 64-bits! */
+-typedef unsigned long mz_ulong;
++typedef unsigned mz_ulong;
+ 
+ /* mz_free() internally uses the MZ_FREE() macro (which by default calls free() unless you've modified the MZ_MALLOC macro) to release a block allocated from the heap. */
+ void mz_free(void *p);
+diff --git a/miniz_common.h b/miniz_common.h
+index a10dae8..aa8213f 100644
+--- a/miniz_common.h
++++ b/miniz_common.h
+@@ -1,9 +1,27 @@
+ #pragma once
+-#include <assert.h>
++#ifdef __ets__
++    #include <user_config.h>
++#endif
++
++#ifdef __ets__
++    #include "m_printf.h"
++    #undef assert
++    #define assert(condition) if (!(condition)) SYSTEM_ERROR("ASSERT: %s %d", __FUNCTION__, __LINE__)
++#else
++    #include <assert.h>
++#endif
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
+ 
++/* ----------------- Sming Framework Specific Settings */
++#define MINIZ_NO_STDIO
++#define MINIZ_NO_ARCHIVE_APIS
++#define MINIZ_NO_TIME
++#define MINIZ_NO_MALLOC
++#define MINIZ_HAS_64BIT_REGISTERS 0
++#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 0
++
+ /* ------------------- Types and macros */
+ typedef unsigned char mz_uint8;
+ typedef signed short mz_int16;

@@ -93,3 +93,6 @@
 	path = Sming/third-party/mqtt-codec
 	url = https://github.com/slaff/mqtt-codec.git
 	ignore = dirty
+[submodule "Sming/third-party/miniz"]
+	path = Sming/third-party/miniz
+	url = https://github.com/richgel999/miniz

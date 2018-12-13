@@ -25,6 +25,10 @@
 
 HttpConnection::HttpConnection(RequestQueue* queue) : HttpConnectionBase(HTTP_RESPONSE)
 {
+#ifndef HTTP_DISABLE_CONTENT_DECODER
+	contentCoders["deflate"] = deflateDecoder;
+#endif
+
 	this->waitingQueue = queue;
 }
 
@@ -52,6 +56,9 @@ bool HttpConnection::connect(const String& host, int port, bool useSsl /* = fals
 
 bool HttpConnection::send(HttpRequest* request)
 {
+	if(!request->headers.contains(HTTP_HEADER_ACCEPT_ENCODING)) {
+		request->headers[HTTP_HEADER_ACCEPT_ENCODING] = "deflate";
+	}
 	return waitingQueue->enqueue(request);
 }
 
@@ -241,6 +248,15 @@ int HttpConnection::onHeadersComplete(const HttpHeaders& headers)
 	}
 
 	if(!error) {
+		// set the content decoder
+		if(response.headers.contains(HTTP_HEADER_CONTENT_ENCODING) &&
+		   contentCoders.contains(response.headers[HTTP_HEADER_CONTENT_ENCODING])) {
+		   contentDecoder = contentCoders[response.headers[HTTP_HEADER_CONTENT_ENCODING]];
+		   if(!contentDecodingBuffer) {
+			   contentDecodingBuffer = new char[contentDecodingLength];
+		   }
+		}
+
 		// set the response stream
 		if(incomingRequest->responseStream != nullptr) {
 			response.stream = incomingRequest->responseStream;
@@ -260,13 +276,23 @@ int HttpConnection::onBody(const char* at, size_t length)
 		return 1;
 	}
 
+	char* data = (char *)at;
+	size_t dataLength = length;
+
+	if(contentDecoder) {
+	   size_t actualLength = contentDecodingLength;
+	   int res = contentDecoder((uint8_t*)contentDecodingBuffer, &actualLength, (const uint8_t*)at, length);
+	   data = contentDecodingBuffer;
+	   length = actualLength;
+	}
+
 	if(incomingRequest->requestBodyDelegate) {
-		return incomingRequest->requestBodyDelegate(*this, at, length);
+		return incomingRequest->requestBodyDelegate(*this, data, dataLength);
 	}
 
 	if(response.stream != nullptr) {
-		int res = response.stream->write((const uint8_t*)at, length);
-		if(res != length) {
+		int res = response.stream->write((const uint8_t*)data, dataLength);
+		if(res != dataLength) {
 			// unable to write the requested bytes - stop here...
 			delete response.stream;
 			response.stream = nullptr;
