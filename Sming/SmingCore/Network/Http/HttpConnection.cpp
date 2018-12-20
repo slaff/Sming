@@ -26,7 +26,7 @@
 HttpConnection::HttpConnection(RequestQueue* queue) : HttpConnectionBase(HTTP_RESPONSE)
 {
 #ifndef HTTP_DISABLE_CONTENT_DECODER
-	contentCoders["deflate"] = deflateDecoder;
+	contentCoders["br"]   = brotliDecoder;
 #endif
 
 	this->waitingQueue = queue;
@@ -56,9 +56,6 @@ bool HttpConnection::connect(const String& host, int port, bool useSsl /* = fals
 
 bool HttpConnection::send(HttpRequest* request)
 {
-	if(!request->headers.contains(HTTP_HEADER_ACCEPT_ENCODING)) {
-		request->headers[HTTP_HEADER_ACCEPT_ENCODING] = "deflate";
-	}
 	return waitingQueue->enqueue(request);
 }
 
@@ -183,6 +180,11 @@ int HttpConnection::onMessageComplete(http_parser* parser)
 		return -2; // no current request...
 	}
 
+	if(contentDecoder) {
+		contentDecoder(nullptr, nullptr, nullptr, CONTENT_CODER_END, &contentDecoderContext);
+		contentDecoderContext = nullptr;
+	}
+
 	debug_d("staticOnMessageComplete: Execution queue: %d, %s", executionQueue.count(),
 			incomingRequest->uri.toString().c_str());
 
@@ -254,7 +256,10 @@ int HttpConnection::onHeadersComplete(const HttpHeaders& headers)
 		   contentDecoder = contentCoders[response.headers[HTTP_HEADER_CONTENT_ENCODING]];
 		   if(!contentDecodingBuffer) {
 			   contentDecodingBuffer = new char[contentDecodingLength];
+			   contentDecoderContext = nullptr;
 		   }
+		   // initialize the content decoder
+		   contentDecoder(nullptr, nullptr, nullptr, CONTENT_CODER_START, &contentDecoderContext);
 		}
 
 		// set the response stream
@@ -281,9 +286,13 @@ int HttpConnection::onBody(const char* at, size_t length)
 
 	if(contentDecoder) {
 	   size_t actualLength = contentDecodingLength;
-	   int res = contentDecoder((uint8_t*)contentDecodingBuffer, &actualLength, (const uint8_t*)at, length);
+	   int error = contentDecoder((uint8_t*)contentDecodingBuffer, &actualLength, (const uint8_t*)at, length, &contentDecoderContext);
+	   if(error) {
+		   return error;
+	   }
+
 	   data = contentDecodingBuffer;
-	   length = actualLength;
+	   dataLength = actualLength;
 	}
 
 	if(incomingRequest->requestBodyDelegate) {
@@ -411,6 +420,17 @@ void HttpConnection::sendRequestHeaders(HttpRequest* request)
 		request->headers[HTTP_HEADER_TRANSFER_ENCODING] = _F("chunked");
 	}
 
+	if(!request->headers.contains(HTTP_HEADER_ACCEPT_ENCODING)) {
+		String acceptEncoding;
+		for(unsigned i = 0; i < contentCoders.count(); i ++) {
+			acceptEncoding += contentCoders.keyAt(i) + ",";
+		}
+
+		if(acceptEncoding.length()) {
+			request->headers[HTTP_HEADER_ACCEPT_ENCODING] = acceptEncoding.substring(0, acceptEncoding.length() - 1);
+		}
+	}
+
 	for(unsigned i = 0; i < request->headers.count(); i++) {
 		// TODO: add name and/or value escaping (implement in HttpHeaders)
 		sendString(request->headers[i]);
@@ -473,5 +493,6 @@ void HttpConnection::cleanup()
 
 HttpConnection::~HttpConnection()
 {
+	delete[] contentDecodingBuffer;
 	cleanup();
 }

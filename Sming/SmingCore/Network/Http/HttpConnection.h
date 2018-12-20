@@ -148,9 +148,10 @@ protected:
 
 	ContentCoders contentCoders;
 	HttpContentCoder contentDecoder = nullptr;
+	void *contentDecoderContext = nullptr;
 
 	char* contentDecodingBuffer = nullptr;
-	size_t contentDecodingLength = 1024;
+	size_t contentDecodingLength = 3 * 1024;
 
 };
 

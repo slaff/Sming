@@ -202,10 +202,12 @@ THIRD_PARTY_DATA += third-party/mqtt-codec/Makefile
 EXTRA_INCDIR     += third-party/mqtt-codec/src
 CUSTOM_TARGETS   += $(USER_LIBDIR)/libmqttc.a
 
-# miniz
-THIRD_PARTY_DATA += third-party/miniz/miniz.h
-MODULES          += third-party/miniz/
-EXTRA_INCDIR 	 += third-party/miniz/ 
+# brotli
+BROTLI_DIRS  = third-party/brotli/common \
+								third-party/brotli/dec \
+								third-party/brotli/include
+MODULES 		 += $(BROTLI_DIRS)								
+EXTRA_INCDIR += $(BROTLI_DIRS)
 
 # => LOCALE
 ifdef LOCALE
