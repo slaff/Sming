@@ -21,7 +21,7 @@ struct PrefixCodeRange {
 };
 
 static const struct PrefixCodeRange
-    kBlockLengthPrefixCode[BROTLI_NUM_BLOCK_LEN_SYMBOLS] = {
+    kBlockLengthPrefixCode[BROTLI_NUM_BLOCK_LEN_SYMBOLS] PROGMEM_L32 = {
   {   1,  2}, {    5,  2}, {  9,   2}, {  13,  2},
   {  17,  3}, {   25,  3}, {  33,  3}, {  41,  3},
   {  49,  4}, {   65,  4}, {  81,  4}, {  97,  4},
@@ -40,7 +40,7 @@ typedef struct CmdLutElement {
   uint16_t copy_len_offset;
 } CmdLutElement;
 
-static const CmdLutElement kCmdLut[BROTLI_NUM_COMMAND_SYMBOLS] = {
+static const CmdLutElement kCmdLut[BROTLI_NUM_COMMAND_SYMBOLS] PROGMEM_L32 = {
   { 0x00, 0x00, 0, 0x00, 0x0000, 0x0002 },
   { 0x00, 0x00, 0, 0x01, 0x0000, 0x0003 },
   { 0x00, 0x00, 0, 0x02, 0x0000, 0x0004 },

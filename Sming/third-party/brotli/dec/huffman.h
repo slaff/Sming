@@ -20,7 +20,7 @@ extern "C" {
 
 /* Maximum possible Huffman table size for an alphabet size of (index * 32),
    max code length 15 and root table bits 8. */
-static const uint16_t kMaxHuffmanTableSize[] = {
+static const uint16_t kMaxHuffmanTableSize[] PROGMEM_L32 = {
   256, 402, 436, 468, 500, 534, 566, 598, 630, 662, 694, 726, 758, 790, 822,
   854, 886, 920, 952, 984, 1016, 1048, 1080, 1112, 1144, 1176, 1208, 1240, 1272,
   1304, 1336, 1368, 1400, 1432, 1464, 1496, 1528};

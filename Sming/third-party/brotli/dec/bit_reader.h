@@ -20,7 +20,7 @@ extern "C" {
 
 #define BROTLI_SHORT_FILL_BIT_WINDOW_READ (sizeof(brotli_reg_t) >> 1)
 
-static const uint32_t kBitMask[33] = {  0x00000000,
+static const uint32_t kBitMask[33] PROGMEM_L32 = {  0x00000000,
     0x00000001, 0x00000003, 0x00000007, 0x0000000F,
     0x0000001F, 0x0000003F, 0x0000007F, 0x000000FF,
     0x000001FF, 0x000003FF, 0x000007FF, 0x00000FFF,

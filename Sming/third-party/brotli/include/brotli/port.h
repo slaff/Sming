@@ -9,6 +9,10 @@
 #ifndef BROTLI_COMMON_PORT_H_
 #define BROTLI_COMMON_PORT_H_
 
+#ifdef __ets__
+    #include <user_config.h>
+#endif
+
 /* The following macros were borrowed from https://github.com/nemequ/hedley
  * with permission of original author - Evan Nemerson <evan@nemerson.com> */
 
