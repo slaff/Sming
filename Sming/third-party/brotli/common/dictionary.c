@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 #ifndef BROTLI_EXTERNAL_DICTIONARY_DATA
-static const uint8_t kBrotliDictionaryData[] PROGMEM =
+static const uint8_t kBrotliDictionaryData[] PROGMEM_L32 =
 {
 116,105,109,101,100,111,119,110,108,105,102,101,108,101,102,116,98,97,99,107,99,
 111,100,101,100,97,116,97,115,104,111,119,111,110,108,121,115,105,116,101,99,105
