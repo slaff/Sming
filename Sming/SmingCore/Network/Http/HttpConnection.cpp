@@ -26,7 +26,7 @@
 HttpConnection::HttpConnection(RequestQueue* queue) : HttpConnectionBase(HTTP_RESPONSE)
 {
 #ifndef HTTP_DISABLE_CONTENT_DECODER
-	contentCoders["br"]   = brotliDecoder;
+	contentCoders["br"] = brotliDecoder;
 #endif
 
 	this->waitingQueue = queue;
@@ -253,13 +253,13 @@ int HttpConnection::onHeadersComplete(const HttpHeaders& headers)
 		// set the content decoder
 		if(response.headers.contains(HTTP_HEADER_CONTENT_ENCODING) &&
 		   contentCoders.contains(response.headers[HTTP_HEADER_CONTENT_ENCODING])) {
-		   contentDecoder = contentCoders[response.headers[HTTP_HEADER_CONTENT_ENCODING]];
-		   if(!contentDecodingBuffer) {
-			   contentDecodingBuffer = new char[contentDecodingLength];
-			   contentDecoderContext = nullptr;
-		   }
-		   // initialize the content decoder
-		   contentDecoder(nullptr, nullptr, nullptr, CONTENT_CODER_START, &contentDecoderContext);
+			contentDecoder = contentCoders[response.headers[HTTP_HEADER_CONTENT_ENCODING]];
+			if(!contentDecodingBuffer) {
+				contentDecodingBuffer = new char[contentDecodingLength];
+				contentDecoderContext = nullptr;
+			}
+			// initialize the content decoder
+			contentDecoder(nullptr, nullptr, nullptr, CONTENT_CODER_START, &contentDecoderContext);
 		}
 
 		// set the response stream
@@ -281,18 +281,19 @@ int HttpConnection::onBody(const char* at, size_t length)
 		return 1;
 	}
 
-	char* data = (char *)at;
+	char* data = (char*)at;
 	size_t dataLength = length;
 
 	if(contentDecoder) {
-	   size_t actualLength = contentDecodingLength;
-	   int error = contentDecoder((uint8_t*)contentDecodingBuffer, &actualLength, (const uint8_t*)at, length, &contentDecoderContext);
-	   if(error) {
-		   return error;
-	   }
+		size_t actualLength = contentDecodingLength;
+		int error = contentDecoder((uint8_t*)contentDecodingBuffer, &actualLength, (const uint8_t*)at, length,
+								   &contentDecoderContext);
+		if(error) {
+			return error;
+		}
 
-	   data = contentDecodingBuffer;
-	   dataLength = actualLength;
+		data = contentDecodingBuffer;
+		dataLength = actualLength;
 	}
 
 	if(incomingRequest->requestBodyDelegate) {
@@ -422,7 +423,7 @@ void HttpConnection::sendRequestHeaders(HttpRequest* request)
 
 	if(!request->headers.contains(HTTP_HEADER_ACCEPT_ENCODING)) {
 		String acceptEncoding;
-		for(unsigned i = 0; i < contentCoders.count(); i ++) {
+		for(unsigned i = 0; i < contentCoders.count(); i++) {
 			acceptEncoding += contentCoders.keyAt(i) + ",";
 		}
 

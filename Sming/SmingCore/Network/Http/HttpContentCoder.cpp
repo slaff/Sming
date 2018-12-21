@@ -3,16 +3,17 @@
 #include "../third-party/brotli/include/brotli/decode.h"
 #include "../third-party/brotli/dec/state.h"
 
-int brotliDecoder(uint8_t* destination, size_t* destinationLength, const uint8_t* source, int sourceLength, void** context)
+int brotliDecoder(uint8_t* destination, size_t* destinationLength, const uint8_t* source, int sourceLength,
+				  void** context)
 {
 	BrotliDecoderState* state = (BrotliDecoderState*)*context;
 	if(sourceLength == CONTENT_CODER_START) {
 		state = new BrotliDecoderState();
-		if (!BrotliDecoderStateInit(state, 0, 0, 0)) {
+		if(!BrotliDecoderStateInit(state, 0, 0, 0)) {
 			return -1;
 		}
 
-		*context = (void *)state;
+		*context = (void*)state;
 		return 0;
 	}
 
@@ -64,6 +65,5 @@ int brotliDecoder(uint8_t* destination, size_t* destinationLength, const uint8_t
 		*destinationLength = totalOut;
 	}
 
-	return (success ? 0: (int)result);
-
+	return (success ? 0 : (int)result);
 }
