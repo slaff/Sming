@@ -171,6 +171,8 @@ CUSTOM_TARGETS ?=
 ARDUINO_LIBRARIES = $(shell git submodule status Libraries | cut -c2- | cut -f2 -d ' ' | sed -r 's/Libraries\/([^/]*)/Libraries\/\1\/library.properties/g' )
 
 # which modules (subdirectories) of the project to include in compiling
+# All .s(assembly), .c (C language), .cpp (C++ language) files will be included 
+# TOGETHER with the .h (header) files.
 MODULES     = system system/helpers Wiring appinit \
               $(sort $(dir $(wildcard SmingCore/*/ SmingCore/*/*/ SmingCore/*/*/*/))) \
               $(filter %/, $(wildcard Services/*/)) \
@@ -203,12 +205,9 @@ EXTRA_INCDIR     += third-party/mqtt-codec/src
 CUSTOM_TARGETS   += $(USER_LIBDIR)/libmqttc.a
 
 # brotli
-BROTLI_DIRS  = third-party/brotli/common \
-								third-party/brotli/dec \
-								third-party/brotli/include
-MODULES 		 += $(BROTLI_DIRS)								
-EXTRA_INCDIR += $(BROTLI_DIRS)
-
+SRC_DIR         += third-party/brotli/common third-party/brotli/dec 
+EXTRA_INCDIR	   += third-party/brotli/include
+								
 # => LOCALE
 ifdef LOCALE
 	CFLAGS += -DLOCALE=$(LOCALE)
@@ -354,8 +353,8 @@ ifeq ($(ENABLE_WPS), 1)
    CFLAGS += -DENABLE_WPS=1
 endif
 
-SRC_DIR		:= $(MODULES)
-BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(MODULES))
+SRC_DIR		:= $(MODULES) $(SRC_DIR)
+BUILD_DIR	:= $(addprefix $(BUILD_BASE)/,$(SRC_DIR))
 
 SDK_LIBDIR	:= $(addprefix $(SDK_BASE)/,$(SDK_LIBDIR))
 SDK_INCDIR	:= $(addprefix -I$(SDK_BASE)/,$(SDK_INCDIR))
@@ -380,7 +379,7 @@ TARGET_OUT	:= $(addprefix $(BUILD_BASE)/,$(TARGET).out)
 #LD_SCRIPT	:= $(addprefix -T$(SDK_BASE)/$(SDK_LDDIR)/,$(LD_SCRIPT))
 LD_SCRIPT	:= $(addprefix -T,$(LD_SCRIPT))
 
-INCDIR	:= $(addprefix -I,$(SRC_DIR))
+INCDIR	:= $(addprefix -I,$(MODULES))
 EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
 MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 
