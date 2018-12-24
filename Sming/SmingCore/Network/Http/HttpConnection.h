@@ -16,7 +16,7 @@
 #include "HttpConnectionBase.h"
 #include "DateTime.h"
 #include "Data/ObjectQueue.h"
-#include "HttpContentCoder.h"
+#include "Data/Coder/Decoder.h"
 
 /** @defgroup   HTTP client connection
  *  @brief      Provides http client connection
@@ -147,7 +147,7 @@ protected:
 	HttpResponse response;
 
 	ContentCoders contentCoders;
-	HttpContentCoder contentDecoder = nullptr;
+	ContentCoder contentDecoder = nullptr;
 	void* contentDecoderContext = nullptr;
 
 	char* contentDecodingBuffer = nullptr;

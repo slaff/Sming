@@ -1,4 +1,4 @@
-#include "HttpContentCoder.h"
+#include "Decoder.h"
 
 #include "../third-party/brotli/include/brotli/decode.h"
 #include "../third-party/brotli/dec/state.h"

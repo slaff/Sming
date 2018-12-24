@@ -256,8 +256,8 @@ int HttpConnection::onHeadersComplete(const HttpHeaders& headers)
 			contentDecoder = contentCoders[response.headers[HTTP_HEADER_CONTENT_ENCODING]];
 			if(!contentDecodingBuffer) {
 				contentDecodingBuffer = new char[contentDecodingLength];
-				contentDecoderContext = nullptr;
 			}
+			contentDecoderContext = nullptr;
 			// initialize the content decoder
 			contentDecoder(nullptr, nullptr, nullptr, CONTENT_CODER_START, &contentDecoderContext);
 		}
