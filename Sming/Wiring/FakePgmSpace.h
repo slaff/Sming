@@ -117,6 +117,7 @@ extern "C"
 	char *strcpy_P(char * dest, const char * src_P);
 	char *strncpy_P(char * dest, const char * src_P, size_t size);
 	int strcmp_P(const char *str1, const char *str2_P);
+	int strncmp_P(const char *str1, const char *str2_P, const size_t size);
 	int strcasecmp_P(const char* str1, const char* str2_P);
 	char* strcat_P(char* dest, const char* src_P);
 	char *strstr_P(char *haystack, const char *needle_P);

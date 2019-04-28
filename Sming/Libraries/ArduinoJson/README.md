@@ -1,122 +1,113 @@
-Arduino JSON library
-====================
+![ArduinoJson](banner.svg)
 
-[![Build status](https://ci.appveyor.com/api/projects/status/m7s53wav1l0abssg/branch/master?svg=true)](https://ci.appveyor.com/project/bblanchon/arduinojson/branch/master) [![Build Status](https://travis-ci.org/bblanchon/ArduinoJson.svg?branch=master)](https://travis-ci.org/bblanchon/ArduinoJson) [![Coverage Status](https://img.shields.io/coveralls/bblanchon/ArduinoJson.svg)](https://coveralls.io/r/bblanchon/ArduinoJson?branch=master) [![Star this project](http://githubbadges.com/star.svg?user=bblanchon&repo=ArduinoJson&style=flat&color=fff&background=007ec6)](https://github.com/bblanchon/ArduinoJson)
+---
 
-*An elegant and efficient JSON library for embedded systems.*
+[![arduino-library-badge](https://www.ardu-badge.com/badge/ArduinoJson.svg?version=6.10.1)](https://www.ardu-badge.com/ArduinoJson/6.10.1)
+[![Build Status](https://ci.appveyor.com/api/projects/status/m7s53wav1l0abssg/branch/6.x?svg=true)](https://ci.appveyor.com/project/bblanchon/arduinojson/branch/6.x)
+[![Build Status](https://travis-ci.org/bblanchon/ArduinoJson.svg?branch=6.x)](https://travis-ci.org/bblanchon/ArduinoJson)
+[![Coverage Status](https://coveralls.io/repos/github/bblanchon/ArduinoJson/badge.svg?branch=6.x)](https://coveralls.io/github/bblanchon/ArduinoJson?branch=6.x)
+[![Star this project](http://githubbadges.com/star.svg?user=bblanchon&repo=ArduinoJson&style=flat&color=fff&background=007ec6)](https://github.com/bblanchon/ArduinoJson)
 
-It's designed to have the most intuitive API, the smallest footprint and works without any allocation on the heap (no malloc).
+ArduinoJson is a C++ JSON library for Arduino and IoT (Internet Of Things).
 
-It has been written with Arduino in mind, but it isn't linked to Arduino libraries so you can use this library in any other C++ project.
-
-Features
---------
+## Features
 
 * JSON decoding (comments are supported)
 * JSON encoding (with optional indentation)
-* Elegant API, very easy to use
-* Efficient (no malloc, nor copy)
-* Portable (written in C++98)
+* MessagePack
+* Elegant API, easy to use
+* Fixed memory allocation (zero malloc)
+* No data duplication (zero copy)
+* Portable (written in C++98, can be used in any C++ project)
 * Self-contained (no external dependency)
 * Small footprint
-* MIT License
+* Input and output streams
+* [100% code coverage](https://coveralls.io/github/bblanchon/ArduinoJson)
+* [Header-only library](https://en.wikipedia.org/wiki/Header-only)
+* [MIT License](https://en.wikipedia.org/wiki/MIT_License)
+* [Comprehensive documentation](https://arduinojson.org?utm_source=github&utm_medium=readme)
 
-Works on
---------
+## Compatibility
 
-* All Arduino boards (Uno, Due, Mini, Micro, Yun...)
-* ESP8266
-* Teensy
-* Intel Edison
-* PlatformIO
-* Energia
-* RedBearLab boards (BLE Nano...)
-* Computers (Windows, Linux, OSX...)
+ArduinoJson works on the following hardware:
 
-See [FAQ: Compatibility issues](https://github.com/bblanchon/ArduinoJson/wiki/Compatibility-issues)
+* <img src="https://www.arduino.cc/favicon.ico" height="16" width="16"> Arduino boards: [Uno](https://www.arduino.cc/en/Main/ArduinoBoardUno), [Due](https://www.arduino.cc/en/Main/ArduinoBoardDue), [Mini](https://www.arduino.cc/en/Main/ArduinoBoardMini), [Micro](https://www.arduino.cc/en/Main/ArduinoBoardMicro), [Yun](https://www.arduino.cc/en/Main/ArduinoBoardYun)...
+* <img src="http://espressif.com/sites/all/themes/espressif/favicon.ico" height="16" width="16"> Espressif chips: [ESP8266](https://en.wikipedia.org/wiki/ESP8266), [ESP32](https://en.wikipedia.org/wiki/ESP32)
+* <img src="https://www.wemos.cc/themes/martin-materialize-parallax/assets/favicon.ico" height="16" width="16"> WeMos boards: [D1](https://wiki.wemos.cc/products:d1:d1), [D1 mini](https://wiki.wemos.cc/products:d1:d1_mini),  ...
+* <img src="http://redbearlab.com/favicon.ico" height="16" width="16"> RedBearLab boards: [BLE Nano](http://redbearlab.com/blenano/), [BLE Mini](http://redbearlab.com/blemini/), [WiFi Micro](https://redbear.cc/product/wifi/wifi-micro.html), [LOLIN32](https://wiki.wemos.cc/products:lolin32:lolin32)...
+* <img src="https://www.pjrc.com/favicon.ico" height="16" width="16"> [Teensy](https://www.pjrc.com/teensy/) boards
+* <img src="https://software.intel.com/sites/all/themes/zero/favicon.ico" height="16" width="16"> Intel boards: Edison, Galileo...
+* <img src="https://www-assets.particle.io/images/favicon.png"  height="16" width="16"> Particle boards: [Photon](https://www.particle.io/products/hardware/photon-wifi-dev-kit), [Electron](https://www.particle.io/products/hardware/electron-cellular-dev-kit)...
+* <img src="http://www.ti.com/favicon.ico" height="16" width="16"> Texas Instruments boards: [MSP430](http://www.ti.com/microcontrollers/msp430-ultra-low-power-mcus/overview/overview.html)...
 
-Quick start
------------
+ArduinoJson compiles with zero warning on the following compilers, IDEs, and platforms:
 
-#### Decoding / Parsing
+* <img src="https://www.arduino.cc/favicon.ico" height="16" width="16"> [Arduino IDE](https://www.arduino.cc/en/Main/Software)
+* <img src="http://cdn.platformio.org/favicon.ico" height="16" width="16"> [PlatformIO](http://platformio.org/)
+* <img src="http://energia.nu/img/favicon.ico" height="16" width="16"> [Energia](http://energia.nu/)
+* <img src="http://www.visualmicro.com/pics/arduino-visual-studio-ld.png" height="16" width="16"> [Visual Micro](http://www.visualmicro.com/)
+* <img src="http://www.atmel.com/Images/favicon.ico" height="16" width="16"> [Atmel Studio](http://www.atmel.com/microsite/atmel-studio/)
+* <img src="https://www.iar.com/favicon.ico" height="16" width="16"> [IAR Embedded Workbench](https://www.iar.com/iar-embedded-workbench/)
+* <img src="http://www.st.com/etc/clientlibs/st-site/media/app/images/favicon.png" height="16" width="16"> [Atollic TrueSTUDIO](https://atollic.com/truestudio/)
+* <img src="http://www.keil.com/favicon.ico" height="16" width="16"> [Keil uVision](http://www.keil.com/)
+* <img src="http://www.microchip.com/favicon.ico" height="16" width="16"> [MPLAB X IDE](http://www.microchip.com/mplab/mplab-x-ide)
+* <img src="https://gcc.gnu.org/favicon.ico" height="16" width="16"> [GCC](https://gcc.gnu.org/)
+* <img src="https://clang.llvm.org/favicon.ico" height="16" width="16"> [Clang](https://clang.llvm.org/)
+* <img src="https://www.visualstudio.com/favicon.ico" height="16" width="16"> [Visual Studio](https://www.visualstudio.com/)
+
+## Quickstart
+
+### Deserialization
+
+Here is a program that parses a JSON document with ArduinoJson.
 
 ```c++
 char json[] = "{\"sensor\":\"gps\",\"time\":1351824120,\"data\":[48.756080,2.302038]}";
 
-StaticJsonBuffer<200> jsonBuffer;
+DynamicJsonDocument doc(1024);
+deserializeJson(doc, json);
 
-JsonObject& root = jsonBuffer.parseObject(json);
-
-const char* sensor = root["sensor"];
-long time          = root["time"];
-double latitude    = root["data"][0];
-double longitude   = root["data"][1];
+const char* sensor = doc["sensor"];
+long time          = doc["time"];
+double latitude    = doc["data"][0];
+double longitude   = doc["data"][1];
 ```
 
-#### Encoding / Generating
+See the [tutorial on arduinojson.org](https://arduinojson.org/doc/decoding/?utm_source=github&utm_medium=readme)
+
+### Serialization
+
+Here is a program that generates a JSON document with ArduinoJson:
 
 ```c++
-StaticJsonBuffer<200> jsonBuffer;
+DynamicJsonDocument doc(1024);
 
-JsonObject& root = jsonBuffer.createObject();
-root["sensor"] = "gps";
-root["time"] = 1351824120;
+doc["sensor"] = "gps";
+doc["time"]   = 1351824120;
 
-JsonArray& data = root.createNestedArray("data");
-data.add(48.756080, 6);  // 6 is the number of decimals to print
-data.add(2.302038, 6);   // if not specified, 2 digits are printed
+JsonArray data = doc.createNestedArray("data");
+data.add(48.756080);
+data.add(2.302038);
 
-root.printTo(Serial);
+serializeJson(doc, Serial);
 // This prints:
 // {"sensor":"gps","time":1351824120,"data":[48.756080,2.302038]}
 ```
 
+See the [tutorial on arduinojson.org](https://arduinojson.org/doc/encoding/?utm_source=github&utm_medium=readme)
 
-Documentation
--------------
+## Documentation
 
-The documentation is available online in the [Arduino JSON wiki](https://github.com/bblanchon/ArduinoJson/wiki)
+The documentation is available on [arduinojson.org](https://arduinojson.org/?utm_source=github&utm_medium=readme), here are some shortcuts:
 
-Testimonials
-------------
-
-From Arduino's Forum user `jflaplante`:
-> I tried aJson json-arduino before trying your library. I always ran into memory problem after a while.
-> I have no such problem so far with your library. It is working perfectly with my web services.
-
-From Arduino's Forum user `gbathree`:
-> Thanks so much - this is an awesome library!  If you want to see what we're doing with it - the project is located at www.photosynq.org.
-
-From StackOverflow user `thegreendroid`:
-> It has a really elegant, simple API and it works like a charm on embedded and Windows/Linux platforms. We recently started using this on an embedded project and I can vouch for its quality.
-
-From GitHub user `zacsketches`:
-
-> Thanks for a great library!!!
-> I've been watching you consistently develop this library over the past six months, and I used it today for a publish and subscribe architecture designed to help hobbyists move into more advanced robotics. Your library allowed me to implement remote subscription in order to facilitate multi-processor robots.
-> ArduinoJson saved me a week's worth of time!!
-
-[From Reddit user `erm_what_`](https://www.reddit.com/r/arduino/comments/3jj6ep/announcing_arduinojson_50/cusjk8c):
-
-> This is a great library and I wouldn't be able to do the project I'm doing without it. I completely recommend it.
-
-[From Reddit user `makerhacks`](https://www.reddit.com/r/arduino/comments/3jj6ep/announcing_arduinojson_50/cusqg7b):
-
-> I am just starting an ESP8266 clock project and now I can output JSON from my server script and interpret it painlessly.
-
-Donators
---------
-
-Special thanks to the following persons and companies who made generous donations to the library author:
-
-* Robert Murphy
-* Surge Communications
-* Alex Scott
-* Firepick Services LLC
-* A B Doodkorte
-* Scott Smith
-* Johann Stieger
+* The [Examples](https://arduinojson.org/example/?utm_source=github&utm_medium=readme) show how to use the library in various situations.
+* The [API Reference](https://arduinojson.org/api/?utm_source=github&utm_medium=readme) contains the description of each class and function.
+* The [FAQ](https://arduinojson.org/faq/?utm_source=github&utm_medium=readme) has the answer to virtually every question.
+* The [ArduinoJson Assistant](https://arduinojson.org/assistant/?utm_source=github&utm_medium=readme) writes programs for you!
 
 ---
 
-Found this library useful? Please star this project or [help me back with a donation!](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=donate%40benoitblanchon%2efr&lc=GB&item_name=Benoit%20Blanchon&item_number=Arduino%20JSON&currency_code=EUR&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted) :smile:
+Do you like this library? Please [star this project on GitHub](https://github.com/bblanchon/ArduinoJson/stargazers)!
+
+What? You don't like it but you *love* it?
+We don't take donations anymore, but [we sell a book](https://arduinojson.org/book/?utm_source=github&utm_medium=readme), so you can help and learn at the same time!

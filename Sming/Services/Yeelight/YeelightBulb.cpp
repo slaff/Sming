@@ -49,11 +49,10 @@ void YeelightBulb::sendCommand(String method, Vector<String> params)
 {
 	connect();
 
-	DynamicJsonBuffer jsonBuffer;
-	JsonObject& root = jsonBuffer.createObject();
-	root["id"] = requestId++;
-	root["method"] = method;
-	auto &arr = root.createNestedArray("params");
+	DynamicJsonDocument doc(1024);
+	doc["id"] = requestId++;
+	doc["method"] = method;
+	auto arr = doc.createNestedArray("params");
 	for (unsigned i = 0; i < params.count(); i++)
 	{
 		if (isNumeric(params[i]))
@@ -62,7 +61,7 @@ void YeelightBulb::sendCommand(String method, Vector<String> params)
 			arr.add(params[i]);
 	}
 	String request;
-	root.printTo(request);
+	serializeJson(doc, request);
 	request += "\r\n";
 	debugf("LED < %s", request.c_str());
 	connection->writeString(request);
@@ -157,32 +156,31 @@ bool YeelightBulb::onResponse(TcpClient& client, char* data, int size)
 			p2 = source.length();
 		String buf = source.substring(p, p2);
 		p = unsigned(p2) + 2;
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject& root = jsonBuffer.parseObject(buf);
-		bool parsed = root.success();
-		if (parsed)
+		DynamicJsonDocument doc(1024);
+		auto error = deserializeJson(doc, buf);
+		if (!error)
 		{
-			if (root.containsKey("id") && root.containsKey("result"))
+			if (doc.containsKey("id") && doc.containsKey("result"))
 			{
-				long id = root["id"];
+				long id = doc["id"];
 				if (id == propsId)
 				{
-					auto &result = root["result"].asArray();
-					String resp = result[0].asString();
+					auto result = doc["result"].as<JsonArray>();
+					String resp = result[0].as<String>();
 					parsePower(resp);
 				}
 			}
-			if (root.containsKey("method") && root.containsKey("params"))
+			if (doc.containsKey("method") && doc.containsKey("params"))
 			{
-				String method = root["method"].asString();
+				String method = doc["method"].as<String>();
 				debugf("LED method %s received", method.c_str());
 				if (method == "props")
 				{
-					auto &result = root["params"].asObject();
+					auto result = doc["params"].as<JsonObject>();
 					for (JsonObject::iterator it=result.begin(); it!=result.end(); ++it)
 					{
-						if (strcmp(it->key, "power") == 0)
-							parsePower(it->value);
+						if (strcmp(it->key().c_str(), "power") == 0)
+							parsePower(it->value());
 					}
 				}
 			}
