@@ -24,22 +24,24 @@ struct ApplicationSettingsStorage {
 
 	void load()
 	{
-		DynamicJsonBuffer jsonBuffer;
+		DynamicJsonDocument doc(1024);
 		if(exist()) {
 			int size = fileGetSize(APP_SETTINGS_FILE);
 			char* jsonString = new char[size + 1];
 			fileGetContent(APP_SETTINGS_FILE, jsonString, size + 1);
-			JsonObject& root = jsonBuffer.parseObject(jsonString);
+			auto error = deserializeJson(doc, jsonString);
+			if(!error) {
+				JsonObject network = doc["network"].as<JsonObject>();
+				ssid = network["ssid"].as<String>();
+				password = network["password"].as<String>();
 
-			JsonObject& network = root["network"];
-			ssid = network["ssid"].asString();
-			password = network["password"].asString();
+				dhcp = network["dhcp"];
 
-			dhcp = network["dhcp"];
+				ip = network["ip"].as<String>();
+				netmask = network["netmask"].as<String>();
+				gateway = network["gateway"].as<String>();
 
-			ip = network["ip"].asString();
-			netmask = network["netmask"].asString();
-			gateway = network["gateway"].asString();
+			}
 
 			delete[] jsonString;
 		}
@@ -47,11 +49,9 @@ struct ApplicationSettingsStorage {
 
 	void save()
 	{
-		DynamicJsonBuffer jsonBuffer;
-		JsonObject& root = jsonBuffer.createObject();
+		DynamicJsonDocument doc(1024);
 
-		JsonObject& network = jsonBuffer.createObject();
-		root["network"] = network;
+		auto network = doc.createNestedObject("network");
 		network["ssid"] = ssid.c_str();
 		network["password"] = password.c_str();
 
@@ -64,7 +64,7 @@ struct ApplicationSettingsStorage {
 
 		//TODO: add direct file stream writing
 		String rootString;
-		root.printTo(rootString);
+		serializeJson(doc, rootString);
 		fileSetContent(APP_SETTINGS_FILE, rootString);
 	}
 

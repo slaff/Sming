@@ -56,7 +56,6 @@ public:
 
 private:
 	DynamicJsonDocument doc;
-//	JsonObject rootNode;
 	bool send = true;
 };
 
