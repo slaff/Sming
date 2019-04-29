@@ -24,7 +24,7 @@ class JsonObjectStream : public MemoryDataStream
 public:
 	/** @brief  Create a JSON object stream
     */
-	JsonObjectStream(): doc(1024)
+	JsonObjectStream() : doc(1024)
 	{
 	}
 
@@ -39,7 +39,7 @@ public:
      */
 	JsonObject getRoot()
 	{
-		return doc.to<JsonObject>();
+		return doc.as<JsonObject>();
 	}
 
 	//Use base class documentation

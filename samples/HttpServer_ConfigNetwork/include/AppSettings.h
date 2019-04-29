@@ -40,7 +40,6 @@ struct ApplicationSettingsStorage {
 				ip = network["ip"].as<String>();
 				netmask = network["netmask"].as<String>();
 				gateway = network["gateway"].as<String>();
-
 			}
 
 			delete[] jsonString;
