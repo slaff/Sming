@@ -20,7 +20,7 @@ void onConfiguration(HttpRequest& request, HttpResponse& response)
 		} else {
 			StaticJsonDocument<ConfigJsonBufferSize> root;
 
-			auto error = deserializeJson(root, request.getBody());
+			auto error = deserializeJson(root, request.getBodyStream());
 			if(error) {
 				debug_w("Invalid JSON to un-serialize");
 				return;
@@ -28,7 +28,7 @@ void onConfiguration(HttpRequest& request, HttpResponse& response)
 
 			serializeJsonPretty(root, Serial); //Uncomment it for debuging
 
-			if(!root["StaSSID"].isNull()) // Settings
+			if(root.containsKey("StaSSID")) // Settings
 			{
 				uint8_t PrevStaEnable = ActiveConfig.StaEnable;
 

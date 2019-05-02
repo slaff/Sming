@@ -11,7 +11,7 @@
 #pragma once
 
 #include "MemoryDataStream.h"
-#include "Libraries/ArduinoJson/ArduinoJson.h"
+#include <ArduinoJson.h>
 
 /** @brief JsonObject stream class
  * 	@ingroup    stream data
