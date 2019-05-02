@@ -24,7 +24,7 @@ class JsonObjectStream : public MemoryDataStream
 public:
 	/** @brief  Create a JSON object stream
     */
-	JsonObjectStream() : doc(1024)
+	JsonObjectStream(size_t capacity = 1024) : doc(capacity)
 	{
 	}
 

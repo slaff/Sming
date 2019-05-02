@@ -164,21 +164,20 @@ bool YeelightBulb::onResponse(TcpClient& client, char* data, int size)
 			if (id == propsId)
 			{
 				JsonArray result = doc["result"];
-				String resp = result[0] | "";
-				if(resp.length()) {
-					parsePower(resp);
+				const char* value = result[0];
+				if(value != nullptr) {
+					parsePower(value);
 				}
 			}
 
-			String method = doc["method"] | "";
-			debugf("LED method %s received", method.c_str());
-			if (method == "props")
+			const char* method = doc["method"];
+			debugf("LED method %s received", method);
+			if (strcmp(method,"props") == 0)
 			{
 				JsonObject result = doc["params"];
-				for (JsonObject::iterator it=result.begin(); it!=result.end(); ++it)
-				{
-					if (strcmp(it->key().c_str(), "power") == 0)
-						parsePower(it->value());
+				const char* value = result["power"];
+				if(value != nullptr) {
+					parsePower(value);
 				}
 			}
 		}
