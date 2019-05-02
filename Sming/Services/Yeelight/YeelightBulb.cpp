@@ -160,28 +160,25 @@ bool YeelightBulb::onResponse(TcpClient& client, char* data, int size)
 		auto error = deserializeJson(doc, buf);
 		if (!error)
 		{
-			if (doc.containsKey("id") && doc.containsKey("result"))
+			long id = doc["id"] | -1;
+			if (id == propsId)
 			{
-				long id = doc["id"];
-				if (id == propsId)
-				{
-					JsonArray result = doc["result"];
-					String resp = result[0];
+				JsonArray result = doc["result"];
+				String resp = result[0] | "";
+				if(resp.length()) {
 					parsePower(resp);
 				}
 			}
-			if (doc.containsKey("method") && doc.containsKey("params"))
+
+			String method = doc["method"] | "";
+			debugf("LED method %s received", method.c_str());
+			if (method == "props")
 			{
-				String method = doc["method"];
-				debugf("LED method %s received", method.c_str());
-				if (method == "props")
+				JsonObject result = doc["params"];
+				for (JsonObject::iterator it=result.begin(); it!=result.end(); ++it)
 				{
-					JsonObject result = doc["params"];
-					for (JsonObject::iterator it=result.begin(); it!=result.end(); ++it)
-					{
-						if (strcmp(it->key().c_str(), "power") == 0)
-							parsePower(it->value());
-					}
+					if (strcmp(it->key().c_str(), "power") == 0)
+						parsePower(it->value());
 				}
 			}
 		}

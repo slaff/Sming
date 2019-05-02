@@ -32,14 +32,14 @@ struct ApplicationSettingsStorage {
 			auto error = deserializeJson(doc, jsonString);
 			if(!error) {
 				JsonObject network = doc["network"].as<JsonObject>();
-				ssid = network["ssid"].as<String>();
-				password = network["password"].as<String>();
+				ssid = network["ssid"].as<const char*>();
+				password = network["password"].as<const char*>();
 
-				dhcp = network["dhcp"];
+				dhcp = network["dhcp"] | false;
 
-				ip = network["ip"].as<String>();
-				netmask = network["netmask"].as<String>();
-				gateway = network["gateway"].as<String>();
+				ip = network["ip"].as<const char*>();
+				netmask = network["netmask"].as<const char*>();
+				gateway = network["gateway"].as<const char*>();
 			}
 
 			delete[] jsonString;
