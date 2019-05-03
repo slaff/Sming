@@ -8,7 +8,7 @@ MeteoConfig loadConfig()
 {
 	DynamicJsonDocument doc(1024);
 	MeteoConfig cfg;
-	if(JSON::loadFromFile(doc, METEO_CONFIG_FILE)) {
+	if(Json::loadFromFile(doc, METEO_CONFIG_FILE)) {
 		JsonObject network = doc["network"];
 		cfg.NetworkSSID = network["ssid"].as<const char*>();
 		cfg.NetworkPassword = network["password"].as<const char*>();
@@ -48,5 +48,5 @@ void saveConfig(MeteoConfig& cfg)
 	trigger["min"] = cfg.RangeMin;
 	trigger["max"] = cfg.RangeMax;
 
-	JSON::saveToFile(doc, METEO_CONFIG_FILE, true);
+	Json::saveToFile(doc, METEO_CONFIG_FILE, true);
 }

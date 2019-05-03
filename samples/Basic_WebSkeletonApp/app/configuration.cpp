@@ -12,7 +12,7 @@ ThermConfig loadConfig()
 {
 	StaticJsonDocument<ConfigJsonBufferSize> doc;
 	ThermConfig cfg;
-	if(JSON::loadFromFile(doc, THERM_CONFIG_FILE)) {
+	if(Json::loadFromFile(doc, THERM_CONFIG_FILE)) {
 		JsonObject network = doc["network"];
 		cfg.StaSSID = network["StaSSID"].as<const char*>();
 		cfg.StaPassword = network["StaPassword"].as<const char*>();
@@ -34,5 +34,5 @@ void saveConfig(ThermConfig& cfg)
 	network["StaPassword"] = cfg.StaPassword;
 	network["StaEnable"] = cfg.StaEnable;
 
-	JSON::saveToFile(doc, THERM_CONFIG_FILE, true);
+	Json::saveToFile(doc, THERM_CONFIG_FILE, true);
 }

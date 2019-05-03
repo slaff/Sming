@@ -14,7 +14,7 @@
 #include <Data/FlashStringRefAdapter.hpp>
 #include "Data/Stream/FileStream.h"
 
-namespace JSON
+namespace Json
 {
 /**
  * @brief Helper function to copy a Json data value, provided it's valid
@@ -26,7 +26,7 @@ namespace JSON
  *		JsonDocument doc;
  *		...
  *		String value1;
- *		if(!JSON::getValue(doc["key1"], value1)) {
+ *		if(!Json::getValue(doc["key1"], value1)) {
  *			// Perform required action when value1 doesn't exist, such as initialising defaults
  *		}
  *

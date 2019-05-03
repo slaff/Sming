@@ -25,7 +25,7 @@ struct ApplicationSettingsStorage {
 	void load()
 	{
 		DynamicJsonDocument doc(1024);
-		if(JSON::loadFromFile(doc, APP_SETTINGS_FILE)) {
+		if(Json::loadFromFile(doc, APP_SETTINGS_FILE)) {
 			JsonObject network = doc["network"];
 			ssid = network["ssid"].as<const char*>();
 			password = network["password"].as<const char*>();
@@ -52,7 +52,7 @@ struct ApplicationSettingsStorage {
 		network["netmask"] = netmask.toString();
 		network["gateway"] = gateway.toString();
 
-		JSON::saveToFile(doc, APP_SETTINGS_FILE);
+		Json::saveToFile(doc, APP_SETTINGS_FILE);
 	}
 
 	bool exist()
