@@ -48,5 +48,5 @@ void saveConfig(MeteoConfig& cfg)
 	trigger["min"] = cfg.RangeMin;
 	trigger["max"] = cfg.RangeMax;
 
-	Json::saveToFile(doc, METEO_CONFIG_FILE, true);
+	Json::saveToFile(doc, METEO_CONFIG_FILE, Json::Pretty);
 }
