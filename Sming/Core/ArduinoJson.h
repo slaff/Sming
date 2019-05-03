@@ -80,7 +80,7 @@ inline bool loadFromFile(JsonDocument& doc, const String& filename)
 	}
 }
 
-}; // namespace JSON
+}; // namespace Json
 
 namespace MsgPack
 {
