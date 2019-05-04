@@ -39,6 +39,19 @@
 #include "FlashStringRefAdapter.hpp"
 #include "Stream/FileStream.h"
 
+#ifndef JSON_ENABLE_COMPACT
+#define JSON_ENABLE_COMPACT 1
+#endif
+#ifndef JSON_ENABLE_PRETTY
+#define JSON_ENABLE_PRETTY 1
+#endif
+#ifndef JSON_ENABLE_MSGPACK
+#define JSON_ENABLE_MSGPACK 1
+#endif
+#ifndef JSON_FORMAT_DEFAULT
+#define JSON_FORMAT_DEFAULT Json::Compact
+#endif
+
 namespace Json
 {
 /**
@@ -93,15 +106,21 @@ inline SerializationFormat operator++(SerializationFormat& fmt)
  * @param format Serialization format
  * @retval size_t Number of bytes that would be written when the document is serialized
  */
-template <typename TSource> size_t measure(const TSource& source, SerializationFormat format = Compact)
+template <typename TSource> size_t measure(const TSource& source, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	switch(format) {
+#if JSON_ENABLE_COMPACT
 	case Compact:
 		return measureJson(source);
+#endif
+#if JSON_ENABLE_PRETTY
 	case Pretty:
 		return measureJsonPretty(source);
+#endif
+#if JSON_ENABLE_MSGPACK
 	case MessagePack:
 		return measureMsgPack(source);
+#endif
 	default:
 		return 0;
 	}
@@ -115,15 +134,21 @@ template <typename TSource> size_t measure(const TSource& source, SerializationF
  * @retval size_t The number of bytes written
  */
 template <typename TSource, typename TDestination>
-size_t serialize(const TSource& source, TDestination& destination, SerializationFormat format = Compact)
+size_t serialize(const TSource& source, TDestination& destination, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	switch(format) {
+#if JSON_ENABLE_COMPACT
 	case Compact:
 		return serializeJson(source, destination);
+#endif
+#if JSON_ENABLE_PRETTY
 	case Pretty:
 		return serializeJsonPretty(source, destination);
+#endif
+#if JSON_ENABLE_MSGPACK
 	case MessagePack:
 		return serializeMsgPack(source, destination);
+#endif
 	default:
 		return 0;
 	}
@@ -139,7 +164,7 @@ size_t serialize(const TSource& source, TDestination& destination, Serialization
  */
 template <typename TSource, typename TPrint>
 typename std::enable_if<std::is_base_of<Print, TPrint>::value, size_t>::type
-serialize(const TSource& source, TPrint* destination, SerializationFormat format = Compact)
+serialize(const TSource& source, TPrint* destination, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	return (destination == nullptr) ? 0 : serialize(source, *destination, format);
 }
@@ -153,15 +178,22 @@ serialize(const TSource& source, TPrint* destination, SerializationFormat format
  * @retval size_t The number of bytes written
  */
 template <typename TSource>
-size_t serialize(const TSource& source, char* buffer, size_t bufferSize, SerializationFormat format = Compact)
+size_t serialize(const TSource& source, char* buffer, size_t bufferSize,
+				 SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	switch(format) {
+#if JSON_ENABLE_COMPACT
 	case Compact:
 		return serializeJson(source, buffer, bufferSize);
+#endif
+#if JSON_ENABLE_PRETTY
 	case Pretty:
 		return serializeJsonPretty(source, buffer, bufferSize);
+#endif
+#if JSON_ENABLE_MSGPACK
 	case MessagePack:
 		return serializeMsgPack(source, buffer, bufferSize);
+#endif
 	default:
 		return 0;
 	}
@@ -173,7 +205,7 @@ size_t serialize(const TSource& source, char* buffer, size_t bufferSize, Seriali
  * @param format Serialization format to use when writing
  * @retval String The serialized data
  */
-template <typename TSource> String serialize(const TSource& source, SerializationFormat format = Compact)
+template <typename TSource> String serialize(const TSource& source, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	String result;
 	serialize(source, result, format);
@@ -188,7 +220,7 @@ template <typename TSource> String serialize(const TSource& source, Serializatio
  * @retval bool true on success, false if the write failed
  */
 template <typename TSource>
-bool saveToFile(const TSource& source, const String& filename, SerializationFormat format = Compact)
+bool saveToFile(const TSource& source, const String& filename, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	FileStream stream(filename, eFO_WriteOnly | eFO_CreateNewAlways);
 	if(!stream.isValid()) {
@@ -203,14 +235,18 @@ bool saveToFile(const TSource& source, const String& filename, SerializationForm
 }
 
 template <typename TInput>
-bool deserializeInternal(JsonDocument& doc, TInput& input, SerializationFormat format = Compact)
+bool deserializeInternal(JsonDocument& doc, TInput& input, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	switch(format) {
+#if JSON_ENABLE_COMPACT || JSON_ENABLE_PRETTY
 	case Compact:
 	case Pretty:
 		return deserializeJson(doc, input) == DeserializationError::Ok;
+#endif
+#if JSON_ENABLE_MSGPACK
 	case MessagePack:
 		return deserializeMsgPack(doc, input) == DeserializationError::Ok;
+#endif
 	default:
 		return false;
 	}
@@ -235,7 +271,8 @@ bool deserializeInternal(JsonDocument& doc, TInput& input, SerializationFormat f
  *
  * Don't forget to keep `str` in scope until you're finished with `doc`.
  */
-template <typename TInput> bool deserialize(JsonDocument& doc, TInput& input, SerializationFormat format = Compact)
+template <typename TInput>
+bool deserialize(JsonDocument& doc, TInput& input, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	return deserializeInternal(doc, input, format);
 }
@@ -251,7 +288,7 @@ template <typename TInput> bool deserialize(JsonDocument& doc, TInput& input, Se
  */
 template <typename TStream>
 typename std::enable_if<!std::is_base_of<Stream, TStream>::value, bool>::type
-deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = Compact)
+deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	return deserializeInternal(doc, input, format);
 }
@@ -274,7 +311,7 @@ deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = Comp
  */
 template <typename TStream>
 typename std::enable_if<std::is_base_of<Stream, TStream>::value, bool>::type
-deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = Compact)
+deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	return (input == nullptr) ? false : deserializeInternal(doc, *input, format);
 }
@@ -296,14 +333,18 @@ deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = Comp
  * 		const __FlashStringHelper*, size_t
  */
 template <typename TInput>
-bool deserialize(JsonDocument& doc, TInput* input, size_t inputSize, SerializationFormat format = Compact)
+bool deserialize(JsonDocument& doc, TInput* input, size_t inputSize, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	switch(format) {
+#if JSON_ENABLE_COMPACT || JSON_ENABLE_PRETTY
 	case Compact:
 	case Pretty:
 		return deserializeJson(doc, input, inputSize) == DeserializationError::Ok;
+#endif
+#if JSON_ENABLE_MSGPACK
 	case MessagePack:
 		return deserializeMsgPack(doc, input, inputSize) == DeserializationError::Ok;
+#endif
 	default:
 		return false;
 	}
@@ -316,7 +357,7 @@ bool deserialize(JsonDocument& doc, TInput* input, size_t inputSize, Serializati
  * @param format Format of the data to be parsed
  * @retval bool true on success, false if the file couldn't be read or there was a parsing error
  */
-inline bool loadFromFile(JsonDocument& doc, const String& filename, SerializationFormat format = Compact)
+inline bool loadFromFile(JsonDocument& doc, const String& filename, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	FileStream stream(filename);
 	return stream.isValid() ? deserialize(doc, stream, format) : false;
