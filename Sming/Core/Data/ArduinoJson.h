@@ -36,8 +36,8 @@
 #pragma once
 
 #include <Libraries/ArduinoJson/ArduinoJson.h>
-#include <Data/FlashStringRefAdapter.hpp>
-#include "Data/Stream/FileStream.h"
+#include "FlashStringRefAdapter.hpp"
+#include "Stream/FileStream.h"
 
 namespace Json
 {
@@ -202,7 +202,8 @@ bool saveToFile(const TSource& source, const String& filename, SerializationForm
 	return stream.getLastError() == 0;
 }
 
-template <typename TInput> bool deserializeInternal(JsonDocument& doc, TInput& input, SerializationFormat format = Compact)
+template <typename TInput>
+bool deserializeInternal(JsonDocument& doc, TInput& input, SerializationFormat format = Compact)
 {
 	switch(format) {
 	case Compact:
