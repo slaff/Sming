@@ -283,12 +283,19 @@ bool deserialize(JsonDocument& doc, TInput& input, SerializationFormat format = 
  * @param input Where to get data from (see notes)
  * @param format Format of the data
  * @retval bool true on success, false on error
- * @note Supports stream pointers (Stream and inherited classses)
- * This function can be safely used with null pointers
+ * @note Supported writeable input types (content will be modified in-situ):
+ *
+ * 		char*
+ *
+ * @note Supported read-only input types:
+ *
+ * 		const char*
+ * 		const __FlashStringHelper*
+ * 		const FlashString*
  */
-template <typename TStream>
-typename std::enable_if<!std::is_base_of<Stream, TStream>::value, bool>::type
-deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = JSON_FORMAT_DEFAULT)
+template <typename TInput>
+typename std::enable_if<!std::is_base_of<Stream, TInput>::value, bool>::type
+deserialize(JsonDocument& doc, TInput* input, SerializationFormat format = JSON_FORMAT_DEFAULT)
 {
 	return deserializeInternal(doc, input, format);
 }
@@ -299,15 +306,8 @@ deserialize(JsonDocument& doc, TStream* input, SerializationFormat format = JSON
  * @param input Where to get data from (see notes)
  * @param format Format of the data
  * @retval bool true on success, false on error
- * @note Supported writeable input types (content will be modified in-situ):
- *
- * 		char*
- *
- * @note Supported read-only input types:
- *
- * 		const char*
- * 		const __FlashStringHelper*
- * 		const FlashString*
+ * @note Supports stream pointers (Stream and inherited classses)
+ * This function can be safely used with null pointers
  */
 template <typename TStream>
 typename std::enable_if<std::is_base_of<Stream, TStream>::value, bool>::type
