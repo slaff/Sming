@@ -20,13 +20,12 @@ void onConfiguration(HttpRequest& request, HttpResponse& response)
 		} else {
 			StaticJsonDocument<ConfigJsonBufferSize> root;
 
-			auto error = deserializeJson(root, request.getBodyStream());
-			if(error) {
+			if(!Json::deserialize(root, request.getBodyStream())) {
 				debug_w("Invalid JSON to un-serialize");
 				return;
 			}
 
-			serializeJsonPretty(root, Serial); //Uncomment it for debuging
+			Json::serialize(root, Serial, Json::Pretty); // For debugging
 
 			if(root.containsKey("StaSSID")) // Settings
 			{

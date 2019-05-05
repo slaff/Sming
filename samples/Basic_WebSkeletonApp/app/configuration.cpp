@@ -34,5 +34,5 @@ void saveConfig(ThermConfig& cfg)
 	network["StaPassword"] = cfg.StaPassword;
 	network["StaEnable"] = cfg.StaEnable;
 
-	Json::saveToFile(doc, THERM_CONFIG_FILE, true);
+	Json::saveToFile(doc, THERM_CONFIG_FILE, Json::Pretty);
 }
