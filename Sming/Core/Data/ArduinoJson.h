@@ -20,7 +20,7 @@
  * 		bool Json::loadFromFile(doc, filename, format)
  * 		bool Json::saveToFile(doc, filename, format)
  * 	- Support functions to simplify usage
- * 		bool Json::getValue(variant, value&)
+ * 		bool Json::getValue(source&, dest&)
  *
  * ArduinoJson V6 vs V5
  * --------------------
@@ -56,8 +56,8 @@ namespace Json
 {
 /**
  * @brief Copies a Json data value to a variable, but only if it exists
- * @param data Typically provided from JsonObject[key], JsonDocument[key] or JsonVariant[key] call
- * @param value Variable to store value, unchanged if `data` is null
+ * @param source Typically provided from JsonObject[key], JsonDocument[key] or JsonVariant[key] call
+ * @param dest Variable to store value, unchanged if `data` is null
  * @retval bool true if value exists and was written to `value`
  * @note Use to perform existence check before assignment, without requiring
  * additional `containsKey` call or temporary variant. Example:
@@ -75,12 +75,12 @@ namespace Json
  *		int value2  = doc["key2] | -1;
  *
  */
-template <typename TValue> bool getValue(const JsonVariantConst& data, TValue& value)
+template <typename TSource, typename TDest> bool getValue(const TSource& source, TDest& dest)
 {
-	if(data.isNull()) {
+	if(source.isNull()) {
 		return false;
 	} else {
-		value = data;
+		dest = source.template as<TDest>();
 		return true;
 	}
 }
