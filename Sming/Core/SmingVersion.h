@@ -5,10 +5,10 @@
  *
  */
 
-#define SMING_MAJOR_VERSION 3
-#define SMING_MINOR_VERSION 8
+#define SMING_MAJOR_VERSION 4
+#define SMING_MINOR_VERSION 0
 #define SMING_PATCH_VERSION 0
-#define SMING_PRE_RELEASE "-dev"
+#define SMING_PRE_RELEASE "-rc2"
 
 #define MACROQUOT(x) #x
 #define MACROQUOTE(x) MACROQUOT(x)
