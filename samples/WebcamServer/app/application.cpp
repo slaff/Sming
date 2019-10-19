@@ -3,6 +3,7 @@
 #include <Data/Stream/MultipartStream.h>
 #include <WebcamStream.h>
 #include <Camera/FakeCamera.h>
+#include <Camera/A20Camera.h>
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
@@ -11,7 +12,7 @@
 #endif
 
 HttpServer server;
-FakeCamera* camera = nullptr;
+CameraInterface* camera = nullptr;
 
 /*
  * default http handler to check if server is up and running
@@ -71,6 +72,7 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 		images.add(buf);
 	}
 	camera = new FakeCamera(images);
+//	camera = new A20Camera(Serial);
 	camera->init();
 
 	// .. and run the HTTP server
