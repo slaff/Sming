@@ -24,8 +24,8 @@
 
 #pragma once
 
-/*
- * Tools for pre-loading code into the flash cache
+/**
+ * @brief Tools for pre-loading code into the flash cache
  *
  * - It can be useful for code that accesses/uses SPI0 which is connected to the flash chip.
  * - Non interrupt handler code that is infrequently called but might otherwise
@@ -34,19 +34,37 @@
  *
  */
 
-#define PRECACHE_ATTR __attribute__((optimize("no-reorder-blocks"))) __attribute__((noinline))
+/**
+ * @brief Mark functions containing critical code using this attribute
+ */
+#define IRAM_PRECACHE_ATTR __attribute__((optimize("no-reorder-blocks"))) __attribute__((noinline))
 
-#define PRECACHE_START(tag)                                                                                            \
-	precache(NULL, (uint8_t*)&&_precache_end_##tag - (uint8_t*)&&_precache_start_##tag);                               \
-	_precache_start_##tag:
+/**
+ * @brief Place this macro before the first line of the critical code
+ * @param tag Used to create the precached section name, must be globally unique
+ * @note Do not omit the tag, and be careful with naming to avoid conflicts
+ */
+#define IRAM_PRECACHE_START(tag)                                                                                       \
+	iram_precache(NULL, (uint8_t*)&&iram_precache_end_##tag - (uint8_t*)&&iram_precache_start_##tag);                  \
+	iram_precache_start_##tag:
 
-#define PRECACHE_END(tag) _precache_end_##tag:
+/**
+ * @brief Place this macro after the last line of critical code
+ * @param tag Must be the same tag used in IRAM_PRECACHE_START()
+ */
+#define IRAM_PRECACHE_END(tag) iram_precache_end_##tag:
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void precache(void* f, uint32_t bytes);
+/**
+ *  @brief Pre-load flash data into the flash instruction cache
+ *  @param addr First location to cache, specify NULL to use current location.
+ *  @param bytes Number of bytes to cache
+ *  @note All pages containing the requested region will be read to pull them into cache RAM.
+ */
+void iram_precache(void* addr, uint32_t bytes);
 
 #ifdef __cplusplus
 }
