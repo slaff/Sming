@@ -20,7 +20,7 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "precache.h"
+#include "iram_precache.h"
 
 /* precache()
  *  @brief pre-loads flash data into the flash cache
