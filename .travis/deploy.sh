@@ -34,7 +34,7 @@ curl -H "$AUTH_HEADER" -H "Content-Type: $(file -b --mime-type $FILE)" --data-bi
 
 # [ Update the choco packages ]
 cd /tmp
-git clone https://github.com/slaff/chocolatey-packages.git
+git clone https://github.com/SmingHub/chocolatey-packages.git
 cd chocolatey-packages
 FILES_TO_CHANGE="packages/sming/sming.nuspec packages/sming.upgrade/sming.upgrade.nuspec packages/sming.examples/sming.examples.nuspec packages/sming.core/sming.core.nuspec"
 
@@ -44,4 +44,4 @@ do
 done
 
 git commit -a -m "Updated chocolatey packages to latest stable $TAG version." || 1
-git push https://${SMING_TOKEN}@github.com/slaff/chocolatey-packages.git master
+git push https://${SMING_TOKEN}@github.com/SmingHub/chocolatey-packages.git master
