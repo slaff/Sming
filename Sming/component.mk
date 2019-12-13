@@ -45,7 +45,7 @@ COMPONENT_DOXYGEN_INPUT := \
 	System
 
 # => SSL
-RELINK_VARS			+= ENABLE_SSL 
+RELINK_VARS			+= ENABLE_SSL
 # Set the default ssl implementation
 ifeq ($(ENABLE_SSL),1)
 	ENABLE_SSL := AXTLS

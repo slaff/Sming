@@ -8,8 +8,8 @@
  *
  * - extended HELO command set
  * - support for PIPELINING
- * - support for STARTTLS (if the directive ENABLE_SSL=1 is set)
- * - support for smtp connection over SSL (if the directive ENABLE_SSL=1 is set)
+ * - support for STARTTLS (if SSL support is enabled)
+ * - support for smtp connection over SSL (if SSL support is enabled)
  * - support for PLAIN and CRAM-MD5 authentication
  * - support for multiple attachments
  * - Support for base64 and quoted-printable transfer encoding
