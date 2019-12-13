@@ -16,6 +16,10 @@
 class SslCertificate
 {
 public:
+	virtual ~SslCertificate()
+	{
+	}
+
 	/**
     *
     */
@@ -33,7 +37,4 @@ public:
    * @retval the value for the desired distinguished name
    */
 	virtual const String getName(const String& name) const = 0;
-	virtual ~SslCertificate()
-	{
-	}
 };

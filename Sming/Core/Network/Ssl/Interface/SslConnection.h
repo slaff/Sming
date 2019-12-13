@@ -17,6 +17,10 @@
 class SslConnection
 {
 public:
+	virtual ~SslConnection()
+	{
+	}
+
 	virtual bool isHandshakeDone() = 0;
 	virtual int read(tcp_pcb* tcp, pbuf* encrypted, pbuf** decrypted) = 0;
 	virtual int write(const uint8_t* data, size_t length) = 0;
@@ -24,8 +28,4 @@ public:
 	virtual const String getCipher() const = 0;
 	virtual SslSessionId* getSessionId() = 0;
 	virtual SslCertificate* getCertificate() = 0;
-
-	virtual ~SslConnection()
-	{
-	}
 };

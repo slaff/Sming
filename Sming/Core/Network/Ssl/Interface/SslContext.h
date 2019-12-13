@@ -21,6 +21,10 @@ class SslConnection;
 class SslContext
 {
 public:
+	virtual ~SslContext()
+	{
+	}
+
 	virtual bool init(tcp_pcb* tcp, uint32_t options = 0, size_t sessionCacheSize = 1)
 	{
 		this->tcp = tcp;
@@ -46,10 +50,6 @@ public:
 	tcp_pcb& getTcp()
 	{
 		return *tcp;
-	}
-
-	virtual ~SslContext()
-	{
 	}
 
 protected:
