@@ -166,13 +166,13 @@ protected:
 
 	virtual void onFinished(TcpClientState finishState);
 
-	err_t onSslConnected(Ssl::Connection* ssl) override
+	err_t onSslConnected(Ssl::Connection* connection) override
 	{
-		if(ssl == nullptr) {
+		if(connection == nullptr) {
 			return ERR_ABRT;
 		}
 
-		return sslValidators.validate(ssl->getCertificate()) ? ERR_OK : ERR_ABRT;
+		return sslValidators.validate(&connection->getCertificate()) ? ERR_OK : ERR_ABRT;
 	}
 
 	void pushAsyncPart();

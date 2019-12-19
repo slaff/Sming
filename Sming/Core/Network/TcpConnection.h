@@ -15,9 +15,7 @@
 
 #pragma once
 
-#include "Ssl/Factory.h"
-#include "Ssl/KeyCertPair.h"
-#include "Ssl/Fingerprints.h"
+#include "Ssl/Session.h"
 #include <IpAddress.h>
 
 #define NETWORK_DEBUG
@@ -115,16 +113,21 @@ public:
 
 	/**
 	 * @brief Specifies the SSL implementation that can be used.
-	 * @param sslFactory
+	 * @param factory
 	 */
-	void setSslFactory(Ssl::Factory* sslFactory)
+	static void setSslFactory(Ssl::Factory& factory)
 	{
-		this->sslFactory = sslFactory;
+		if(sslFactory != nullptr) {
+			debug_e("SSL Factory already set");
+			assert(false);
+		}
+		sslFactory = &factory;
 	}
 
-	void addSslOptions(uint32_t sslOptions)
+	void addSslOptions(uint32_t options)
 	{
-		this->sslOptions |= sslOptions;
+		assert(sslCreateSession());
+		ssl->options |= options;
 	}
 
 	/**
@@ -149,8 +152,11 @@ public:
 	bool setSslKeyCert(const uint8_t* key, int keyLength, const uint8_t* certificate, int certificateLength,
 					   const char* keyPassword = nullptr, bool freeAfterHandshake = false)
 	{
-		freeKeyCertAfterHandshake = freeAfterHandshake;
-		return sslKeyCert.assign(key, keyLength, certificate, certificateLength, keyPassword);
+		if(!sslCreateSession()) {
+			return false;
+		}
+		ssl->freeKeyCertAfterHandshake = freeAfterHandshake;
+		return ssl->keyCert.assign(key, keyLength, certificate, certificateLength, keyPassword);
 	}
 
 	/**
@@ -170,33 +176,32 @@ public:
 	*/
 	bool setSslKeyCert(const Ssl::KeyCertPair& keyCert, bool freeAfterHandshake = false)
 	{
-		freeKeyCertAfterHandshake = freeAfterHandshake;
-		return sslKeyCert.assign(keyCert);
-	}
-
-	/**
-	 * @brief Frees the memory used for the key and certificate pair
-	 */
-	void freeSslKeyCert()
-	{
-		sslKeyCert.free();
+		if(!sslCreateSession()) {
+			return false;
+		}
+		ssl->freeKeyCertAfterHandshake = freeAfterHandshake;
+		return ssl->keyCert.assign(keyCert);
 	}
 
 	// Called by TcpServer
-	void setSsl(Ssl::Connection* ssl)
+	void setSsl(Ssl::Connection* connection)
 	{
-		this->ssl = ssl;
+		assert(ssl != nullptr);
+		delete ssl->connection;
+		ssl->connection = connection;
 		useSsl = true;
 	}
 
 	Ssl::Connection* getSsl()
 	{
-		return ssl;
+		return ssl ? ssl->connection : nullptr;
 	}
 
 protected:
 	void initialize(tcp_pcb* pcb);
 	bool internalConnect(IpAddress addr, uint16_t port);
+
+	bool sslCreateSession();
 
 	virtual err_t onConnected(err_t err);
 	virtual err_t onReceive(pbuf* buf);
@@ -231,20 +236,11 @@ protected:
 	uint16_t timeOut = USHRT_MAX; ///< By default a TCP connection does not have a time out
 	bool canSend = true;
 	bool autoSelfDestruct = true;
-
-	Ssl::Factory* sslFactory = nullptr; /// < The factory implementation to use. Must be set to enable SSL connections
-	Ssl::Context* sslContext = nullptr;
-	Ssl::Connection* ssl = nullptr;
-	Ssl::Extension* sslExtension = nullptr;
-	bool sslConnected = false;
-	uint32_t sslOptions = 0;
-	Ssl::KeyCertPair sslKeyCert;
-	bool freeKeyCertAfterHandshake = false;
-	Ssl::SessionId* sslSessionId = nullptr;
-
+	Ssl::Session* ssl = nullptr;
 	bool useSsl = false;
 
 private:
+	static Ssl::Factory* sslFactory;
 	TcpConnectionDestroyedDelegate destroyedDelegate = nullptr;
 
 	void closeSsl();

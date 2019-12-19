@@ -44,26 +44,30 @@ const String ConnectionImpl::getCipher() const
 	}
 }
 
-SessionId* ConnectionImpl::getSessionId()
+const SessionId& ConnectionImpl::getSessionId()
 {
 	if(sessionId == nullptr) {
 		sessionId = new SessionId();
 	}
 
+	assert(sessionId != nullptr);
+
 	if(ssl_handshake_status(ssl) == SSL_OK) {
 		sessionId->assign(ssl->session_id, ssl->sess_id_size);
 	}
 
-	return sessionId;
+	return *sessionId;
 }
 
-Certificate* ConnectionImpl::getCertificate()
+const Certificate& ConnectionImpl::getCertificate()
 {
 	if(certificate == nullptr) {
 		certificate = new CertificateImpl(ssl);
 	}
 
-	return certificate;
+	assert(certificate != nullptr);
+
+	return *certificate;
 }
 
 } // namespace Ssl

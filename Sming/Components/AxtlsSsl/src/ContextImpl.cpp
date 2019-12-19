@@ -15,6 +15,14 @@
 
 namespace Ssl
 {
+ContextImpl::~ContextImpl()
+{
+	// Free context typically sends out closing message
+	ssl_ctx_free(context);
+	// Now we can free the connection
+	axl_free(tcp);
+}
+
 bool ContextImpl::init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize)
 {
 	if(!Context::init(tcp, options, sessionCacheSize)) {
@@ -72,12 +80,6 @@ Ssl::Connection* ContextImpl::createServer()
 bool ContextImpl::loadMemory(ObjectType memType, const uint8_t* data, size_t length, const char* password)
 {
 	return (ssl_obj_memory_load(context, int(memType), data, length, password) == SSL_OK);
-}
-
-ContextImpl::~ContextImpl()
-{
-	axl_free(tcp);
-	ssl_ctx_free(context);
 }
 
 } // namespace Ssl

@@ -15,13 +15,13 @@
 
 namespace Ssl
 {
-static bool validateCertificateSha1(Certificate* ssl, void* data)
+static bool validateCertificateSha1(const Certificate* certificate, void* data)
 {
 	uint8_t* hash = static_cast<uint8_t*>(data);
 	bool success = false;
 	if(hash != nullptr) {
-		if(ssl != nullptr) {
-			success = ssl->matchFingerprint(hash);
+		if(certificate != nullptr) {
+			success = certificate->matchFingerprint(hash);
 		}
 		delete[] hash;
 	}
@@ -29,13 +29,13 @@ static bool validateCertificateSha1(Certificate* ssl, void* data)
 	return success;
 }
 
-static bool validatePublicKeySha256(Certificate* ssl, void* data)
+static bool validatePublicKeySha256(const Certificate* certificate, void* data)
 {
 	uint8_t* hash = static_cast<uint8_t*>(data);
 	bool success = false;
 	if(hash != nullptr) {
-		if(ssl != nullptr) {
-			success = ssl->matchFingerprint(hash);
+		if(certificate != nullptr) {
+			success = certificate->matchFingerprint(hash);
 		}
 		delete[] hash;
 	}
@@ -43,9 +43,9 @@ static bool validatePublicKeySha256(Certificate* ssl, void* data)
 	return success;
 }
 
-bool ValidatorList::validate(Certificate* ssl)
+bool ValidatorList::validate(const Certificate* certificate)
 {
-	if(ssl != nullptr && count() == 0) {
+	if(certificate != nullptr && count() == 0) {
 		// No validators specified, always succeed
 		debug_d("SSL Validator: list empty, allow connection");
 		return true;
@@ -59,7 +59,7 @@ bool ValidatorList::validate(Certificate* ssl)
 	for(unsigned i = 0; i < count(); i++) {
 		auto& validator = operator[](i);
 		// If we've already succeeded, then just release validator data without checking
-		if(validator.callback(success ? nullptr : ssl, validator.data)) {
+		if(validator.callback(success ? nullptr : certificate, validator.data)) {
 			debug_d("SSL validator: positive match");
 			success = true;
 		}
@@ -67,7 +67,7 @@ bool ValidatorList::validate(Certificate* ssl)
 		validator.data = nullptr;
 	}
 
-	if(ssl != nullptr && !success) {
+	if(certificate != nullptr && !success) {
 		debug_d("SSL validator: NO match");
 	}
 

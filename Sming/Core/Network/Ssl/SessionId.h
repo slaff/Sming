@@ -11,6 +11,7 @@
 #pragma once
 
 #include "WString.h"
+#include <Data/HexString.h>
 
 namespace Ssl
 {
@@ -21,17 +22,17 @@ namespace Ssl
 class SessionId
 {
 public:
-	const uint8_t* getValue()
+	const uint8_t* getValue() const
 	{
 		return reinterpret_cast<const uint8_t*>(value.c_str());
 	}
 
-	unsigned getLength()
+	unsigned getLength() const
 	{
 		return value.length();
 	}
 
-	bool isValid()
+	bool isValid() const
 	{
 		return getLength() != 0;
 	}
@@ -43,6 +44,14 @@ public:
 		}
 		memcpy(value.begin(), newValue, newLength);
 		return true;
+	}
+
+	/**
+	 * @brief Return a string representation of the session ID
+	 */
+	String toString() const
+	{
+		return makeHexString(getValue(), getLength());
 	}
 
 private:

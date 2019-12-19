@@ -28,6 +28,11 @@ public:
 	{
 	}
 
+	bool isValid() const override
+	{
+		return ssl != nullptr;
+	}
+
 	bool matchFingerprint(const uint8_t* hash) const override;
 
 	bool matchPki(const uint8_t* hash) const override;

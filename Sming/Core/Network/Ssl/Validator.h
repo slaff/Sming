@@ -31,9 +31,9 @@ struct Validator {
 	 *  @param data Data for the callback to use
 	 *  @retval bool true if validation succeeded
 	 *  @note Callback must ALWAYS release any allocate memory before returning.
-	 *  If called with ssl = NULL then just release memory and return false.
+	 *  If called with certificate = NULL then just release memory and return false.
 	 */
-	typedef Delegate<bool(Certificate* ssl, void* data)> Callback;
+	typedef Delegate<bool(const Certificate* certificate, void* data)> Callback;
 
 	Callback callback;
 	void* data; ///< Callback-specific data, e.g. fingerprint to compare against
@@ -70,10 +70,10 @@ public:
 	bool add(Fingerprints& fingerprints);
 
 	/** @brief Used to validate certificate by invoking each validator callback until successful
-	 *  @param ssl When called with nullptr will simply de-allocate any validator memory
+	 *  @param certificate When called with nullptr will simply de-allocate any validator memory
 	 * @retval bool  true on success, false on failure
 	 */
-	bool validate(Certificate* ssl);
+	bool validate(const Certificate* certificate);
 };
 
 /** @} */

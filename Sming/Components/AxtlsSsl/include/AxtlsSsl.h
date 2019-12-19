@@ -4,16 +4,16 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * FactoryImpl.cpp
+ * AxtlsSsl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
-#include "../include/AxtlsSsl.h"
-#include "ContextImpl.h"
+#include <Network/Ssl/Factory.h>
 
-Ssl::Context* AxtlsFactory::createContext()
+class AxtlsFactory : public Ssl::Factory
 {
-	return new Ssl::ContextImpl();
-}
+public:
+	Ssl::Context* createContext() override;
+};

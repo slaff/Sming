@@ -50,9 +50,9 @@ public:
 
 	const String getCipher() const override;
 
-	SessionId* getSessionId() override;
+	const SessionId& getSessionId() override;
 
-	Certificate* getCertificate() override;
+	const Certificate& getCertificate() override;
 
 protected:
 	SSL* ssl = nullptr;

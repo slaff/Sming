@@ -126,7 +126,7 @@ public:
 	 *        Should be called after handshake.
 	 * @retval Ssl::SessionId*
 	 */
-	virtual SessionId* getSessionId() = 0;
+	virtual const SessionId& getSessionId() = 0;
 
 	/**
 	 * @brief Gets the certificate object.
@@ -135,7 +135,7 @@ public:
 	 *
 	 * @retval Ssl::SessionId*
 	 */
-	virtual Certificate* getCertificate() = 0;
+	virtual const Certificate& getCertificate() = 0;
 };
 
 /** @} */

@@ -26,11 +26,11 @@ TcpClient* client;
 bool showMeta = true;
 
 /* Debug SSL functions */
-void displaySessionId(SslSessionId* sessionId)
+void displaySessionId(const SslSessionId& sessionId)
 {
-	if(sessionId != nullptr && sessionId->isValid()) {
+	if(sessionId.isValid()) {
 		debugf("-----BEGIN SSL SESSION PARAMETERS-----");
-		debugf("%s", makeHexString(sessionId->getValue(), sessionId->getLength()).c_str());
+		debugf("%s", sessionId.toString().c_str());
 		debugf("-----END SSL SESSION PARAMETERS-----");
 	}
 }
@@ -46,8 +46,8 @@ bool onReceive(TcpClient& tcpClient, char* data, int size)
 	if(showMeta) {
 		SslConnection* ssl = tcpClient.getSsl();
 		if(ssl) {
-			SslCertificate* cert = ssl->getCertificate();
-			debugf("Common Name:\t\t\t%s\n", cert->getName(Ssl::Certificate::Name::CERT_COMMON_NAME).c_str());
+			const SslCertificate& cert = ssl->getCertificate();
+			debugf("Common Name:\t\t\t%s\n", cert.getName(Ssl::Certificate::Name::CERT_COMMON_NAME).c_str());
 			debugf("Cipher: %s", ssl->getCipher().c_str());
 			displaySessionId(ssl->getSessionId());
 		}

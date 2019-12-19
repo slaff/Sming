@@ -1,5 +1,6 @@
 #include <SmingCore.h>
 #include "Data/HexString.h"
+#include <AxtlsSsl.h>
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
@@ -7,15 +8,16 @@
 #define WIFI_PWD "PleaseEnterPass"
 #endif
 
+AxtlsFactory sslFactory;
 Timer procTimer;
 HttpClient downloadClient;
 
 /* Debug SSL functions */
-void displaySessionId(SslSessionId* sessionId)
+void displaySessionId(const SslSessionId& sessionId)
 {
-	if(sessionId != nullptr && sessionId->isValid()) {
+	if(sessionId.isValid()) {
 		debugf("-----BEGIN SSL SESSION PARAMETERS-----");
-		debugf("%s", makeHexString(sessionId->getValue(), sessionId->getLength()).c_str());
+		debugf("%s", sessionId.toString().c_str());
 		debugf("-----END SSL SESSION PARAMETERS-----");
 	}
 }
@@ -27,8 +29,8 @@ int onDownload(HttpConnection& connection, bool success)
 
 	SslConnection* ssl = connection.getSsl();
 	if(ssl) {
-		SslCertificate* cert = ssl->getCertificate();
-		debugf("Common Name:\t\t\t%s\n", cert->getName(Ssl::Certificate::Name::CERT_COMMON_NAME).c_str());
+		const SslCertificate& cert = ssl->getCertificate();
+		debugf("Common Name:\t\t\t%s\n", cert.getName(Ssl::Certificate::Name::CERT_COMMON_NAME).c_str());
 		debugf("Cipher: %s", ssl->getCipher().c_str());
 		displaySessionId(ssl->getSessionId());
 	}
@@ -93,4 +95,7 @@ void init()
 
 	WifiEvents.onStationGotIP(gotIP);
 	WifiEvents.onStationDisconnect(connectFail);
+
+	//
+	TcpConnection::setSslFactory(sslFactory);
 }
