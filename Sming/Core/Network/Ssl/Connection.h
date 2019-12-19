@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslConnection.h
+ * Connection.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,9 +12,11 @@
 #pragma once
 
 #include <user_config.h>
-#include "SslSessionId.h"
-#include "SslCertificate.h"
+#include "SessionId.h"
+#include "Certificate.h"
 
+namespace Ssl
+{
 /**
  * @ingroup ssl
  * @brief Provides the functionality needed to create SSL communicate over TCP
@@ -66,16 +68,16 @@
 /**
  * @brief Alert codes defined by the standard
  */
-enum SslAlertCode {
+enum AlertCode {
 #define XX(tag, code) SSL_ALERT##tag = code,
 	SSL_ALERT_CODE_MAP(XX)
 #undef XX
 };
 
-class SslConnection
+class Connection
 {
 public:
-	virtual ~SslConnection()
+	virtual ~Connection()
 	{
 	}
 
@@ -122,18 +124,22 @@ public:
 	/**
 	 * @brief Gets the current session id object.
 	 *        Should be called after handshake.
-	 * @retval SslSessionId*
+	 * @retval Ssl::SessionId*
 	 */
-	virtual SslSessionId* getSessionId() = 0;
+	virtual SessionId* getSessionId() = 0;
 
 	/**
 	 * @brief Gets the certificate object.
-	 *        That object MUST be owned by the SslConnection implementation
+	 *        That object MUST be owned by the Ssl::Connection implementation
 	 *        and should not be freed outside of it
 	 *
-	 * @retval SslSessionId*
+	 * @retval Ssl::SessionId*
 	 */
-	virtual SslCertificate* getCertificate() = 0;
+	virtual Certificate* getCertificate() = 0;
 };
 
 /** @} */
+
+} // namespace Ssl
+
+typedef Ssl::Connection SslConnection;

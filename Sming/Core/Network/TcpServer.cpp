@@ -63,7 +63,7 @@ bool TcpServer::listen(int port, bool useSsl)
 		}
 
 		delete sslContext;
-		sslContext = sslFactory->sslCreateContext();
+		sslContext = sslFactory->createContext();
 		if(sslContext == nullptr) {
 			return false;
 		}
@@ -74,14 +74,14 @@ bool TcpServer::listen(int port, bool useSsl)
 			return false;
 		}
 
-		if(!sslContext->loadMemory(eSCO_RSA_KEY, sslKeyCert.getKey(), sslKeyCert.getKeyLength(),
+		if(!sslContext->loadMemory(Ssl::Context::ObjectType::RSA_KEY, sslKeyCert.getKey(), sslKeyCert.getKeyLength(),
 								   sslKeyCert.getKeyPassword())) {
 			debug_e("SSL: Unable to load server private key");
 			return false;
 		}
 
-		if(!sslContext->loadMemory(eSCO_X509_CERT, sslKeyCert.getCertificate(), sslKeyCert.getCertificateLength(),
-								   nullptr)) {
+		if(!sslContext->loadMemory(Ssl::Context::ObjectType::X509_CERT, sslKeyCert.getCertificate(),
+								   sslKeyCert.getCertificateLength(), nullptr)) {
 			debug_e("SSL: Unable to load server certificate");
 			return false;
 		}

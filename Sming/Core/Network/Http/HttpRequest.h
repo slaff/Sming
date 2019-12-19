@@ -243,7 +243,7 @@ public:
 	 *
 	 * @retval bool  true of success, false or failure
 	 */
-	HttpRequest* pinCertificate(SslFingerprints& fingerprints)
+	HttpRequest* pinCertificate(Ssl::Fingerprints& fingerprints)
 	{
 		sslFingerprints = fingerprints;
 		return this;
@@ -255,7 +255,7 @@ public:
 	 *
 	 * @retval HttpRequest* Pointer to this request
 	 */
-	HttpRequest* setSslKeyCert(const SslKeyCertPair& keyCertPair)
+	HttpRequest* setSslKeyCert(const Ssl::KeyCertPair& keyCertPair)
 	{
 		sslKeyCertPair = keyCertPair;
 		return this;
@@ -293,8 +293,8 @@ protected:
 #endif
 
 	uint32_t sslOptions = 0;
-	SslFingerprints sslFingerprints;
-	SslKeyCertPair sslKeyCertPair;
+	Ssl::Fingerprints sslFingerprints;
+	Ssl::KeyCertPair sslKeyCertPair;
 
 private:
 	HttpParams* queryParams = nullptr; // << @todo deprecate

@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslContextImpl.h
+ * ContextImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,23 +12,26 @@
 
 #pragma once
 
-#include <Network/Ssl/SslContext.h>
+#include <Network/Ssl/Context.h>
 #include <axtls-8266/compat/lwipr_compat.h>
 
-class SslContextImpl : public SslContext
+namespace Ssl
+{
+class ContextImpl : public Context
 {
 public:
-	~SslContextImpl();
+	~ContextImpl();
 
 	bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) override;
-	SslConnection* createServer() override;
-	bool loadMemory(const SslContextObject& memType, const uint8_t* data, size_t length, const char* password) override;
+	Connection* createServer() override;
+	bool loadMemory(ObjectType memType, const uint8_t* data, size_t length, const char* password) override;
 
 protected:
-	SslConnection* internalCreateClient(const uint8_t* sessionData, size_t length,
-										SslExtension* sslExtensions) override;
+	Connection* internalCreateClient(const uint8_t* sessionData, size_t length, Extension* extension) override;
 
 private:
 	uint8_t capacity = 10;
 	SSLCTX* context = nullptr;
 };
+
+} // namespace Ssl

@@ -4,20 +4,22 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslFingerprints.h
+ * Fingerprints.h
  *
  ****/
 
 #pragma once
 
-#include "SslCrypto.h"
+#include "Crypto.h"
 #include <sming_attr.h>
 
+namespace Ssl
+{
 /**
  * @brief SSL Certificate fingerprint type
  * @ingroup ssl
  */
-enum SslFingerprintType {
+enum FingerprintType {
 	/** @brief Fingerprint based on the SHA1 value of the certificate
 	 * 	@note The SHA1 hash of the entire certificate. This changes on each certificate renewal so needs
 	 * 	to be updated every time the remote server updates its certificate.
@@ -44,11 +46,11 @@ enum SslFingerprintType {
  *  	- When certificate validated, memory is released
  *
  */
-struct SslFingerprints {
+struct Fingerprints {
 	const uint8_t* certSha1 = nullptr; ///< certificate SHA1 fingerprint
 	const uint8_t* pkSha256 = nullptr; ///< public key SHA256 fingerprint
 
-	~SslFingerprints()
+	~Fingerprints()
 	{
 		free();
 	}
@@ -88,10 +90,10 @@ struct SslFingerprints {
 	}
 
 	/** @brief Moves values out of source */
-	SslFingerprints& operator=(SslFingerprints& source);
+	Ssl::Fingerprints& operator=(Ssl::Fingerprints& source);
 
 	/** @brief Make copy of values from source */
-	SslFingerprints& operator=(const SslFingerprints& source);
+	Ssl::Fingerprints& operator=(const Ssl::Fingerprints& source);
 
 private:
 	/** @brief Internal method to set a fingerprint
@@ -104,5 +106,10 @@ private:
 	bool setValue(const uint8_t*& value, unsigned requiredLength, const uint8_t* newValue, unsigned newLength);
 };
 
-typedef SslFingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use SslFingerprintType instead
-typedef SslFingerprints SSLFingerprints SMING_DEPRECATED;		///< @deprecated Use SslFingerprints instead
+} // namespace Ssl
+
+typedef Ssl::FingerprintType SslFingerprintType;
+typedef Ssl::Fingerprints SslFingerprints;
+
+typedef Ssl::FingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use Ssl::FingerprintType instead
+typedef Ssl::Fingerprints SSLFingerprints SMING_DEPRECATED;		  ///< @deprecated Use Ssl::Fingerprints instead

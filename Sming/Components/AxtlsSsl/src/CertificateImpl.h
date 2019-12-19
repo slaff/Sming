@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslCertificateImpl.h
+ * CertificateImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,17 +12,19 @@
 
 #pragma once
 
-#include <Network/Ssl/SslCertificate.h>
+#include <Network/Ssl/Certificate.h>
 #include <axtls-8266/compat/lwipr_compat.h>
 
-class SslCertificateImpl : public SslCertificate
+namespace Ssl
+{
+class CertificateImpl : public Certificate
 {
 public:
-	SslCertificateImpl(SSL* ssl) : ssl(ssl)
+	CertificateImpl(SSL* ssl) : ssl(ssl)
 	{
 	}
 
-	~SslCertificateImpl()
+	~CertificateImpl()
 	{
 	}
 
@@ -30,8 +32,10 @@ public:
 
 	bool matchPki(const uint8_t* hash) const override;
 
-	const String getName(const SslCertificateName& name) const override;
+	const String getName(const Name& name) const override;
 
 private:
 	SSL* ssl = nullptr;
 };
+
+} // namespace Ssl

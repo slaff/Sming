@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "Ssl/SslFactory.h"
-#include "Ssl/SslKeyCertPair.h"
-#include "Ssl/SslFingerprints.h"
+#include "Ssl/Factory.h"
+#include "Ssl/KeyCertPair.h"
+#include "Ssl/Fingerprints.h"
 #include <IpAddress.h>
 
 #define NETWORK_DEBUG
@@ -117,7 +117,7 @@ public:
 	 * @brief Specifies the SSL implementation that can be used.
 	 * @param sslFactory
 	 */
-	void setSslFactory(SslFactory* sslFactory)
+	void setSslFactory(Ssl::Factory* sslFactory)
 	{
 		this->sslFactory = sslFactory;
 	}
@@ -168,7 +168,7 @@ public:
 	*
 	* @retval bool  true of success, false or failure
 	*/
-	bool setSslKeyCert(const SslKeyCertPair& keyCert, bool freeAfterHandshake = false)
+	bool setSslKeyCert(const Ssl::KeyCertPair& keyCert, bool freeAfterHandshake = false)
 	{
 		freeKeyCertAfterHandshake = freeAfterHandshake;
 		return sslKeyCert.assign(keyCert);
@@ -183,13 +183,13 @@ public:
 	}
 
 	// Called by TcpServer
-	void setSsl(SslConnection* ssl)
+	void setSsl(Ssl::Connection* ssl)
 	{
 		this->ssl = ssl;
 		useSsl = true;
 	}
 
-	SslConnection* getSsl()
+	Ssl::Connection* getSsl()
 	{
 		return ssl;
 	}
@@ -204,7 +204,7 @@ protected:
 	virtual err_t onPoll();
 	virtual void onError(err_t err);
 	virtual void onReadyToSendData(TcpConnectionEvent sourceEvent);
-	virtual err_t onSslConnected(SslConnection* ssl);
+	virtual err_t onSslConnected(Ssl::Connection* ssl);
 
 	// These methods are called via LWIP handlers
 	err_t internalOnConnected(err_t err);
@@ -232,15 +232,15 @@ protected:
 	bool canSend = true;
 	bool autoSelfDestruct = true;
 
-	SslFactory* sslFactory = nullptr; /// < The factory implementation to use. Must be set to enable SSL connections
-	SslContext* sslContext = nullptr;
-	SslConnection* ssl = nullptr;
-	SslExtension* sslExtension = nullptr;
+	Ssl::Factory* sslFactory = nullptr; /// < The factory implementation to use. Must be set to enable SSL connections
+	Ssl::Context* sslContext = nullptr;
+	Ssl::Connection* ssl = nullptr;
+	Ssl::Extension* sslExtension = nullptr;
 	bool sslConnected = false;
 	uint32_t sslOptions = 0;
-	SslKeyCertPair sslKeyCert;
+	Ssl::KeyCertPair sslKeyCert;
 	bool freeKeyCertAfterHandshake = false;
-	SslSessionId* sslSessionId = nullptr;
+	Ssl::SessionId* sslSessionId = nullptr;
 
 	bool useSsl = false;
 

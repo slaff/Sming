@@ -4,16 +4,18 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslConnectionImpl.cpp
+ * ConnectionImpl.cpp
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
-#include "SslConnectionImpl.h"
-#include "SslCertificateImpl.h"
+#include "ConnectionImpl.h"
+#include "CertificateImpl.h"
 
-int SslConnectionImpl::read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted)
+namespace Ssl
+{
+int ConnectionImpl::read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted)
 {
 	int read_bytes = axl_ssl_read(ssl, tcp, encrypted, &decrypted);
 
@@ -22,7 +24,7 @@ int SslConnectionImpl::read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted)
 	return read_bytes;
 }
 
-const String SslConnectionImpl::getCipher() const
+const String ConnectionImpl::getCipher() const
 {
 	switch(ssl_get_cipher_id(ssl)) {
 	case SSL_AES128_SHA:
@@ -42,10 +44,10 @@ const String SslConnectionImpl::getCipher() const
 	}
 }
 
-SslSessionId* SslConnectionImpl::getSessionId()
+SessionId* ConnectionImpl::getSessionId()
 {
 	if(sessionId == nullptr) {
-		sessionId = new SslSessionId();
+		sessionId = new SessionId();
 	}
 
 	if(ssl_handshake_status(ssl) == SSL_OK) {
@@ -55,11 +57,13 @@ SslSessionId* SslConnectionImpl::getSessionId()
 	return sessionId;
 }
 
-SslCertificate* SslConnectionImpl::getCertificate()
+Certificate* ConnectionImpl::getCertificate()
 {
 	if(certificate == nullptr) {
-		certificate = new SslCertificateImpl(ssl);
+		certificate = new CertificateImpl(ssl);
 	}
 
 	return certificate;
 }
+
+} // namespace Ssl

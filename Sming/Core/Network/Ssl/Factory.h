@@ -4,15 +4,17 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslFactory.h
+ * Factory.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 #pragma once
 
-#include "SslContext.h"
+#include "Context.h"
 
+namespace Ssl
+{
 /**
  * @ingroup ssl
  * @brief Ssl Factory class
@@ -20,16 +22,18 @@
  * @{
  */
 
-class SslFactory
+class Factory
 {
 public:
-	virtual ~SslFactory()
+	virtual ~Factory()
 	{
 	}
 
 	/**
 	 * @brief Create SSL context that can be used to create new client or server connections
-	 * @retval SslContext* return null if the adapter cannot handle SSL. Useful only for dummy SSL adapters
+	 * @retval Context* return null if the adapter cannot handle SSL. Useful only for dummy SSL adapters
 	 */
-	virtual SslContext* sslCreateContext() = 0;
+	virtual Context* createContext() = 0;
 };
+
+} // namespace Ssl

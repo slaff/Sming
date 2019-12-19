@@ -4,19 +4,24 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslConstants.h
+ * FactoryImpl.cpp
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
-#pragma once
 
-/**
- * @ingroup ssl
- * @{
- */
+#include <Network/Ssl/Factory.h>
+#include "ContextImpl.h"
 
-// crypto library
-#define MD5_SIZE 16
+namespace Ssl
+{
+class FactoryImpl : public Factory
+{
+public:
+	Context* createContext() override
+	{
+		return new ContextImpl();
+	}
+};
 
-/** @} */
+} // namespace Ssl

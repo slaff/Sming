@@ -4,16 +4,18 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslValidator.cpp
+ * Validator.cpp
  *
  * @author: 2018 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
-#include "SslValidator.h"
+#include "Validator.h"
 #include <debug_progmem.h>
 
-static bool sslValidateCertificateSha1(SslCertificate* ssl, void* data)
+namespace Ssl
+{
+static bool validateCertificateSha1(Certificate* ssl, void* data)
 {
 	uint8_t* hash = static_cast<uint8_t*>(data);
 	bool success = false;
@@ -27,7 +29,7 @@ static bool sslValidateCertificateSha1(SslCertificate* ssl, void* data)
 	return success;
 }
 
-static bool sslValidatePublicKeySha256(SslCertificate* ssl, void* data)
+static bool validatePublicKeySha256(Certificate* ssl, void* data)
 {
 	uint8_t* hash = static_cast<uint8_t*>(data);
 	bool success = false;
@@ -41,9 +43,7 @@ static bool sslValidatePublicKeySha256(SslCertificate* ssl, void* data)
 	return success;
 }
 
-/* SslValidatorList */
-
-bool SslValidatorList::validate(SslCertificate* ssl)
+bool ValidatorList::validate(Certificate* ssl)
 {
 	if(ssl != nullptr && count() == 0) {
 		// No validators specified, always succeed
@@ -74,15 +74,15 @@ bool SslValidatorList::validate(SslCertificate* ssl)
 	return success;
 }
 
-bool SslValidatorList::add(const uint8_t* fingerprint, SslFingerprintType type)
+bool ValidatorList::add(const uint8_t* fingerprint, FingerprintType type)
 {
-	SslValidatorCallback callback = nullptr;
+	Validator::Callback callback = nullptr;
 	switch(type) {
 	case eSFT_CertSha1:
-		callback = sslValidateCertificateSha1;
+		callback = validateCertificateSha1;
 		break;
 	case eSFT_PkSha256:
-		callback = sslValidatePublicKeySha256;
+		callback = validatePublicKeySha256;
 		break;
 	default:
 		debug_d("Unsupported SSL certificate fingerprint type");
@@ -96,7 +96,7 @@ bool SslValidatorList::add(const uint8_t* fingerprint, SslFingerprintType type)
 	return add(callback, const_cast<uint8_t*>(fingerprint));
 }
 
-bool SslValidatorList::add(SslFingerprints& fingerprints)
+bool ValidatorList::add(Fingerprints& fingerprints)
 {
 	bool success = false;
 	if(fingerprints.certSha1 != nullptr) {
@@ -111,3 +111,5 @@ bool SslValidatorList::add(SslFingerprints& fingerprints)
 
 	return success;
 }
+
+} // namespace Ssl

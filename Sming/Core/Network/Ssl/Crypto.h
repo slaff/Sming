@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslCrypto.h
+ * Crypto.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *

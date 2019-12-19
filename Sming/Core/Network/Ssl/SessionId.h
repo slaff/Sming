@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslSessionId.h
+ * SessionId.h
  *
  ****/
 
@@ -12,11 +12,13 @@
 
 #include "WString.h"
 
+namespace Ssl
+{
 /**
  * @brief Manages buffer to store SSL Session ID
  * @ingroup ssl
  */
-class SslSessionId
+class SessionId
 {
 public:
 	const uint8_t* getValue()
@@ -47,4 +49,8 @@ private:
 	String value;
 };
 
-typedef SslSessionId SSLSessionId SMING_DEPRECATED; ///< @deprecated Use SslSessionId instead
+} // namespace Ssl
+
+typedef Ssl::SessionId SslSessionId;
+
+typedef Ssl::SessionId SSLSessionId SMING_DEPRECATED; ///< @deprecated Use Ssl::SessionId instead

@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslConnectionImpl.h
+ * ConnectionImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,18 +12,20 @@
 
 #pragma once
 
-#include <Network/Ssl/SslConnection.h>
-#include "SslCertificateImpl.h"
+#include <Network/Ssl/Connection.h>
+#include "CertificateImpl.h"
 #include <axtls-8266/compat/lwipr_compat.h>
 
-class SslConnectionImpl : public SslConnection
+namespace Ssl
+{
+class ConnectionImpl : public Connection
 {
 public:
-	SslConnectionImpl(SSL* ssl) : ssl(ssl)
+	ConnectionImpl(SSL* ssl) : ssl(ssl)
 	{
 	}
 
-	~SslConnectionImpl()
+	~ConnectionImpl()
 	{
 		delete certificate;
 		delete sessionId;
@@ -48,12 +50,14 @@ public:
 
 	const String getCipher() const override;
 
-	SslSessionId* getSessionId() override;
+	SessionId* getSessionId() override;
 
-	SslCertificate* getCertificate() override;
+	Certificate* getCertificate() override;
 
 protected:
 	SSL* ssl = nullptr;
-	SslCertificateImpl* certificate = nullptr; // << The certificate object is owned by this class
-	SslSessionId* sessionId = nullptr;		   // << The sslSessionId object is owned by this class
+	CertificateImpl* certificate = nullptr; // << The certificate object is owned by this class
+	SessionId* sessionId = nullptr;			// << The sslSessionId object is owned by this class
 };
+
+} // namespace Ssl

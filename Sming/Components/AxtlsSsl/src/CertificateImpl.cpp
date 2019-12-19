@@ -4,29 +4,33 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslCertificateImpl.cpp
+ * CertificateImpl.cpp
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
-#include "SslCertificateImpl.h"
+#include "CertificateImpl.h"
 
-const String SslCertificateImpl::getName(const SslCertificateName& name) const
+namespace Ssl
+{
+const String CertificateImpl::getName(const Name& name) const
 {
 	if(ssl == nullptr) {
-		return String();
+		return nullptr;
 	}
 
-	return String(ssl_get_cert_dn(ssl, name));
+	return String(ssl_get_cert_dn(ssl, int(name)));
 }
 
-bool SslCertificateImpl::matchFingerprint(const uint8_t* hash) const
+bool CertificateImpl::matchFingerprint(const uint8_t* hash) const
 {
 	return (ssl_match_fingerprint(ssl, hash) == 0);
 }
 
-bool SslCertificateImpl::matchPki(const uint8_t* hash) const
+bool CertificateImpl::matchPki(const uint8_t* hash) const
 {
 	return (ssl_match_spki_sha256(ssl, hash) == 0);
 }
+
+} // namespace Ssl
