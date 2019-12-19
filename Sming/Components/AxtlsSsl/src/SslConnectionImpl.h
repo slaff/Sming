@@ -23,7 +23,7 @@ public:
 	{
 	}
 
-	virtual ~SslConnectionImpl()
+	~SslConnectionImpl()
 	{
 		delete certificate;
 		delete sessionId;
@@ -34,7 +34,7 @@ public:
 		return (ssl_handshake_status(ssl) == SSL_OK);
 	}
 
-	int read(tcp_pcb* tcp, pbuf* encrypted, pbuf** decrypted) override;
+	int read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted) override;
 
 	int write(const uint8_t* data, size_t length) override
 	{

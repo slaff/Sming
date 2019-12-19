@@ -22,7 +22,7 @@ public:
 	{
 	}
 
-	virtual ~SslCertificateImpl()
+	~SslCertificateImpl()
 	{
 	}
 

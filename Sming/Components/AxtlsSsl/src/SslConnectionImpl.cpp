@@ -13,9 +13,9 @@
 #include "SslConnectionImpl.h"
 #include "SslCertificateImpl.h"
 
-int SslConnectionImpl::read(tcp_pcb* tcp, pbuf* encrypted, pbuf** decrypted)
+int SslConnectionImpl::read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted)
 {
-	int read_bytes = axl_ssl_read(ssl, tcp, encrypted, decrypted);
+	int read_bytes = axl_ssl_read(ssl, tcp, encrypted, &decrypted);
 
 	// TODO: process the response and check if it connection abort or an error....
 

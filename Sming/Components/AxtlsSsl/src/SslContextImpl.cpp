@@ -27,7 +27,7 @@ bool SslContextImpl::init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSiz
 }
 
 SslConnection* SslContextImpl::internalCreateClient(const uint8_t* sessionData, size_t sessionLength,
-											  SslExtension* sslExtension)
+													SslExtension* sslExtension)
 {
 	int clientfd = axl_append(tcp);
 	if(clientfd < 0) {

@@ -492,7 +492,7 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 		WDT.alive(); /* SSL handshake needs time. In theory we have max 8 seconds before the hardware watchdog resets the device */
 
 		struct pbuf* pout;
-		int read_bytes = ssl->read(tcp, p, &pout);
+		int read_bytes = ssl->read(tcp, p, pout);
 
 		// free the SSL pbuf and put the decrypted data in the brand new pout pbuf
 		if(p != nullptr) {

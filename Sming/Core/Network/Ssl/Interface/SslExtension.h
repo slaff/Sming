@@ -21,11 +21,18 @@
  * @{
  */
 
+/**
+ * @brief Maximum Fragment Length Negotiation https://tools.ietf.org/html/rfc6066
+ *
+ * 0,1,2,3..6 corresponding to off,512,1024,2048..16384 bytes
+ *
+ * The allowed values for this field are: 2^9, 2^10, 2^11, and 2^12
+ *
+ */
 enum SslExtensionFragmentSize {
-	// 0,1,2,3..6 corresponding to off,512,1024,2048..16384 bytes
 	eSEFS_Off,
-	eSEFS_512, // << 512 bytes
-	eSEFS_1K,  // << 1024 bytes
+	eSEFS_512, //<< 512 bytes
+	eSEFS_1K,  //<< 1024 bytes
 	eSEFS_2K,
 	eSEFS_4K,
 	eSEFS_8K,
@@ -33,8 +40,8 @@ enum SslExtensionFragmentSize {
 };
 
 struct SslExtension {
-  String hostName;
-  SslExtensionFragmentSize fragmentSize = eSEFS_Off;
+	String hostName;
+	SslExtensionFragmentSize fragmentSize = eSEFS_Off;
 };
 
 /** @} */

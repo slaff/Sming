@@ -20,7 +20,7 @@
  * @{
  */
 
-/* errors that can be generated */
+/* errors that can be generated - these are specific to AXTLS */
 #define SSL_OK 0
 #define SSL_NOT_OK -1
 #define SSL_ERROR_DEAD -2
@@ -45,26 +45,37 @@
 #define SSL_X509_OFFSET -512
 
 /* alert types that are recognized */
-#define SSL_ALERT_TYPE_WARNING 1
-#define SLL_ALERT_TYPE_FATAL 2
+enum SslAlertType {
+	SSL_ALERT_TYPE_WARNING = 1,
+	SLL_ALERT_TYPE_FATAL = 2,
+};
 
-/* these are all the alerts that are recognized */
-#define SSL_ALERT_CLOSE_NOTIFY 0
-#define SSL_ALERT_UNEXPECTED_MESSAGE 10
-#define SSL_ALERT_BAD_RECORD_MAC 20
-#define SSL_ALERT_RECORD_OVERFLOW 22
-#define SSL_ALERT_HANDSHAKE_FAILURE 40
-#define SSL_ALERT_BAD_CERTIFICATE 42
-#define SSL_ALERT_UNSUPPORTED_CERTIFICATE 43
-#define SSL_ALERT_CERTIFICATE_EXPIRED 45
-#define SSL_ALERT_CERTIFICATE_UNKNOWN 46
-#define SSL_ALERT_ILLEGAL_PARAMETER 47
-#define SSL_ALERT_UNKNOWN_CA 48
-#define SSL_ALERT_DECODE_ERROR 50
-#define SSL_ALERT_DECRYPT_ERROR 51
-#define SSL_ALERT_INVALID_VERSION 70
-#define SSL_ALERT_NO_RENEGOTIATION 100
-#define SSL_ALERT_UNSUPPORTED_EXTENSION 110
+#define SSL_ALERT_CODE_MAP(XX)                                                                                         \
+	XX(CLOSE_NOTIFY, 0)                                                                                                \
+	XX(UNEXPECTED_MESSAGE, 10)                                                                                         \
+	XX(BAD_RECORD_MAC, 20)                                                                                             \
+	XX(RECORD_OVERFLOW, 22)                                                                                            \
+	XX(HANDSHAKE_FAILURE, 40)                                                                                          \
+	XX(BAD_CERTIFICATE, 42)                                                                                            \
+	XX(UNSUPPORTED_CERTIFICATE, 43)                                                                                    \
+	XX(CERTIFICATE_EXPIRED, 45)                                                                                        \
+	XX(CERTIFICATE_UNKNOWN, 46)                                                                                        \
+	XX(ILLEGAL_PARAMETER, 47)                                                                                          \
+	XX(UNKNOWN_CA, 48)                                                                                                 \
+	XX(DECODE_ERROR, 50)                                                                                               \
+	XX(DECRYPT_ERROR, 51)                                                                                              \
+	XX(INVALID_VERSION, 70)                                                                                            \
+	XX(NO_RENEGOTIATION, 100)                                                                                          \
+	XX(UNSUPPORTED_EXTENSION, 110)
+
+/**
+ * @brief Alert codes defined by the standard
+ */
+enum SslAlertCode {
+#define XX(tag, code) SSL_ALERT##tag = code,
+	SSL_ALERT_CODE_MAP(XX)
+#undef XX
+};
 
 class SslConnection
 {
@@ -82,15 +93,15 @@ public:
 	/**
 	 * @brief Reads encrypted information and decrypts it
 	 * @param tcp active tcp connection
-	 * @param encrypted - the pbuf buffer will the encrypted data
-	 * @param
+	 * @param encrypted Source encrypted data
+	 * @param decrypted Decrypted plaintext
 	 *
 	 * @retval
 	 * 		 0 - when the handshake is still in progress
 	 * 		 > 0 - when the is decrypted data
 	 * 		 < 0 - in case of an error
 	 */
-	virtual int read(tcp_pcb* tcp, pbuf* encrypted, pbuf** decrypted) = 0;
+	virtual int read(tcp_pcb* tcp, pbuf* encrypted, pbuf*& decrypted) = 0;
 
 	/**
 	 * @brief Converts and sends plaintext data

@@ -18,14 +18,15 @@
 class SslContextImpl : public SslContext
 {
 public:
-	virtual ~SslContextImpl();
+	~SslContextImpl();
 
-	bool init(tcp_pcb* tcp, uint32_t options = 0, size_t sessionCacheSize = 1) override;
+	bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) override;
 	SslConnection* createServer() override;
 	bool loadMemory(const SslContextObject& memType, const uint8_t* data, size_t length, const char* password) override;
 
 protected:
-	SslConnection* internalCreateClient(const uint8_t* sessionData, size_t length, SslExtension* sslExtensions) override;
+	SslConnection* internalCreateClient(const uint8_t* sessionData, size_t length,
+										SslExtension* sslExtensions) override;
 
 private:
 	uint8_t capacity = 10;
