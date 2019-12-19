@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslInterface.h
+ * SslContext.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,11 +12,11 @@
 
 #pragma once
 
-#include <user_config.h>
-#include "../SslStructs.h"
 #include "SslExtension.h"
+#include "SslConnection.h"
+#include "SslSessionId.h"
 
-class SslConnection;
+struct tcp_pcb;
 
 /**
  * @ingroup ssl
@@ -93,7 +93,7 @@ public:
 	SslConnection* createClient(SslSessionId* sessionId, SslExtension* sslExtensions)
 	{
 		return internalCreateClient(sessionId != nullptr ? sessionId->getValue() : nullptr,
-							  sessionId != nullptr ? sessionId->getLength() : 0, sslExtensions);
+									sessionId != nullptr ? sessionId->getLength() : 0, sslExtensions);
 	}
 
 	/**
@@ -122,7 +122,8 @@ protected:
 	 *
 	 * @retval SslConnection*
 	 */
-	virtual SslConnection* internalCreateClient(const uint8_t* sessionData, size_t length, SslExtension* sslExtensions) = 0;
+	virtual SslConnection* internalCreateClient(const uint8_t* sessionData, size_t length,
+												SslExtension* sslExtensions) = 0;
 
 protected:
 	tcp_pcb* tcp = nullptr;  // << should contain active tcp connection

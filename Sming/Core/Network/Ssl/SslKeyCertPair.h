@@ -111,3 +111,5 @@ private:
 	String keyPassword;
 	String certificate;
 };
+
+typedef SslKeyCertPair SSLKeyCertPair SMING_DEPRECATED; ///< @deprecated Use SslKeyCertPair instead

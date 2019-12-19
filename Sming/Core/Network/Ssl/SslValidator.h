@@ -16,7 +16,7 @@
 #include <WVector.h>
 
 #include "SslFingerprints.h"
-#include "Interface/SslCertificate.h"
+#include "SslCertificate.h"
 
 /**
  * @ingroup ssl

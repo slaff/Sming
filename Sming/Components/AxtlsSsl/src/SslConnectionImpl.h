@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * AxtlsConnection.h
+ * SslConnectionImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,9 +12,9 @@
 
 #pragma once
 
-#include <Network/Ssl/SslInterface.h>
-#include <axtls-8266/compat/lwipr_compat.h>
+#include <Network/Ssl/SslConnection.h>
 #include "SslCertificateImpl.h"
+#include <axtls-8266/compat/lwipr_compat.h>
 
 class SslConnectionImpl : public SslConnection
 {
@@ -53,7 +53,6 @@ public:
 	SslCertificate* getCertificate() override;
 
 protected:
-	SslContext* context = nullptr;
 	SSL* ssl = nullptr;
 	SslCertificateImpl* certificate = nullptr; // << The certificate object is owned by this class
 	SslSessionId* sessionId = nullptr;		   // << The sslSessionId object is owned by this class

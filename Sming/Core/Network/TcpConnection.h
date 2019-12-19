@@ -15,7 +15,9 @@
 
 #pragma once
 
-#include <Network/Ssl/SslInterface.h>
+#include "Ssl/SslFactory.h"
+#include "Ssl/SslKeyCertPair.h"
+#include "Ssl/SslFingerprints.h"
 #include <IpAddress.h>
 
 #define NETWORK_DEBUG

@@ -11,6 +11,7 @@
 #pragma once
 
 #include "SslCrypto.h"
+#include <sming_attr.h>
 
 /**
  * @brief SSL Certificate fingerprint type
@@ -102,3 +103,6 @@ private:
 	 */
 	bool setValue(const uint8_t*& value, unsigned requiredLength, const uint8_t* newValue, unsigned newLength);
 };
+
+typedef SslFingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use SslFingerprintType instead
+typedef SslFingerprints SSLFingerprints SMING_DEPRECATED;		///< @deprecated Use SslFingerprints instead

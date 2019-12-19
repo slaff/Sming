@@ -4,13 +4,13 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslInterface.h
+ * SslFactory.cpp
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
-#include <Network/Ssl/SslInterface.h>
+#include <Network/Ssl/SslFactory.h>
 #include "SslContextImpl.h"
 
 class SslFactoryImpl : public SslFactory

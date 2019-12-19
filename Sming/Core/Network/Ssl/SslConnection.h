@@ -4,14 +4,15 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslInterface.h
+ * SslConnection.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 #pragma once
 
-#include "../SslStructs.h"
+#include <user_config.h>
+#include "SslSessionId.h"
 #include "SslCertificate.h"
 
 /**
@@ -43,12 +44,6 @@
 #define SSL_ERROR_NO_CLIENT_RENOG -273
 #define SSL_ERROR_NOT_SUPPORTED -274
 #define SSL_X509_OFFSET -512
-
-/* alert types that are recognized */
-enum SslAlertType {
-	SSL_ALERT_TYPE_WARNING = 1,
-	SLL_ALERT_TYPE_FATAL = 2,
-};
 
 #define SSL_ALERT_CODE_MAP(XX)                                                                                         \
 	XX(CLOSE_NOTIFY, 0)                                                                                                \

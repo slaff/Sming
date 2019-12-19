@@ -46,3 +46,5 @@ public:
 private:
 	String value;
 };
+
+typedef SslSessionId SSLSessionId SMING_DEPRECATED; ///< @deprecated Use SslSessionId instead

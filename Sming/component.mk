@@ -52,7 +52,6 @@ ifeq ($(ENABLE_SSL),$(filter $(ENABLE_SSL),1 AXTLS))
 else ifeq ($(ENABLE_SSL),MBEDTLS) 	
 	# TODO: ....
 else
-	COMPONENT_DEPENDS	+= DummySsl
 	ENABLE_SSL := 0
 endif
 

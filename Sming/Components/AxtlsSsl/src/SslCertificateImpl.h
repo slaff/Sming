@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * SslInterface.h
+ * SslCertificateImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Network/Ssl/SslInterface.h>
+#include <Network/Ssl/SslCertificate.h>
 #include <axtls-8266/compat/lwipr_compat.h>
 
 class SslCertificateImpl : public SslCertificate

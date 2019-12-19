@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * AxtlsContext.h
+ * SslContextImpl.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <Network/Ssl/SslInterface.h>
+#include <Network/Ssl/SslContext.h>
 #include <axtls-8266/compat/lwipr_compat.h>
 
 class SslContextImpl : public SslContext
