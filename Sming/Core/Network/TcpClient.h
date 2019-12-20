@@ -17,7 +17,7 @@
 #pragma once
 
 #include "TcpConnection.h"
-#include "Ssl/Validator.h"
+#include <Network/Ssl/Validator.h>
 
 class TcpClient;
 class ReadWriteStream;

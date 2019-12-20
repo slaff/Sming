@@ -9,6 +9,7 @@
  ****/
 
 #include "TcpConnection.h"
+#include <Network/Ssl/Factory.h>
 
 #include <Data/Stream/DataSourceStream.h>
 #include "NetUtils.h"
@@ -19,8 +20,6 @@
 #else
 #define debug_tcp(fmt, ...) debug_none(fmt, ##__VA_ARGS__)
 #endif
-
-Ssl::Factory* TcpConnection::sslFactory = nullptr;
 
 TcpConnection::~TcpConnection()
 {
@@ -42,12 +41,12 @@ bool TcpConnection::sslCreateSession()
 		return true;
 	}
 
-	if(sslFactory == nullptr) {
+	if(Ssl::factory == nullptr) {
 		debug_e("SSL required, no factory");
 		return false;
 	}
 
-	ssl = new Ssl::Session(*sslFactory);
+	ssl = new Ssl::Session;
 
 	return ssl != nullptr;
 }

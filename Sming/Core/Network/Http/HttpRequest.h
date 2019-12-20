@@ -17,7 +17,7 @@
 #include "HttpRequestAuth.h"
 #endif
 #include "../TcpConnection.h"
-#include "../Ssl/Fingerprints.h"
+#include <Network/Ssl/Fingerprints.h>
 #include "Data/Stream/DataSourceStream.h"
 #include "Data/Stream/MultipartStream.h"
 #include "HttpHeaders.h"

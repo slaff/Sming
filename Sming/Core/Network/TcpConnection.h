@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Ssl/Session.h"
+#include <Network/Ssl/Session.h>
 #include <IpAddress.h>
 
 #define NETWORK_DEBUG
@@ -111,23 +111,11 @@ public:
 
 	// [ SSL related methods]
 
-	/**
-	 * @brief Specifies the SSL implementation that can be used.
-	 * @param factory
-	 */
-	static void setSslFactory(Ssl::Factory& factory)
-	{
-		if(sslFactory != nullptr) {
-			debug_e("SSL Factory already set");
-			assert(false);
-		}
-		sslFactory = &factory;
-	}
-
 	void addSslOptions(uint32_t options)
 	{
-		assert(sslCreateSession());
-		ssl->options |= options;
+		if(sslCreateSession()) {
+			ssl->options |= options;
+		}
 	}
 
 	/**
@@ -240,7 +228,6 @@ protected:
 	bool useSsl = false;
 
 private:
-	static Ssl::Factory* sslFactory;
 	TcpConnectionDestroyedDelegate destroyedDelegate = nullptr;
 
 	void closeSsl();

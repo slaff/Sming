@@ -36,4 +36,7 @@ public:
 	virtual Context* createContext() = 0;
 };
 
+// Provided by ssl Component
+extern Factory* factory;
+
 } // namespace Ssl

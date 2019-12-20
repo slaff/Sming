@@ -1,5 +1,6 @@
 
-#include "Session.h"
+#include <Network/Ssl/Session.h>
+#include <Network/Ssl/Factory.h>
 #include <Platform/WDT.h>
 #include <Platform/System.h>
 
@@ -12,7 +13,8 @@ bool Session::listen(tcp_pcb* tcp)
 #endif
 
 	delete context;
-	context = factory.createContext();
+	assert(factory != nullptr);
+	context = factory->createContext();
 	if(context == nullptr) {
 		return false;
 	}
@@ -47,7 +49,8 @@ err_t Session::onConnected(tcp_pcb* tcp)
 	debug_d("SSL: Starting connection...");
 
 	delete context;
-	context = factory.createContext();
+	assert(factory != nullptr);
+	context = factory->createContext();
 	if(context == nullptr) {
 		return ERR_ABRT;
 	}

@@ -52,7 +52,9 @@ bool HttpClientConnection::send(HttpRequest* request)
 
 	// Based on the URL decide if we should reuse the SSL and TCP pool
 	if(useSsl) {
-		assert(sslCreateSession());
+		if(!sslCreateSession()) {
+			return false;
+		}
 		if(ssl->sessionId == nullptr) {
 			ssl->sessionId = new Ssl::SessionId;
 		}

@@ -8,7 +8,7 @@
  *
  ****/
 
-#include "Fingerprints.h"
+#include <Network/Ssl/Fingerprints.h>
 #include <user_config.h>
 
 namespace Ssl

@@ -10,10 +10,21 @@
  *
  ****/
 
-#include "../include/AxtlsSsl.h"
+#include <Network/Ssl/Factory.h>
 #include "ContextImpl.h"
 
-Ssl::Context* AxtlsFactory::createContext()
+namespace Ssl
 {
-	return new Ssl::ContextImpl();
-}
+class AxtlsFactory : public Factory
+{
+public:
+	Context* createContext() override
+	{
+		return new Ssl::ContextImpl();
+	}
+};
+
+static AxtlsFactory axtlsFactory;
+Factory* factory = &axtlsFactory;
+
+} // namespace Ssl

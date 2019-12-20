@@ -1,11 +1,10 @@
 
-#include "Factory.h"
+#include "Context.h"
 #include "KeyCertPair.h"
 
 namespace Ssl
 {
 struct Session {
-	Factory& factory;
 	Context* context = nullptr;
 	Connection* connection = nullptr;
 	Extension* extension = nullptr;
@@ -16,10 +15,6 @@ struct Session {
 	uint32_t options = 0;
 	// For TCP server
 	int cacheSize = 50;
-
-	Session(Factory& factory) : factory(factory)
-	{
-	}
 
 	~Session()
 	{

@@ -10,7 +10,7 @@
  *
  ****/
 
-#include "Validator.h"
+#include <Network/Ssl/Validator.h>
 #include <debug_progmem.h>
 
 namespace Ssl
