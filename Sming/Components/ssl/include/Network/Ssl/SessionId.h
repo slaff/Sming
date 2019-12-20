@@ -54,6 +54,11 @@ public:
 		return makeHexString(getValue(), getLength());
 	}
 
+	operator String() const
+	{
+		return toString();
+	}
+
 private:
 	String value;
 };

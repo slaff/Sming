@@ -71,7 +71,7 @@ public:
    * @param name the desired distinguished name
    * @retval the value for the desired distinguished name
    */
-	virtual const String getName(const Name& name) const = 0;
+	virtual const String getName(Name name) const = 0;
 };
 
 /** @} */

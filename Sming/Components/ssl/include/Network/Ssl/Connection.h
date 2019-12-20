@@ -74,7 +74,48 @@ enum AlertCode {
 #undef XX
 };
 
-class Connection
+/*
+ * Cipher suites
+ *
+ *	TLS v1.2	https://tools.ietf.org/html/rfc5246#appendix-A.5
+ * 	TLS v1.3	https://tools.ietf.org/html/rfc8446#appendix-B.4
+ *
+ */
+#define SSL_CIPHER_SUITE_MAP(XX)                                                                                       \
+	XX(0x00, 0x2f, TLS_RSA_WITH_AES_128_CBC_SHA)                                                                       \
+	XX(0x00, 0x35, TLS_RSA_WITH_AES_256_CBC_SHA)                                                                       \
+	XX(0x00, 0x3c, TLS_RSA_WITH_AES_128_CBC_SHA256)                                                                    \
+	XX(0x00, 0x3d, TLS_RSA_WITH_AES_256_CBC_SHA256)                                                                    \
+	XX(0x13, 0x01, TLS_AES_128_GCM_SHA256)                                                                             \
+	XX(0x13, 0x02, TLS_AES_256_GCM_SHA384)                                                                             \
+	XX(0x13, 0x03, TLS_CHACHA20_POLY1305_SHA256)                                                                       \
+	XX(0x13, 0x04, TLS_AES_128_CCM_SHA256)                                                                             \
+	XX(0x13, 0x05, TLS_AES_128_CCM_8_SHA256)
+
+/**
+ * @brief Cipher suite identifier
+ *
+ * The TLS standard specifies codes using two 8-bit values.
+ * We combine these into a single 16-bit value in MSB-LSB order.
+ *
+ * For example:
+ *
+ * TLS_RSA_WITH_AES_128_CBC_SHA = { 0x00, 0x2F } = 0x002F
+ */
+enum class CipherSuite {
+#define XX(n1, n2, tag) tag = (n1 << 8) | n2,
+	SSL_CIPHER_SUITE_MAP(XX)
+#undef XX
+};
+
+/**
+ * @brief Gets the name of the cipher suite
+ * @param Cipher Suite identifier
+ * @retval String
+ */
+String cipherSuiteName(CipherSuite id);
+
+class Connection : public Printable
 {
 public:
 	virtual ~Connection()
@@ -113,20 +154,20 @@ public:
 	 * @param plainTextLength
 	 * @retval int
 	 */
-	virtual int calcWriteSize(size_t plainTextLength) = 0;
+	virtual int calcWriteSize(size_t plainTextLength) const = 0;
 
 	/**
-	 * @brief Gets the name of the cipher that was used
-	 * @retval String
+	 * @brief Gets the cipher suite that was used
+	 * @retval CipherSuite IDs as defined by SSL/TLS standard
 	 */
-	virtual const String getCipher() const = 0;
+	virtual CipherSuite getCipherSuite() const = 0;
 
 	/**
 	 * @brief Gets the current session id object.
 	 *        Should be called after handshake.
-	 * @retval Ssl::SessionId*
+	 * @retval SessionId
 	 */
-	virtual const SessionId& getSessionId() = 0;
+	virtual SessionId getSessionId() const = 0;
 
 	/**
 	 * @brief Gets the certificate object.
@@ -135,11 +176,14 @@ public:
 	 *
 	 * @retval Ssl::SessionId*
 	 */
-	virtual const Certificate& getCertificate() = 0;
+	virtual const Certificate& getCertificate() const = 0;
+
+	/**
+	 * @brief For debugging
+	 */
+	size_t printTo(Print& p) const override;
 };
 
 /** @} */
 
 } // namespace Ssl
-
-typedef Ssl::Connection SslConnection;

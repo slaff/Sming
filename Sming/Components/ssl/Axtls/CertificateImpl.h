@@ -30,14 +30,27 @@ public:
 
 	bool isValid() const override
 	{
-		return ssl != nullptr;
+		return ssl != nullptr && ssl->x509_ctx != nullptr;
 	}
 
-	bool matchFingerprint(const uint8_t* hash) const override;
+	bool matchFingerprint(const uint8_t* hash) const override
+	{
+		return (ssl_match_fingerprint(ssl, hash) == 0);
+	}
 
-	bool matchPki(const uint8_t* hash) const override;
+	bool matchPki(const uint8_t* hash) const override
+	{
+		return (ssl_match_spki_sha256(ssl, hash) == 0);
+	}
 
-	const String getName(const Name& name) const override;
+	const String getName(Name name) const override
+	{
+		if(ssl == nullptr) {
+			return nullptr;
+		}
+
+		return String(ssl_get_cert_dn(ssl, int(name)));
+	}
 
 private:
 	SSL* ssl = nullptr;
