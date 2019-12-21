@@ -19,7 +19,9 @@ bool Session::listen(tcp_pcb* tcp)
 		return false;
 	}
 
-	context->init(tcp, options, cacheSize);
+	if(!context->init(tcp, options, cacheSize)) {
+		return false;
+	}
 
 	if(!keyCert.isValid()) {
 		debug_e("SSL: server certificate and key are not provided!");
@@ -61,7 +63,10 @@ err_t Session::onConnected(tcp_pcb* tcp)
 	debug_d("SSL: Show debug data ...");
 #endif
 
-	context->init(tcp, localOptions, 1);
+	if(!context->init(tcp, localOptions, 1)) {
+		return ERR_MEM;
+	}
+
 	if(keyCert.isValid()) {
 		// if we have client certificate -> try to use it.
 		if(!context->loadMemory(Ssl::Context::ObjectType::RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(),
@@ -121,8 +126,7 @@ void Session::close()
 	delete connection;
 	connection = nullptr;
 
-	delete extension;
-	extension = nullptr;
+	extension.clear();
 
 	connected = false;
 }
@@ -137,7 +141,7 @@ int Session::onReceive(tcp_pcb* tcp, pbuf*& p)
 	WDT.alive();
 
 	struct pbuf* pout;
-	int read_bytes = connection->read(tcp, p, pout);
+	int read_bytes = connection->read(p, pout);
 
 	// free the SSL pbuf and put the decrypted data in the brand new pout pbuf
 	if(p != nullptr) {

@@ -7,7 +7,7 @@ namespace Ssl
 struct Session {
 	Context* context = nullptr;
 	Connection* connection = nullptr;
-	Extension* extension = nullptr;
+	Extension extension;
 	bool connected = false;
 	KeyCertPair keyCert;
 	bool freeKeyCertAfterHandshake = false;
@@ -19,9 +19,7 @@ struct Session {
 	~Session()
 	{
 		close();
-
 		delete sessionId;
-		sessionId = nullptr;
 	}
 
 	/**
