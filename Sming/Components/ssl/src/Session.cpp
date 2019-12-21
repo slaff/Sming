@@ -131,22 +131,22 @@ void Session::close()
 	connected = false;
 }
 
-int Session::onReceive(tcp_pcb* tcp, pbuf*& p)
+int Session::read(pbuf* encrypted, pbuf*& decrypted)
 {
+	assert(encrypted != nullptr);
+
+	decrypted = nullptr;
+
 	if(connection == nullptr) {
+		pbuf_free(encrypted);
 		return ERR_CONN;
 	}
 
 	/* SSL handshake needs time. In theory we have max 8 seconds before the hardware watchdog resets the device */
 	WDT.alive();
 
-	struct pbuf* pout;
-	int read_bytes = connection->read(p, pout);
-
-	// free the SSL pbuf and put the decrypted data in the brand new pout pbuf
-	if(p != nullptr) {
-		pbuf_free(p);
-	}
+	int read_bytes = connection->read(encrypted, decrypted);
+	pbuf_free(encrypted);
 
 	if(read_bytes < 0) {
 		debug_d("SSL: Got error: %d", read_bytes);
@@ -168,35 +168,9 @@ int Session::onReceive(tcp_pcb* tcp, pbuf*& p)
 	} else {
 		// we got some decrypted bytes...
 		debug_d("SSL: Decrypted data len %d", read_bytes);
-
-		// put the decrypted data in a brand new pbuf
-		p = pout;
 	}
 
 	return read_bytes;
-}
-
-int Session::write(tcp_pcb* tcp, const uint8_t* data, size_t len)
-{
-	if(connection == nullptr) {
-		return ERR_CONN;
-	}
-
-	int expected = connection->calcWriteSize(len);
-	u16_t available = tcp ? tcp_sndbuf(tcp) : 0;
-	debug_d("SSL: Expected: %d, Available: %d", expected, available);
-	if(expected < 0 || available < expected) {
-		return ERR_MEM;
-	}
-
-	int written = connection->write(data, len);
-	debug_d("SSL: Write len: %d, Written: %d", len, written);
-	if(written < 0) {
-		debug_e("SSL: Write Error: %d", written);
-		return written;
-	}
-
-	return ERR_OK;
 }
 
 }; // namespace Ssl

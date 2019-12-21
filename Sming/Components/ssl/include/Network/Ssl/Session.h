@@ -33,17 +33,33 @@ struct Session {
 	 */
 	err_t onConnected(tcp_pcb* tcp);
 
+	/**
+	 * @brief End the session
+	 */
 	void close();
 
 	/**
-	 * @brief Handle received buffer
-	 * @param tcp
-	 * @param p Received encrypted data, on success contains decrypted packet
+	 * @brief Process received encrypted data
+	 * @param encrypted The input data, will be freed before returning
+	 * @param decrypted On success, the decrypted data
 	 * @retval int Number of bytes received, or error code
 	 */
-	int onReceive(tcp_pcb* tcp, pbuf*& p);
+	int read(pbuf* encrypted, pbuf*& decrypted);
 
-	int write(tcp_pcb* tcp, const uint8_t* data, size_t len);
+	/**
+	 * @brief Write data to SSL connection
+	 * @param data
+	 * @param length
+	 * @retval int Quantity of bytes actually written
+	 */
+	int write(const uint8_t* data, size_t length)
+	{
+		if(connection == nullptr) {
+			return ERR_CONN;
+		}
+
+		return connection->write(data, length);
+	}
 };
 
 }; // namespace Ssl

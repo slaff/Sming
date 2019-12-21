@@ -41,10 +41,7 @@ public:
 
 	int read(pbuf* encrypted, pbuf*& decrypted) override;
 
-	int write(const uint8_t* data, size_t length) override
-	{
-		return ssl_write(ssl, data, length);
-	}
+	int write(const uint8_t* data, size_t length) override;
 
 	int calcWriteSize(size_t plainTextLength) const override
 	{
@@ -75,6 +72,7 @@ public:
 		return certificate;
 	}
 
+public:
 	// Called from axTLS
 	int port_write(uint8_t* buf, uint16_t bytes_needed);
 	int port_read(uint8_t* buf, int bytes_needed);

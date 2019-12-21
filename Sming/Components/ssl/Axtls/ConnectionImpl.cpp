@@ -103,6 +103,25 @@ int ConnectionImpl::read(pbuf* encrypted, pbuf*& decrypted)
 	return total_bytes;
 }
 
+int ConnectionImpl::write(const uint8_t* data, size_t length)
+{
+	int expected = calcWriteSize(length);
+	u16_t available = tcp ? tcp_sndbuf(tcp) : 0;
+	debug_d("SSL: Expected: %d, Available: %u", expected, available);
+	if(expected < 0 || int(available) < expected) {
+		return ERR_MEM;
+	}
+
+	int written = ssl_write(ssl, data, length);
+	debug_d("SSL: Write len: %d, Written: %d", length, written);
+	if(written < 0) {
+		debug_e("SSL: Write Error: %d", written);
+		return written;
+	}
+
+	return ERR_OK;
+}
+
 /*
  * Lower Level LWIP RAW functions
  */
