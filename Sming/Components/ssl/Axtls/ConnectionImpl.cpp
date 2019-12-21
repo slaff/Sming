@@ -220,7 +220,7 @@ int ConnectionImpl::port_read(uint8_t* buf, int bytes_needed)
 		debug_d("ax_port_read: Bytes needed: %d, Bytes read: %d", bytes_needed, recv_len);
 	}
 
-	delete read_buf;
+	delete[] read_buf;
 
 	return recv_len;
 }
