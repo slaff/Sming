@@ -82,4 +82,11 @@ bool ContextImpl::loadMemory(ObjectType memType, const uint8_t* data, size_t len
 	return (ssl_obj_memory_load(context, int(memType), data, length, password) == SSL_OK);
 }
 
+// Required by axtls-8266
+extern "C" int ax_get_file(const char* filename, uint8_t** buf)
+{
+	*buf = 0;
+	return 0;
+}
+
 } // namespace Ssl
