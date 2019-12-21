@@ -69,10 +69,10 @@ err_t Session::onConnected(tcp_pcb* tcp)
 
 	if(keyCert.isValid()) {
 		// if we have client certificate -> try to use it.
-		if(!context->loadMemory(Ssl::Context::ObjectType::RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(),
+		if(!context->loadMemory(Context::ObjectType::RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(),
 								keyCert.getKeyPassword())) {
 			debug_d("SSL: Unable to load client private key");
-		} else if(!context->loadMemory(Ssl::Context::ObjectType::X509_CERT, keyCert.getCertificate(),
+		} else if(!context->loadMemory(Context::ObjectType::X509_CERT, keyCert.getCertificate(),
 									   keyCert.getCertificateLength(), nullptr)) {
 			debug_d("SSL: Unable to load client certificate");
 		}

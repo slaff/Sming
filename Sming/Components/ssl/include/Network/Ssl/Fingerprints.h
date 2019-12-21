@@ -90,10 +90,10 @@ struct Fingerprints {
 	}
 
 	/** @brief Moves values out of source */
-	Ssl::Fingerprints& operator=(Ssl::Fingerprints& source);
+	Fingerprints& operator=(Fingerprints& source);
 
 	/** @brief Make copy of values from source */
-	Ssl::Fingerprints& operator=(const Ssl::Fingerprints& source);
+	Fingerprints& operator=(const Fingerprints& source);
 
 private:
 	/** @brief Internal method to set a fingerprint
@@ -111,5 +111,5 @@ private:
 typedef Ssl::FingerprintType SslFingerprintType;
 typedef Ssl::Fingerprints SslFingerprints;
 
-typedef Ssl::FingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use Ssl::FingerprintType instead
-typedef Ssl::Fingerprints SSLFingerprints SMING_DEPRECATED;		  ///< @deprecated Use Ssl::Fingerprints instead
+typedef Ssl::FingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use SslFingerprintType instead
+typedef Ssl::Fingerprints SSLFingerprints SMING_DEPRECATED;		  ///< @deprecated Use SslFingerprints instead

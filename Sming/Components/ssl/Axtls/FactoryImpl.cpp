@@ -20,7 +20,7 @@ class AxtlsFactory : public Factory
 public:
 	Context* createContext() override
 	{
-		return new Ssl::ContextImpl();
+		return new ContextImpl();
 	}
 };
 

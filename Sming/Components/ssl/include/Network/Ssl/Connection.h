@@ -170,7 +170,7 @@ public:
 
 	/**
 	 * @brief Gets the certificate object.
-	 *        That object MUST be owned by the Ssl::Connection implementation
+	 *        That object MUST be owned by the Connection implementation
 	 *        and should not be freed outside of it
 	 *
 	 * @retval Certificate* Returns NULL if there is no certificate available
