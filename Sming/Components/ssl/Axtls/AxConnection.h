@@ -20,9 +20,7 @@ namespace Ssl
 class AxConnection : public Connection
 {
 public:
-	AxConnection(tcp_pcb* tcp) : tcp(tcp)
-	{
-	}
+	using Connection::Connection;
 
 	~AxConnection()
 	{
@@ -38,8 +36,6 @@ public:
 	{
 		return (ssl_handshake_status(ssl) == SSL_OK);
 	}
-
-	int read(pbuf* encrypted, pbuf*& decrypted) override;
 
 	int write(const uint8_t* data, size_t length) override;
 
@@ -73,17 +69,14 @@ public:
 		certificate = nullptr;
 	}
 
-public:
-	// Called from axTLS
-	int port_write(uint8_t* buf, uint16_t bytes_needed);
-	int port_read(uint8_t* buf, int bytes_needed);
+	int decrypt(uint8_t*& buffer) override
+	{
+		return ssl_read(ssl, &buffer);
+	}
 
 private:
 	SSL* ssl;
 	mutable AxCertificate* certificate = nullptr;
-	struct tcp_pcb* tcp = nullptr;
-	struct pbuf* tcp_pbuf = nullptr;
-	int pbuf_offset = 0;
 };
 
 } // namespace Ssl

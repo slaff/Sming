@@ -119,6 +119,11 @@ String cipherSuiteName(CipherSuite id);
 class Connection : public Printable
 {
 public:
+	Connection(tcp_pcb* tcp) : tcp(tcp)
+	{
+		assert(tcp != nullptr);
+	}
+
 	virtual ~Connection()
 	{
 	}
@@ -139,7 +144,7 @@ public:
 	 * 		 > 0 - when the is decrypted data
 	 * 		 < 0 - in case of an error
 	 */
-	virtual int read(pbuf* encrypted, pbuf*& decrypted) = 0;
+	virtual int read(pbuf* encrypted, pbuf*& decrypted);
 
 	/**
 	 * @brief Converts and sends plaintext data
@@ -178,6 +183,26 @@ public:
 	 * @brief For debugging
 	 */
 	size_t printTo(Print& p) const override;
+
+	size_t readTcpData(uint8_t* buf, size_t bufSize);
+
+	int writeTcpData(uint8_t* data, size_t length);
+
+	/*
+	 * Called through from read() method.
+	 * Read incoming data from `decryptSource`, updating `offset` field,
+	 * and pass into SSL layer, then return a pointer to a block of
+	 * decrypted data with length. Zero-length block is fine.
+	 */
+	virtual int decrypt(uint8_t*& buffer) = 0;
+
+protected:
+	struct tcp_pcb* tcp = nullptr;
+	//
+	struct {
+		struct pbuf* buf = nullptr;
+		uint16_t offset = 0;
+	} tcpData;
 };
 
 /** @} */
