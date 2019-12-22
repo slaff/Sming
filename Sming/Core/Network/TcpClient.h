@@ -117,58 +117,6 @@ public:
 		closeAfterSent = ignoreIncomingData ? eTCCASS_AfterSent_Ignore_Received : eTCCASS_AfterSent;
 	}
 
-	/**
-	 * @brief Allows setting of multiple SSL validators after a successful handshake
-	 * @param callback The callback function to be invoked on validation
-	 * @param data The data to pass to the callback
-	 * @note The callback is responsible for releasing the data if appropriate.
-	 * See Ssl::Validator::Callback for further details.
-	 *
-	 * @retval bool true on success, false on failure
-	 */
-	bool addSslValidator(Ssl::Validator::Callback callback, void* data = nullptr)
-	{
-		if(!sslCreateSession()) {
-			return false;
-		}
-
-		return ssl->validators.add(callback, data);
-	}
-
-	/**
-	 * @brief Requires (pins) the remote SSL certificate to match certain fingerprints
-	 * @param fingerprint	The fingerprint data against which the match should be performed.
-	 * 						Must be allocated on the heap and will be deleted after use.
-	 * 						Do not re-use outside of this method.
-	 * @param type			The fingerprint type - see Ssl::FingerprintType for details.
-	 *
-	 * @retval bool true on success, false on failure
-	 */
-	bool pinCertificate(const uint8_t* fingerprint, Ssl::FingerprintType type)
-	{
-		if(!sslCreateSession()) {
-			return false;
-		}
-
-		return ssl->validators.add(fingerprint, type);
-	}
-
-	/**
-	 * @brief	Requires (pins) the remote SSL certificate to match certain fingerprints
-	 * @note	The data inside the fingerprints parameter is passed by reference
-	 * @param	fingerprints - passes the certificate fingerprints by reference.
-	 *
-	 * @retval bool  true on success, false on failure
-	 */
-	bool pinCertificate(Ssl::Fingerprints& fingerprints)
-	{
-		if(!sslCreateSession()) {
-			return false;
-		}
-
-		return ssl->validators.add(fingerprints);
-	}
-
 protected:
 	err_t onConnected(err_t err) override;
 	err_t onReceive(pbuf* buf) override;

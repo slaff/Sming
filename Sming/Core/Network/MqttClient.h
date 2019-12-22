@@ -160,9 +160,7 @@ public:
 	}
 
 	using TcpClient::addSslOptions;
-	using TcpClient::addSslValidator;
 	using TcpClient::getSsl;
-	using TcpClient::pinCertificate;
 	using TcpClient::setSslKeyCert;
 
 	// deprecated methods below

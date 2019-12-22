@@ -42,7 +42,7 @@ enum FingerprintType {
  *  @note Lifetime as follows:
  *  	- Constructed by application, using appropriate setXXX method;
  *  	- Passed into HttpRequest by application, using pinCertificate method - request is then queued;
- *  	- Passed into HttpClientConnection (TcpClient descendant) by HttpClient, using pinCertificate method
+ *  	- Passed into Ssl::Session by HttpClientConnection (TcpClient descendant)
  *  	- When certificate validated, memory is released
  *
  */

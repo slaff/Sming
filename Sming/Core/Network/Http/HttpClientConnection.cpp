@@ -50,7 +50,6 @@ bool HttpClientConnection::send(HttpRequest* request)
 
 	bool useSsl = (request->uri.Scheme == URI_SCHEME_HTTP_SECURE);
 
-	// Based on the URL decide if we should reuse the SSL and TCP pool
 	if(useSsl) {
 		if(!sslCreateSession()) {
 			return false;
@@ -58,9 +57,10 @@ bool HttpClientConnection::send(HttpRequest* request)
 		if(ssl->sessionId == nullptr) {
 			ssl->sessionId = new Ssl::SessionId;
 		}
-		addSslOptions(request->getSslOptions());
-		pinCertificate(request->sslFingerprints);
-		setSslKeyCert(request->sslKeyCertPair);
+		ssl->options |= request->getSslOptions();
+		ssl->validators.add(request->sslFingerprints);
+		ssl->freeKeyCertAfterHandshake = false;
+		ssl->keyCert = request->sslKeyCertPair;
 	}
 
 	return connect(request->uri.Host, request->uri.getPort(), useSsl);
