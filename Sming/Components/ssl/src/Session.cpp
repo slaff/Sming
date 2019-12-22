@@ -2,7 +2,6 @@
 #include <Network/Ssl/Session.h>
 #include <Network/Ssl/Factory.h>
 #include <Platform/WDT.h>
-#include <Platform/System.h>
 
 namespace Ssl
 {
@@ -88,11 +87,7 @@ err_t Session::onConnected(tcp_pcb* tcp)
 		debug_d("------END SSL SESSION PARAMETERS------");
 	}
 
-#ifndef SSL_SLOW_CONNECT
-	debug_d("SSL: Switching to 160 MHz");
-	System.setCpuFrequency(eCF_160MHz); // For shorter waiting time, more power consumption.
-#endif
-	debug_d("SSL: handshake start");
+	beginHandshake();
 
 	connection = context->createClient(sessionId, extension);
 	if(connection == nullptr) {
@@ -104,16 +99,36 @@ err_t Session::onConnected(tcp_pcb* tcp)
 		return ERR_INPROGRESS;
 	}
 
+	endHandshake();
+
 	if(sessionId != nullptr) {
 		*sessionId = connection->getSessionId();
 	}
 
-#ifndef SSL_SLOW_CONNECT
-	debug_d("SSL: Switching back 80 MHz");
-	System.setCpuFrequency(eCF_80MHz);
-#endif
-
 	return ERR_OK;
+}
+
+void Session::beginHandshake()
+{
+	debug_d("SSL: handshake start");
+#ifndef SSL_SLOW_CONNECT
+	curFreq = System.getCpuFrequency();
+	if(curFreq != eCF_160MHz) {
+		debug_d("SSL: Switching to 160 MHz");
+		System.setCpuFrequency(eCF_160MHz); // For shorter waiting time, more power consumption.
+	}
+#endif
+}
+
+void Session::endHandshake()
+{
+#ifndef SSL_SLOW_CONNECT
+	if(curFreq != System.getCpuFrequency()) {
+		debug_d("SSL: Switching back to %u MHz", curFreq);
+		System.setCpuFrequency(curFreq);
+	}
+#endif
+	debug_d("SSL: Handshake done");
 }
 
 void Session::close()
@@ -156,14 +171,25 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 	} else if(read_bytes == 0) {
 		if(!connected && connection->isHandshakeDone()) {
 			connected = true;
-			debug_d("SSL: Handshake done");
-#ifndef SSL_SLOW_CONNECT
-			debug_d("SSL: Switching back to 80 MHz");
-			System.setCpuFrequency(eCF_80MHz); // Preserve some CPU cycles
-#endif
+
+			endHandshake();
+
+			if(!validators.validate(connection->getCertificate())) {
+				debug_w("SSL Validation failed");
+
+				if(decrypted != nullptr) {
+					pbuf_free(decrypted);
+					decrypted = nullptr;
+				}
+
+				return ERR_ABRT;
+			}
+
 			if(sessionId != nullptr) {
 				*sessionId = connection->getSessionId();
 			}
+
+			return ERR_OK;
 		}
 	} else {
 		// we got some decrypted bytes...

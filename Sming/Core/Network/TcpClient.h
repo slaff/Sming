@@ -128,7 +128,11 @@ public:
 	 */
 	bool addSslValidator(Ssl::Validator::Callback callback, void* data = nullptr)
 	{
-		return sslValidators.add(callback, data);
+		if(!sslCreateSession()) {
+			return false;
+		}
+
+		return ssl->validators.add(callback, data);
 	}
 
 	/**
@@ -142,7 +146,11 @@ public:
 	 */
 	bool pinCertificate(const uint8_t* fingerprint, Ssl::FingerprintType type)
 	{
-		return sslValidators.add(fingerprint, type);
+		if(!sslCreateSession()) {
+			return false;
+		}
+
+		return ssl->validators.add(fingerprint, type);
 	}
 
 	/**
@@ -154,7 +162,11 @@ public:
 	 */
 	bool pinCertificate(Ssl::Fingerprints& fingerprints)
 	{
-		return sslValidators.add(fingerprints);
+		if(!sslCreateSession()) {
+			return false;
+		}
+
+		return ssl->validators.add(fingerprints);
 	}
 
 protected:
@@ -165,15 +177,6 @@ protected:
 	void onReadyToSendData(TcpConnectionEvent sourceEvent) override;
 
 	virtual void onFinished(TcpClientState finishState);
-
-	err_t onSslConnected(Ssl::Connection* connection) override
-	{
-		if(connection == nullptr) {
-			return ERR_ABRT;
-		}
-
-		return sslValidators.validate(connection->getCertificate()) ? ERR_OK : ERR_ABRT;
-	}
 
 	void pushAsyncPart();
 	void freeStreams();
@@ -193,8 +196,6 @@ private:
 	TcpClientCloseAfterSentState closeAfterSent = eTCCASS_None;
 	uint16_t totalSentConfirmedBytes = 0;
 	uint16_t totalSentBytes = 0;
-
-	Ssl::ValidatorList sslValidators;
 };
 
 /** @} */

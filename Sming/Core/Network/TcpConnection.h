@@ -197,7 +197,6 @@ protected:
 	virtual err_t onPoll();
 	virtual void onError(err_t err);
 	virtual void onReadyToSendData(TcpConnectionEvent sourceEvent);
-	virtual err_t onSslConnected(Ssl::Connection* ssl);
 
 	// These methods are called via LWIP handlers
 	err_t internalOnConnected(err_t err);

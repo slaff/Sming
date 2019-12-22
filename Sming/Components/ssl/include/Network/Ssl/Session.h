@@ -1,6 +1,8 @@
 
 #include "Context.h"
 #include "KeyCertPair.h"
+#include "Validator.h"
+#include <Platform/System.h>
 
 namespace Ssl
 {
@@ -13,8 +15,10 @@ struct Session {
 	bool freeKeyCertAfterHandshake = false;
 	SessionId* sessionId = nullptr;
 	uint32_t options = 0;
-	// For TCP server
+	// server
 	int cacheSize = 50;
+	// client
+	ValidatorList validators;
 
 	~Session()
 	{
@@ -60,6 +64,13 @@ struct Session {
 
 		return connection->write(data, length);
 	}
+
+private:
+	void beginHandshake();
+	void endHandshake();
+
+private:
+	CpuFrequency curFreq;
 };
 
 }; // namespace Ssl

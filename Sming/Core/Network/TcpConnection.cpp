@@ -196,11 +196,6 @@ void TcpConnection::onReadyToSendData(TcpConnectionEvent sourceEvent)
 	}
 }
 
-err_t TcpConnection::onSslConnected(Ssl::Connection* connection)
-{
-	return ERR_OK;
-}
-
 int TcpConnection::write(const char* data, int len, uint8_t apiflags)
 {
 	err_t err = ERR_OK;
@@ -459,29 +454,15 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 		p = out;
 
 		if(isConnecting && ssl->connected) {
-			debug_tcp("SSL Just connected, err = %d", res);
-			if(onSslConnected(ssl->connection) != ERR_OK) {
-				debug_tcp("onSslConnected failed");
-
-				if(p != nullptr) {
-					pbuf_free(p);
-				}
-
-				close();
-				closeTcpConnection(tcp);
-
-				return ERR_ABRT;
-			}
-
+			assert(p == nullptr);
 			err = onConnected(ERR_OK);
 			checkSelfFree();
-
 			return err;
 		}
 
 		// No data received
-		if(res == ERR_OK) {
-			return err;
+		if(res == 0) {
+			return ERR_OK;
 		}
 
 		// Proceed with received decrypted data
