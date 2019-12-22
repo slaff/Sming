@@ -22,10 +22,12 @@ class CertificateImpl : public Certificate
 public:
 	CertificateImpl(SSL* ssl) : ssl(ssl)
 	{
+		ssl->can_free_certificates = false;
 	}
 
 	~CertificateImpl()
 	{
+		ssl->can_free_certificates = true;
 	}
 
 	bool matchFingerprint(const uint8_t* hash) const override

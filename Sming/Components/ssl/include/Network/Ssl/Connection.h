@@ -82,6 +82,7 @@ enum AlertCode {
  *
  */
 #define SSL_CIPHER_SUITE_MAP(XX)                                                                                       \
+	XX(0x00, 0x00, TLS_NULL_WITH_NULL_NULL)                                                                            \
 	XX(0x00, 0x2f, TLS_RSA_WITH_AES_128_CBC_SHA)                                                                       \
 	XX(0x00, 0x35, TLS_RSA_WITH_AES_256_CBC_SHA)                                                                       \
 	XX(0x00, 0x3c, TLS_RSA_WITH_AES_128_CBC_SHA256)                                                                    \
@@ -126,7 +127,7 @@ public:
 	 * @brief Checks if the handshake has finished
 	 * @retval bool true on success
 	 */
-	virtual bool isHandshakeDone() = 0;
+	virtual bool isHandshakeDone() const = 0;
 
 	/**
 	 * @brief Reads encrypted information and decrypts it
@@ -145,6 +146,7 @@ public:
 	 * @param data
 	 * @param length
 	 * @retval int length of the data that was actually written
+	 * 	< 0 on error
 	 */
 	virtual int write(const uint8_t* data, size_t length) = 0;
 
@@ -176,6 +178,8 @@ public:
 	 * @retval Certificate* Returns NULL if there is no certificate available
 	 */
 	virtual const Certificate* getCertificate() const = 0;
+
+	virtual void freeCertificate() = 0;
 
 	/**
 	 * @brief For debugging

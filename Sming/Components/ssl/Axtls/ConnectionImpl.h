@@ -34,7 +34,7 @@ public:
 		this->ssl = ssl;
 	}
 
-	bool isHandshakeDone() override
+	bool isHandshakeDone() const override
 	{
 		return (ssl_handshake_status(ssl) == SSL_OK);
 	}
@@ -56,7 +56,7 @@ public:
 	SessionId getSessionId() const override
 	{
 		SessionId id;
-		if(ssl_handshake_status(ssl) == SSL_OK) {
+		if(isHandshakeDone()) {
 			id.assign(ssl->session_id, ssl->sess_id_size);
 		}
 
@@ -70,6 +70,12 @@ public:
 		}
 
 		return certificate;
+	}
+
+	void freeCertificate() override
+	{
+		delete certificate;
+		certificate = nullptr;
 	}
 
 public:

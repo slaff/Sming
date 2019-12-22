@@ -189,6 +189,10 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 				*sessionId = connection->getSessionId();
 			}
 
+			if(freeKeyCertAfterHandshake) {
+				connection->freeCertificate();
+			}
+
 			return ERR_OK;
 		}
 	} else {

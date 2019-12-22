@@ -65,12 +65,12 @@ public:
 	 * @param sessionCacheSize
 	 * 		Server: When the context is used to create a server connection this indicates how many
 	 * 			client sessions will be cached. Suggested value: 10
-	 * 		Client: When used to create a client connection this indicates how many ssl sessio ids
-	 * 			should be cached . Suggested value: 1
+	 * 		Client: When used to create a client connection this indicates how many ssl session ids
+	 * 			should be cached. Suggested value: 1
 	 *
 	 * @retval bool true on success
 	 */
-	virtual bool init(tcp_pcb* tcp, uint32_t options = 0, size_t sessionCacheSize = 1) = 0;
+	virtual bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) = 0;
 
 	/**
 	 * @brief Use to load into memory certificates, public and private keys, etc.
