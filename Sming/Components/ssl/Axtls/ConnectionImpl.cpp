@@ -204,23 +204,12 @@ int ConnectionImpl::port_read(uint8_t* buf, int bytes_needed)
 		return 0;
 	}
 
-	auto read_buf = new uint8_t[tcp_pbuf->len + 1];
-	if(read_buf == nullptr) {
-		debug_e("ax_port_read: Out of memory (%d bytes required)", tcp_pbuf->len + 1);
-		return 0;
-	}
-
-	unsigned recv_len = pbuf_copy_partial(tcp_pbuf, read_buf, bytes_needed, pbuf_offset);
+	unsigned recv_len = pbuf_copy_partial(tcp_pbuf, buf, bytes_needed, pbuf_offset);
 	pbuf_offset += recv_len;
-	if(recv_len != 0) {
-		memcpy(buf, read_buf, recv_len);
-	}
 
 	if(int(recv_len) < bytes_needed) {
 		debug_d("ax_port_read: Bytes needed: %d, Bytes read: %d", bytes_needed, recv_len);
 	}
-
-	delete[] read_buf;
 
 	return recv_len;
 }
