@@ -4,27 +4,27 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * FactoryImpl.cpp
+ * AxFactory.cpp
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
  ****/
 
 #include <Network/Ssl/Factory.h>
-#include "ContextImpl.h"
+#include "AxContext.h"
 
 namespace Ssl
 {
-class AxtlsFactory : public Factory
+class AxFactory : public Factory
 {
 public:
 	Context* createContext() override
 	{
-		return new ContextImpl();
+		return new AxContext();
 	}
 };
 
-static AxtlsFactory axtlsFactory;
-Factory* factory = &axtlsFactory;
+static AxFactory axFactory;
+Factory* factory = &axFactory;
 
 } // namespace Ssl

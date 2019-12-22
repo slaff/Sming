@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * ConnectionImpl.h
+ * AxConnection.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -13,18 +13,18 @@
 #pragma once
 
 #include <Network/Ssl/Connection.h>
-#include "CertificateImpl.h"
+#include "AxCertificate.h"
 
 namespace Ssl
 {
-class ConnectionImpl : public Connection
+class AxConnection : public Connection
 {
 public:
-	ConnectionImpl(tcp_pcb* tcp) : tcp(tcp)
+	AxConnection(tcp_pcb* tcp) : tcp(tcp)
 	{
 	}
 
-	~ConnectionImpl()
+	~AxConnection()
 	{
 		delete certificate;
 	}
@@ -42,11 +42,6 @@ public:
 	int read(pbuf* encrypted, pbuf*& decrypted) override;
 
 	int write(const uint8_t* data, size_t length) override;
-
-	int calcWriteSize(size_t plainTextLength) const override
-	{
-		return ssl_calculate_write_length(ssl, plainTextLength);
-	}
 
 	CipherSuite getCipherSuite() const override
 	{
@@ -66,7 +61,7 @@ public:
 	const Certificate* getCertificate() const override
 	{
 		if(certificate == nullptr && ssl->x509_ctx != nullptr) {
-			certificate = new CertificateImpl(ssl);
+			certificate = new AxCertificate(ssl);
 		}
 
 		return certificate;
@@ -85,7 +80,7 @@ public:
 
 private:
 	SSL* ssl;
-	mutable CertificateImpl* certificate = nullptr;
+	mutable AxCertificate* certificate = nullptr;
 	struct tcp_pcb* tcp = nullptr;
 	struct pbuf* tcp_pbuf = nullptr;
 	int pbuf_offset = 0;

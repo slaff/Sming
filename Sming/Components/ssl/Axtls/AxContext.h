@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * ContextImpl.h
+ * AxContext.h
  *
  * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
  *
@@ -17,10 +17,10 @@
 
 namespace Ssl
 {
-class ContextImpl : public Context
+class AxContext : public Context
 {
 public:
-	~ContextImpl();
+	~AxContext();
 
 	bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) override;
 	Connection* createClient(SessionId* sessionId, const Extension& extension) override;

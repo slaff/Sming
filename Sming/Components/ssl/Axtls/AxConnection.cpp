@@ -4,7 +4,7 @@
  * http://github.com/SmingHub/Sming
  * All files of the Sming Core are provided under the LGPL v3 license.
  *
- * ConnectionImpl.cpp
+ * AxConnection.cpp
  *
  * @author: 2019 - mikee47 <mike@sillyhouse.net>
  *
@@ -20,11 +20,11 @@
 
 /*
  */
-#include "ConnectionImpl.h"
+#include "AxConnection.h"
 
 namespace Ssl
 {
-int ConnectionImpl::read(pbuf* encrypted, pbuf*& decrypted)
+int AxConnection::read(pbuf* encrypted, pbuf*& decrypted)
 {
 	assert(ssl != nullptr);
 	assert(encrypted != nullptr);
@@ -103,9 +103,9 @@ int ConnectionImpl::read(pbuf* encrypted, pbuf*& decrypted)
 	return total_bytes;
 }
 
-int ConnectionImpl::write(const uint8_t* data, size_t length)
+int AxConnection::write(const uint8_t* data, size_t length)
 {
-	int expected = calcWriteSize(length);
+	int expected = ssl_calculate_write_length(ssl, length);
 	u16_t available = tcp ? tcp_sndbuf(tcp) : 0;
 	debug_d("SSL: Expected: %d, Available: %u", expected, available);
 	if(expected < 0 || int(available) < expected) {
@@ -133,11 +133,11 @@ extern "C" int ax_port_write(int clientfd, uint8_t* buf, uint16_t bytes_needed)
 {
 	assert(clientfd != 0);
 
-	auto connection = reinterpret_cast<ConnectionImpl*>(clientfd);
+	auto connection = reinterpret_cast<AxConnection*>(clientfd);
 	return connection->port_write(buf, bytes_needed);
 }
 
-int ConnectionImpl::port_write(uint8_t* buf, uint16_t bytes_needed)
+int AxConnection::port_write(uint8_t* buf, uint16_t bytes_needed)
 {
 	assert(tcp != nullptr);
 
@@ -193,11 +193,11 @@ extern "C" int ax_port_read(int clientfd, uint8_t* buf, int bytes_needed)
 {
 	assert(clientfd != 0);
 
-	auto connection = reinterpret_cast<ConnectionImpl*>(clientfd);
+	auto connection = reinterpret_cast<AxConnection*>(clientfd);
 	return connection->port_read(buf, bytes_needed);
 }
 
-int ConnectionImpl::port_read(uint8_t* buf, int bytes_needed)
+int AxConnection::port_read(uint8_t* buf, int bytes_needed)
 {
 	if(tcp_pbuf == nullptr || tcp_pbuf->tot_len == 0) {
 		debug_w("ax_port_read: Nothing to read?! May be the connection needs resetting?");

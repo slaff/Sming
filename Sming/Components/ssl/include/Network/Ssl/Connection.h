@@ -151,13 +151,6 @@ public:
 	virtual int write(const uint8_t* data, size_t length) = 0;
 
 	/**
-	 * @brief Calculates the size of encrypted plain text data
-	 * @param plainTextLength
-	 * @retval int
-	 */
-	virtual int calcWriteSize(size_t plainTextLength) const = 0;
-
-	/**
 	 * @brief Gets the cipher suite that was used
 	 * @retval CipherSuite IDs as defined by SSL/TLS standard
 	 */
