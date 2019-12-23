@@ -35,6 +35,31 @@ bool AxContext::init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize)
 	return true;
 }
 
+bool AxContext::setKeyCert(KeyCertPair& keyCert)
+{
+	if(!keyCert.isValid()) {
+		debug_w("Ignoring invalid keyCert");
+		return true;
+	}
+
+	auto load = [&](int objtype, const uint8_t* data, unsigned length, const char* password) -> bool {
+		lastError = ssl_obj_memory_load(context, objtype, data, length, password);
+		return lastError == SSL_OK;
+	};
+
+	if(!load(SSL_OBJ_RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(), keyCert.getKeyPassword())) {
+		debug_e("SSL: Error loading key");
+		return false;
+	}
+
+	if(!load(SSL_OBJ_X509_CERT, keyCert.getCertificate(), keyCert.getCertificateLength(), nullptr)) {
+		debug_e("SSL: Error loading certificate");
+		return false;
+	}
+
+	return true;
+}
+
 Connection* AxContext::createClient(SessionId* sessionId, const Extension& extension)
 {
 	assert(context != nullptr);
@@ -69,11 +94,6 @@ Connection* AxContext::createServer()
 
 	connection->init(server);
 	return connection;
-}
-
-bool AxContext::loadMemory(ObjectType memType, const uint8_t* data, size_t length, const char* password)
-{
-	return (ssl_obj_memory_load(context, int(memType), data, length, password) == SSL_OK);
 }
 
 // Required by axtls-8266

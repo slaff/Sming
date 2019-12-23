@@ -74,6 +74,8 @@ public:
 		return ssl_read(ssl, &buffer);
 	}
 
+	String getErrorString(int error) const override;
+
 private:
 	SSL* ssl;
 	mutable AxCertificate* certificate = nullptr;

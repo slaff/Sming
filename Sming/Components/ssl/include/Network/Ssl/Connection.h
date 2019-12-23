@@ -196,6 +196,11 @@ public:
 	 */
 	virtual int decrypt(uint8_t*& buffer) = 0;
 
+	/**
+	 * @brief Get string for error code
+	 */
+	virtual String getErrorString(int error) const = 0;
+
 protected:
 	struct tcp_pcb* tcp = nullptr;
 	//

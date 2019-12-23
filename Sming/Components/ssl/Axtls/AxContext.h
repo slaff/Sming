@@ -23,13 +23,14 @@ public:
 	~AxContext();
 
 	bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) override;
+	bool setKeyCert(KeyCertPair& keyCert) override;
 	Connection* createClient(SessionId* sessionId, const Extension& extension) override;
 	Connection* createServer() override;
-	bool loadMemory(ObjectType memType, const uint8_t* data, size_t length, const char* password) override;
 
 private:
 	SSLCTX* context = nullptr;
 	tcp_pcb* tcp = nullptr;
+	int lastError = SSL_OK;
 };
 
 } // namespace Ssl

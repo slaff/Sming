@@ -27,17 +27,7 @@ bool Session::listen(tcp_pcb* tcp)
 		return false;
 	}
 
-	if(!context->loadMemory(Context::ObjectType::RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(),
-							keyCert.getKeyPassword())) {
-		debug_e("SSL: Unable to load server private key");
-		return false;
-	}
-
-	if(!context->loadMemory(Context::ObjectType::X509_CERT, keyCert.getCertificate(), keyCert.getCertificateLength(),
-							nullptr)) {
-		debug_e("SSL: Unable to load server certificate");
-		return false;
-	}
+	context->setKeyCert(keyCert);
 
 	// TODO: test: free the certificate data on server destroy...
 	freeKeyCertAfterHandshake = true;
@@ -49,6 +39,7 @@ err_t Session::onConnected(tcp_pcb* tcp)
 {
 	debug_d("SSL: Starting connection...");
 
+	// Client Session
 	delete context;
 	assert(factory != nullptr);
 	context = factory->createContext();
@@ -66,20 +57,14 @@ err_t Session::onConnected(tcp_pcb* tcp)
 		return ERR_MEM;
 	}
 
-	if(keyCert.isValid()) {
-		// if we have client certificate -> try to use it.
-		if(!context->loadMemory(Context::ObjectType::RSA_KEY, keyCert.getKey(), keyCert.getKeyLength(),
-								keyCert.getKeyPassword())) {
-			debug_d("SSL: Unable to load client private key");
-		} else if(!context->loadMemory(Context::ObjectType::X509_CERT, keyCert.getCertificate(),
-									   keyCert.getCertificateLength(), nullptr)) {
-			debug_d("SSL: Unable to load client certificate");
-		}
-
-		if(freeKeyCertAfterHandshake) {
-			keyCert.free();
-		}
+	if(!context->setKeyCert(keyCert)) {
+		debug_e("SSL: Error loading keyCert");
+		return ERR_ABRT;
 	}
+
+//	if(freeKeyCertAfterHandshake) {
+//		keyCert.free();
+//	}
 
 	if(sessionId != nullptr && sessionId->isValid()) {
 		debug_d("-----BEGIN SSL SESSION PARAMETERS-----");

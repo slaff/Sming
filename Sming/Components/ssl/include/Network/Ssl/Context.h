@@ -15,6 +15,7 @@
 #include "Extension.h"
 #include "Connection.h"
 #include "SessionId.h"
+#include "KeyCertPair.h"
 
 struct tcp_pcb;
 
@@ -39,18 +40,6 @@ namespace Ssl
 class Context
 {
 public:
-	/**
-	 * @brief Describes the different types of data that can be added to a context
-	 * @note These are defined by AXTLS. Other implementations will need to translate them.
-	 */
-	enum class ObjectType {
-		X509_CERT = 1, // << certificate - can be client or server one
-		X509_CACERT,   // << Certificate Authority certificate
-		RSA_KEY,	   // << RSA key - can be public or private
-		PKCS8,
-		PKCS12,
-	};
-
 	virtual ~Context()
 	{
 	}
@@ -72,16 +61,7 @@ public:
 	 */
 	virtual bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) = 0;
 
-	/**
-	 * @brief Use to load into memory certificates, public and private keys, etc.
-	 * @param memType the type of the data. Example: public key, client certificate, etc
-	 * @param data The data should be in DER format ( https://wiki.openssl.org/index.php/DER )
-	 * @param length Size of data in bytes
-	 * @param password - null terminated string
-	 *
-	 * @retval boo true on success
-	 */
-	virtual bool loadMemory(ObjectType memType, const uint8_t* data, size_t length, const char* password) = 0;
+	virtual bool setKeyCert(KeyCertPair& keyCert) = 0;
 
 	/**
 	 * @brief Creates client SSL connection.

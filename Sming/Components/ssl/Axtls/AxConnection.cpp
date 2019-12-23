@@ -24,6 +24,11 @@
 
 namespace Ssl
 {
+String AxConnection::getErrorString(int error) const
+{
+	return F("Error_") + String(error);
+}
+
 int AxConnection::write(const uint8_t* data, size_t length)
 {
 	int expected = ssl_calculate_write_length(ssl, length);
