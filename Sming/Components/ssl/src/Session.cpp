@@ -76,6 +76,7 @@ err_t Session::onConnected(tcp_pcb* tcp)
 
 	connection = context->createClient(sessionId, extension);
 	if(connection == nullptr) {
+		endHandshake();
 		return ERR_ABRT;
 	}
 
@@ -146,7 +147,6 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 	WDT.alive();
 
 	int read_bytes = connection->read(encrypted, decrypted);
-	pbuf_free(encrypted);
 
 	if(read_bytes < 0) {
 		debug_d("SSL: Got error: %d", read_bytes);

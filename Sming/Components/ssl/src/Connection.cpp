@@ -64,7 +64,7 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 				totalBytes = readBytes;
 			} else {
 				// We already have read some data -> deliver it back and silence the error for now..
-				debug_w("axl_ssl_read: Silently ignoring SSL error %d", readBytes);
+				debug_w("SSL read: Silently ignoring SSL error %d", readBytes);
 			}
 
 			break;
@@ -89,7 +89,7 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 
 		if(totalReadBuffer == nullptr) {
 			debug_e("SSL read: Unable to allocate additional %d bytes", readBytes);
-			totalBytes = -1;
+			totalBytes = ERR_MEM;
 			break;
 		}
 
@@ -100,6 +100,9 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 
 	} while(tcpData.offset < tcpData.buf->tot_len);
 
+	tcpData.buf = nullptr;
+	pbuf_free(encrypted);
+
 	if(totalBytes > 0) {
 		// put the decrypted data in a brand new pbuf
 		decrypted = pbuf_alloc(PBUF_TRANSPORT, totalBytes, PBUF_RAM);
@@ -109,12 +112,10 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 			debug_e("Unable to allocate pbuf memory. Required %d. Check MEM_SIZE in your lwipopts.h file and "
 					"increase if needed.",
 					totalBytes);
-			totalBytes = -1;
+			totalBytes = ERR_MEM;
 		}
 		free(totalReadBuffer);
 	}
-
-	tcpData.buf = nullptr;
 
 	return totalBytes;
 }
