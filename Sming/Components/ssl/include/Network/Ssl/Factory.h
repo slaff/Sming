@@ -33,7 +33,7 @@ public:
 	 * @brief Create SSL context that can be used to create new client or server connections
 	 * @retval Context* The constructed context, shouldn't fail (except on OOM)
 	 */
-	virtual Context* createContext() = 0;
+	virtual Context* createContext(Session& session, tcp_pcb* tcp) = 0;
 };
 
 // Provided by ssl Component

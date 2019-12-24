@@ -175,14 +175,13 @@ public:
 	void setSsl(Ssl::Connection* connection)
 	{
 		assert(ssl != nullptr);
-		delete ssl->connection;
-		ssl->connection = connection;
+		ssl->setConnection(connection);
 		useSsl = true;
 	}
 
 	Ssl::Connection* getSsl()
 	{
-		return ssl ? ssl->connection : nullptr;
+		return ssl ? ssl->getConnection() : nullptr;
 	}
 
 protected:

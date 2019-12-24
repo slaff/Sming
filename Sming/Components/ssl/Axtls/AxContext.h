@@ -20,16 +20,16 @@ namespace Ssl
 class AxContext : public Context
 {
 public:
+	using Context::Context;
 	~AxContext();
 
-	bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) override;
+	bool init(uint32_t options, size_t sessionCacheSize) override;
 	bool setKeyCert(KeyCertPair& keyCert) override;
-	Connection* createClient(SessionId* sessionId, const Extension& extension) override;
+	Connection* createClient() override;
 	Connection* createServer() override;
 
 private:
-	SSLCTX* context = nullptr;
-	tcp_pcb* tcp = nullptr;
+	SSL_CTX* context = nullptr;
 	int lastError = SSL_OK;
 };
 

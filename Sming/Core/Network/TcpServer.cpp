@@ -96,8 +96,10 @@ err_t TcpServer::onAccept(tcp_pcb* clientTcp, err_t err)
 
 	if(useSsl) {
 		debug_d("SSL: handshake start.");
-		assert(ssl != nullptr && ssl->context != nullptr);
-		client->setSsl(ssl->context->createServer());
+		assert(ssl != nullptr);
+		if(!ssl->onAccept(client)) {
+			return ERR_ABRT;
+		}
 	}
 
 	client->setDestroyedDelegate(TcpConnectionDestroyedDelegate(&TcpServer::onClientDestroy, this));

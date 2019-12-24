@@ -16,6 +16,7 @@
 #include "Connection.h"
 #include "SessionId.h"
 #include "KeyCertPair.h"
+#include "Validator.h"
 
 struct tcp_pcb;
 
@@ -28,7 +29,12 @@ namespace Ssl
  * @{
  */
 
-// SSL Options
+/**
+ * @brief SSL Options
+ *
+ * These are defined by AXTLS and handled also for other SSL implementations
+ */
+#define SSL_SESSION_RESUME 0x0008
 #define SSL_CLIENT_AUTHENTICATION 0x00010000
 #define SSL_SERVER_VERIFY_LATER 0x00020000
 #define SSL_NO_DEFAULT_KEY 0x00040000
@@ -37,9 +43,16 @@ namespace Ssl
 #define SSL_DISPLAY_CERTS 0x00200000
 #define SSL_DISPLAY_RSA 0x00400000
 
+class Session;
+
 class Context
 {
 public:
+	Context(Session& session, tcp_pcb* tcp) : session(session), tcp(tcp)
+	{
+		assert(tcp != nullptr);
+	}
+
 	virtual ~Context()
 	{
 	}
@@ -47,8 +60,6 @@ public:
 	/**
 	 * @brief Initializer method that must be called after object creation and before the creation
 	 * 		  of server or client connections
-	 * @param tcp active tcp connection
-	 *
 	 * @param options
 	 *
 	 * @param sessionCacheSize
@@ -59,20 +70,16 @@ public:
 	 *
 	 * @retval bool true on success
 	 */
-	virtual bool init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize) = 0;
+	virtual bool init(uint32_t options, size_t sessionCacheSize) = 0;
 
 	virtual bool setKeyCert(KeyCertPair& keyCert) = 0;
 
 	/**
 	 * @brief Creates client SSL connection.
 	 *        Your SSL client use this call to make create a client connection to remote server.
-	 * @param sessionId   If provided, will try to use the sessionId for SSL resumption.
-	 * 					  This will speed up consecutive SSL handshakes to the same server on the same port
-	 * @param extension   Additional details required for connection
-	 *
 	 * @retval Connection*
 	 */
-	virtual Connection* createClient(SessionId* sessionId, const Extension& extension) = 0;
+	virtual Connection* createClient() = 0;
 
 	/**
 	 * @brief Creates server SSL connection.
@@ -80,6 +87,19 @@ public:
 	 * @retval Connection*
 	 */
 	virtual Connection* createServer() = 0;
+
+	virtual bool handshakeComplete();
+
+	Extension& getExtension();
+
+	tcp_pcb* getTcp()
+	{
+		return tcp;
+	}
+
+protected:
+	Session& session;
+	tcp_pcb* tcp = nullptr;
 };
 
 /** @} */

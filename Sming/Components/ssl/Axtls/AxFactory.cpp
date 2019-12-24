@@ -18,9 +18,9 @@ namespace Ssl
 class AxFactory : public Factory
 {
 public:
-	Context* createContext() override
+	Context* createContext(Session& session, tcp_pcb* tcp) override
 	{
-		return new AxContext();
+		return new AxContext(session, tcp);
 	}
 };
 

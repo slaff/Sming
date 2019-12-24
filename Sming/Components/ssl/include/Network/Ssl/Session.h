@@ -1,29 +1,36 @@
+#pragma once
 
 #include "Context.h"
 #include "KeyCertPair.h"
 #include "Validator.h"
 #include <Platform/System.h>
 
+class TcpConnection;
+
 namespace Ssl
 {
-struct Session {
-	Context* context = nullptr;
-	Connection* connection = nullptr;
+class Session
+{
+public:
 	Extension extension;
-	bool connected = false;
 	KeyCertPair keyCert;
 	bool freeKeyCertAfterHandshake = false;
-	SessionId* sessionId = nullptr;
 	uint32_t options = 0;
 	// server
 	int cacheSize = 50;
 	// client
 	ValidatorList validators;
 
+public:
 	~Session()
 	{
 		close();
 		delete sessionId;
+	}
+
+	const SessionId* getSessionId() const
+	{
+		return sessionId;
 	}
 
 	/**
@@ -31,11 +38,29 @@ struct Session {
 	 */
 	bool listen(tcp_pcb* tcp);
 
+	bool onAccept(TcpConnection* client);
+
+	void setConnection(Connection* connection)
+	{
+		delete this->connection;
+		this->connection = connection;
+	}
+
+	Connection* getConnection()
+	{
+		return connection;
+	}
+
 	/**
 	 * @brief Handle connection event
 	 * @retval err_t
 	 */
-	err_t onConnected(tcp_pcb* tcp);
+	bool onConnect(tcp_pcb* tcp);
+
+	bool isConnected() const
+	{
+		return connected;
+	}
 
 	/**
 	 * @brief End the session
@@ -54,7 +79,7 @@ struct Session {
 	 * @brief Write data to SSL connection
 	 * @param data
 	 * @param length
-	 * @retval int Quantity of bytes actually written
+	 * @retval int Quantity of bytes actually written, or tcp error code
 	 */
 	int write(const uint8_t* data, size_t length)
 	{
@@ -62,15 +87,28 @@ struct Session {
 			return ERR_CONN;
 		}
 
-		return connection->write(data, length);
+		int res = connection->write(data, length);
+		if(res < 0) {
+			// @todo Add a method to obtain a more appropriate TCP error code
+			return ERR_BUF;
+		}
+
+		return res;
 	}
+
+	// Called by connection to perform certificate validation
+	bool handshakeComplete();
 
 private:
 	void beginHandshake();
 	void endHandshake();
 
 private:
+	Context* context = nullptr;
+	Connection* connection = nullptr;
+	SessionId* sessionId = nullptr;
 	CpuFrequency curFreq;
+	bool connected = false;
 };
 
 }; // namespace Ssl

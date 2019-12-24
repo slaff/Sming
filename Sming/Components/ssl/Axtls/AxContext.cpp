@@ -12,6 +12,7 @@
 
 #include "AxContext.h"
 #include "AxConnection.h"
+#include <Network/Ssl/Session.h>
 
 namespace Ssl
 {
@@ -21,17 +22,16 @@ AxContext::~AxContext()
 	ssl_ctx_free(context);
 }
 
-bool AxContext::init(tcp_pcb* tcp, uint32_t options, size_t sessionCacheSize)
+bool AxContext::init(uint32_t options, size_t sessionCacheSize)
 {
 	assert(context == nullptr);
 
-	context = ssl_ctx_new(SSL_CONNECT_IN_PARTS | options, sessionCacheSize);
+	context = ssl_ctx_new(SSL_CONNECT_IN_PARTS | (options & 0xFFFF0000), sessionCacheSize);
 	if(context == nullptr) {
 		debug_e("SSL: Unable to allocate context");
 		return false;
 	}
 
-	this->tcp = tcp;
 	return true;
 }
 
@@ -60,17 +60,18 @@ bool AxContext::setKeyCert(KeyCertPair& keyCert)
 	return true;
 }
 
-Connection* AxContext::createClient(SessionId* sessionId, const Extension& extension)
+Connection* AxContext::createClient()
 {
 	assert(context != nullptr);
 
 	auto ssl_ext = ssl_ext_new();
-	ssl_ext_set_host_name(ssl_ext, extension.hostName.c_str());
-	ssl_ext_set_max_fragment_size(ssl_ext, extension.fragmentSize);
+	ssl_ext_set_host_name(ssl_ext, session.extension.hostName.c_str());
+	ssl_ext_set_max_fragment_size(ssl_ext, session.extension.fragmentSize);
 
-	auto connection = new AxConnection(tcp);
-	auto client = ssl_client_new(context, int(connection), sessionId ? sessionId->getValue() : nullptr,
-								 sessionId ? sessionId->getLength() : 0, ssl_ext);
+	auto id = session.getSessionId();
+	auto connection = new AxConnection(*this);
+	auto client =
+		ssl_client_new(context, int(connection), id ? id->getValue() : nullptr, id ? id->getLength() : 0, ssl_ext);
 	if(client == nullptr) {
 		ssl_ext_free(ssl_ext);
 		delete connection;
@@ -85,7 +86,7 @@ Connection* AxContext::createServer()
 {
 	assert(context != nullptr);
 
-	auto connection = new AxConnection(tcp);
+	auto connection = new AxConnection(*this);
 	auto server = ssl_server_new(context, int(connection));
 	if(server == nullptr) {
 		delete connection;

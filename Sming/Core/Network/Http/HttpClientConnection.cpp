@@ -54,10 +54,7 @@ bool HttpClientConnection::send(HttpRequest* request)
 		if(!sslCreateSession()) {
 			return false;
 		}
-		if(ssl->sessionId == nullptr) {
-			ssl->sessionId = new Ssl::SessionId;
-		}
-		ssl->options |= request->getSslOptions();
+		ssl->options |= request->getSslOptions() | SSL_SESSION_RESUME;
 		ssl->validators.add(request->sslFingerprints);
 		ssl->freeKeyCertAfterHandshake = false;
 		ssl->keyCert = request->sslKeyCertPair;

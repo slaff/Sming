@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Network/Ssl/Connection.h>
+#include <Network/Ssl/Validator.h>
 #include "AxCertificate.h"
 
 namespace Ssl
@@ -69,10 +70,7 @@ public:
 		certificate = nullptr;
 	}
 
-	int decrypt(uint8_t*& buffer) override
-	{
-		return ssl_read(ssl, &buffer);
-	}
+	int decrypt(uint8_t*& buffer) override;
 
 	String getErrorString(int error) const override;
 

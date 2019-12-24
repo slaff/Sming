@@ -2,6 +2,7 @@
 #include <Network/Ssl/Session.h>
 #include <Network/Ssl/Factory.h>
 #include <Platform/WDT.h>
+#include <Network/TcpConnection.h>
 
 namespace Ssl
 {
@@ -13,12 +14,12 @@ bool Session::listen(tcp_pcb* tcp)
 
 	delete context;
 	assert(factory != nullptr);
-	context = factory->createContext();
+	context = factory->createContext(*this, tcp);
 	if(context == nullptr) {
 		return false;
 	}
 
-	if(!context->init(tcp, options, cacheSize)) {
+	if(!context->init(options, cacheSize)) {
 		return false;
 	}
 
@@ -35,16 +36,24 @@ bool Session::listen(tcp_pcb* tcp)
 	return true;
 }
 
-err_t Session::onConnected(tcp_pcb* tcp)
+bool Session::onAccept(TcpConnection* client)
+{
+	assert(context != nullptr);
+	auto server = context->createServer();
+	client->setSsl(server);
+	return true;
+}
+
+bool Session::onConnect(tcp_pcb* tcp)
 {
 	debug_d("SSL: Starting connection...");
 
 	// Client Session
 	delete context;
 	assert(factory != nullptr);
-	context = factory->createContext();
+	context = factory->createContext(*this, tcp);
 	if(context == nullptr) {
-		return ERR_ABRT;
+		return false;
 	}
 
 	uint32_t localOptions = options;
@@ -53,18 +62,14 @@ err_t Session::onConnected(tcp_pcb* tcp)
 	debug_d("SSL: Show debug data ...");
 #endif
 
-	if(!context->init(tcp, localOptions, 1)) {
-		return ERR_MEM;
+	if(!context->init(localOptions, 1)) {
+		return false;
 	}
 
 	if(!context->setKeyCert(keyCert)) {
 		debug_e("SSL: Error loading keyCert");
-		return ERR_ABRT;
+		return false;
 	}
-
-//	if(freeKeyCertAfterHandshake) {
-//		keyCert.free();
-//	}
 
 	if(sessionId != nullptr && sessionId->isValid()) {
 		debug_d("-----BEGIN SSL SESSION PARAMETERS-----");
@@ -74,24 +79,13 @@ err_t Session::onConnected(tcp_pcb* tcp)
 
 	beginHandshake();
 
-	connection = context->createClient(sessionId, extension);
+	connection = context->createClient();
 	if(connection == nullptr) {
 		endHandshake();
-		return ERR_ABRT;
+		return false;
 	}
 
-	if(!connection->isHandshakeDone()) {
-		debug_d("SSL: handshake is in progress...");
-		return ERR_INPROGRESS;
-	}
-
-	endHandshake();
-
-	if(sessionId != nullptr) {
-		*sessionId = connection->getSessionId();
-	}
-
-	return ERR_OK;
+	return true;
 }
 
 void Session::beginHandshake()
@@ -150,42 +144,47 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 
 	if(read_bytes < 0) {
 		debug_d("SSL: Got error: %d", read_bytes);
+		// @todo Perhaps change this to returning read_bytes == 0, then call method
+		// on connection to determine alert code
+		// Implementation error codes should be opaque.
 		if(read_bytes == SSL_CLOSE_NOTIFY) {
 			read_bytes = 0;
 		}
-	} else if(read_bytes == 0) {
-		if(!connected && connection->isHandshakeDone()) {
-			connected = true;
-
-			endHandshake();
-
-			if(!validators.validate(connection->getCertificate())) {
-				debug_w("SSL Validation failed");
-
-				if(decrypted != nullptr) {
-					pbuf_free(decrypted);
-					decrypted = nullptr;
-				}
-
-				return ERR_ABRT;
-			}
-
-			if(sessionId != nullptr) {
-				*sessionId = connection->getSessionId();
-			}
-
-			if(freeKeyCertAfterHandshake) {
-				connection->freeCertificate();
-			}
-
-			return ERR_OK;
-		}
-	} else {
+	} else if(read_bytes != 0) {
 		// we got some decrypted bytes...
 		debug_d("SSL: Decrypted data len %d", read_bytes);
 	}
 
 	return read_bytes;
+}
+
+bool Session::handshakeComplete()
+{
+	assert(!connected);
+
+	endHandshake();
+
+	bool validated = validators.validate(connection->getCertificate());
+
+	if(validated) {
+		connected = true;
+
+		// If requested, take a copy of the session ID for later re-use
+		if(options & SSL_SESSION_RESUME) {
+			if(sessionId == nullptr) {
+				sessionId = new SessionId;
+			}
+			*sessionId = connection->getSessionId();
+		}
+	} else {
+		debug_w("SSL Validation failed");
+	}
+
+	if(freeKeyCertAfterHandshake) {
+		connection->freeCertificate();
+	}
+
+	return validated;
 }
 
 }; // namespace Ssl

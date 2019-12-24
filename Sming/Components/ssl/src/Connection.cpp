@@ -1,4 +1,4 @@
-#include <Network/Ssl/Connection.h>
+#include <Network/Ssl/Context.h>
 #include <Print.h>
 
 namespace Ssl
@@ -54,9 +54,10 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 	do {
 		uint8_t* readBuffer = nullptr;
 		int readBytes = decrypt(readBuffer);
-		if(readBytes > 0) {
-			debug_d("SSL read: %d bytes", readBytes);
+		if(readBytes == 0) {
+			continue;
 		}
+
 		if(readBytes < 0) {
 			/* An error has occurred. Give it back for further processing */
 			if(totalBytes == 0) {
@@ -70,9 +71,7 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 			break;
 		}
 
-		if(readBytes == 0) {
-			continue;
-		}
+		debug_d("SSL read: %d bytes", readBytes);
 
 		if(totalReadBuffer == nullptr) {
 			totalReadBuffer = (uint8_t*)malloc(readBytes);
@@ -138,8 +137,6 @@ size_t Connection::readTcpData(uint8_t* buf, size_t bufSize)
 
 int Connection::writeTcpData(uint8_t* data, size_t length)
 {
-	assert(tcp != nullptr);
-
 	if(data == nullptr || length == 0) {
 		debug_w("writeTcpData: Return Zero.");
 		return 0;
@@ -147,6 +144,7 @@ int Connection::writeTcpData(uint8_t* data, size_t length)
 
 	debug_hex(INFO, "WRITE", data, length);
 
+	auto tcp = context.getTcp();
 	int tcp_len = 0;
 	if(tcp_sndbuf(tcp) < length) {
 		tcp_len = tcp_sndbuf(tcp);

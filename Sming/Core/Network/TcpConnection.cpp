@@ -225,7 +225,7 @@ int TcpConnection::write(const char* data, int len, uint8_t apiflags)
 
 int TcpConnection::write(IDataSourceStream* stream)
 {
-	if(ssl != nullptr && !ssl->connected) {
+	if(ssl != nullptr && !ssl->isConnected()) {
 		// wait until the SSL handshake is done.
 		return 0;
 	}
@@ -400,12 +400,11 @@ err_t TcpConnection::internalOnConnected(err_t err)
 			return ERR_ABRT;
 		}
 
-		auto err = ssl->onConnected(tcp);
-		if(err == ERR_INPROGRESS) {
-			return ERR_OK;
+		if(!ssl->onConnect(tcp)) {
+			return ERR_ABRT;
 		}
-		if(err != ERR_OK) {
-			return err;
+		if(!ssl->isConnected()) {
+			return ERR_OK;
 		}
 	}
 
@@ -443,7 +442,7 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 	}
 
 	if(ssl != nullptr && p != nullptr) {
-		bool isConnecting = !ssl->connected;
+		bool isConnecting = !ssl->isConnected();
 		pbuf* out;
 		int res = ssl->read(p, out);
 		if(res < 0) {
@@ -453,7 +452,7 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 		}
 		p = out;
 
-		if(isConnecting && ssl->connected) {
+		if(isConnecting && ssl->isConnected()) {
 			assert(p == nullptr);
 			err = onConnected(ERR_OK);
 			checkSelfFree();

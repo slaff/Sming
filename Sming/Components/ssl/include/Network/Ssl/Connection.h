@@ -116,12 +116,13 @@ enum class CipherSuite {
  */
 String cipherSuiteName(CipherSuite id);
 
+class Context;
+
 class Connection : public Printable
 {
 public:
-	Connection(tcp_pcb* tcp) : tcp(tcp)
+	Connection(Context& context) : context(context)
 	{
-		assert(tcp != nullptr);
 	}
 
 	virtual ~Connection()
@@ -193,6 +194,8 @@ public:
 	 * Read incoming data from `decryptSource`, updating `offset` field,
 	 * and pass into SSL layer, then return a pointer to a block of
 	 * decrypted data with length. Zero-length block is fine.
+	 *
+	 * This method only returns application data so during initial handshake will return 0.
 	 */
 	virtual int decrypt(uint8_t*& buffer) = 0;
 
@@ -202,8 +205,7 @@ public:
 	virtual String getErrorString(int error) const = 0;
 
 protected:
-	struct tcp_pcb* tcp = nullptr;
-	//
+	Context& context;
 	struct {
 		struct pbuf* buf = nullptr;
 		uint16_t offset = 0;

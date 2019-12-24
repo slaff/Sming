@@ -22,6 +22,7 @@
  */
 #include "AxConnection.h"
 #include "AxError.h"
+#include "AxContext.h"
 #include <FlashString/Map.hpp>
 
 namespace Ssl
@@ -43,10 +44,15 @@ String AxConnection::getErrorString(int error) const
 int AxConnection::write(const uint8_t* data, size_t length)
 {
 	int expected = ssl_calculate_write_length(ssl, length);
+	if(expected < 0) {
+		return expected;
+	}
+
+	auto tcp = context.getTcp();
 	u16_t available = tcp ? tcp_sndbuf(tcp) : 0;
-	debug_d("SSL: Expected: %d, Available: %u", expected, available);
-	if(expected < 0 || int(available) < expected) {
-		return ERR_MEM;
+	if(int(available) < expected) {
+		debug_d("SSL: Expected: %d, Available: %u", expected, available);
+		return SSL_NOT_OK;
 	}
 
 	int written = ssl_write(ssl, data, length);
@@ -56,7 +62,20 @@ int AxConnection::write(const uint8_t* data, size_t length)
 		return written;
 	}
 
-	return ERR_OK;
+	return SSL_OK;
+}
+
+int AxConnection::decrypt(uint8_t*& buffer)
+{
+	bool connected = isHandshakeDone();
+	int readBytes = ssl_read(ssl, &buffer);
+	if(!connected && isHandshakeDone()) {
+		if(!context.handshakeComplete()) {
+			return SSL_ERROR_BAD_CERTIFICATE;
+		}
+	}
+
+	return readBytes;
 }
 
 /*
