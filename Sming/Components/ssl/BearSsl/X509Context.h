@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <Network/Ssl/Certificate.h>
-#include <Network/Ssl/Validator.h>
 #include <debug_progmem.h>
 #include <bearssl.h>
 #include <assert.h>
@@ -24,12 +22,12 @@ namespace Ssl
 
 #define GET_SELF() auto self = reinterpret_cast<X509Context*>(ctx)
 
-class Context;
-
 class X509Context
 {
 public:
-	X509Context(Context& context) : context(context)
+	using OnValidate = Delegate<bool()>;
+
+	X509Context(OnValidate onValidate) : onValidate(onValidate)
 	{
 	}
 
@@ -38,19 +36,19 @@ public:
 		return &vtable;
 	}
 
-	uint8_t* getIssuerHash(uint8_t hash[SHA256_SIZE])
+	uint8_t* getIssuerHash(uint8_t hash[br_sha256_SIZE])
 	{
 		br_sha256_out(&issuerSha256, hash);
 		return hash;
 	}
 
-	uint8_t* getSubjectHash(uint8_t hash[SHA256_SIZE])
+	uint8_t* getSubjectHash(uint8_t hash[br_sha256_SIZE])
 	{
 		br_sha256_out(&subjectSha256, hash);
 		return hash;
 	}
 
-	uint8_t* getCertificateHash(uint8_t hash[SHA1_SIZE])
+	uint8_t* getCertificateHash(uint8_t hash[br_sha1_SIZE])
 	{
 		br_sha1_out(&certificateSha1, hash);
 		return hash;
@@ -67,8 +65,7 @@ private:
 
 	void startChain(const char* serverName);
 
-	// Callback for each certificate present in the chain (but only operates
-	// on the first one by design).
+	// Callback for each certificate present in the chain
 	static void start_cert(const br_x509_class** ctx, uint32_t length)
 	{
 		debug_br("start_cert: %u", length);
@@ -76,7 +73,7 @@ private:
 		(void)length;
 	}
 
-	// Callback for each byte stream in the chain.  Only process first cert.
+	// Callback for each byte stream in the chain
 	static void append(const br_x509_class** ctx, const unsigned char* buf, size_t len)
 	{
 		debug_br("append: %u", len);
@@ -89,7 +86,6 @@ private:
 		}
 	}
 
-	// Callback on individual cert end.
 	static void end_cert(const br_x509_class** ctx)
 	{
 		debug_br("end_cert");
@@ -97,8 +93,7 @@ private:
 		++self->certificateCount;
 	}
 
-	// Complete chain has been parsed.
-	// Return 0 on validation success
+	// Complete chain has been parsed, return 0 on validation success
 	static unsigned end_chain(const br_x509_class** ctx)
 	{
 		debug_br("end_chain");
@@ -121,7 +116,7 @@ private:
 private:
 	const br_x509_class* vtable = &vt;
 	static const br_x509_class vt;
-	Context& context;
+	OnValidate onValidate;
 	br_sha1_context certificateSha1 = {};
 	br_sha256_context subjectSha256 = {};
 	br_sha256_context issuerSha256 = {};

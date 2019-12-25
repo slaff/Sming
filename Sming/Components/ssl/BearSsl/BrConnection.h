@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Network/Ssl/Connection.h>
-#include <Network/Ssl/Extension.h>
 #include "BrCertificate.h"
 #include "X509Context.h"
 
@@ -35,6 +34,7 @@ public:
 	~BrClientConnection()
 	{
 		delete certificate;
+		delete x509Context;
 	}
 
 	int init();
@@ -82,7 +82,6 @@ private:
 	br_ssl_client_context clientContext;
 	uint8_t buffer[BR_SSL_BUFSIZE_MONO];
 	X509Context* x509Context = nullptr;
-	ValidatorList* validators = nullptr;
 	mutable BrCertificate* certificate = nullptr;
 	bool handshakeDone = false;
 };

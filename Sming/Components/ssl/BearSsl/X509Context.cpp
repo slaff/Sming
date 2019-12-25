@@ -1,5 +1,5 @@
 #include "X509Context.h"
-#include "BrContext.h"
+#include "BrConnection.h"
 
 namespace Ssl
 {
@@ -34,7 +34,7 @@ unsigned X509Context::endChain()
 		return BR_ERR_X509_EMPTY_CHAIN;
 	}
 
-	if(!context.validateCertificate()) {
+	if(!onValidate()) {
 		return BR_ERR_X509_NOT_TRUSTED;
 	}
 

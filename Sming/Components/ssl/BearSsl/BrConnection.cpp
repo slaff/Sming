@@ -100,11 +100,11 @@ int BrClientConnection::init()
 	br_ssl_engine_set_default_chapol(engine);
 
 	// X509 verification
-	x509Context = new X509Context(context);
+	x509Context = new X509Context([this]() { return context.getSession().validateCertificate(); });
 	br_ssl_engine_set_x509(engine, *x509Context);
 
 	br_ssl_engine_set_buffer(&clientContext.eng, buffer, sizeof(buffer), 0);
-	br_ssl_client_reset(&clientContext, context.getExtension().hostName.c_str(), 0);
+	br_ssl_client_reset(&clientContext, context.getSession().hostName.c_str(), 0);
 
 	return runUntil(BR_SSL_SENDAPP | BR_SSL_RECVAPP);
 }
@@ -132,7 +132,9 @@ int BrClientConnection::decrypt(uint8_t*& buffer)
 
 	size_t len = 0;
 	buffer = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
+#ifdef SSL_DEBUG
 	debug_hex(INFO, "READ", buffer, len);
+#endif
 	br_ssl_engine_recvapp_ack(&clientContext.eng, len);
 
 	return len;
@@ -151,7 +153,9 @@ int BrClientConnection::write(const uint8_t* data, size_t length)
 
 	size_t available;
 	auto buf = br_ssl_engine_sendapp_buf(&clientContext.eng, &available);
+#ifdef SSL_DEBUG
 	debug_d("SSL: Expected: %d, Available: %u", length, available);
+#endif
 	if(available < length) {
 		return -1;
 	}
@@ -180,7 +184,7 @@ int BrClientConnection::runUntil(unsigned target)
 
 		if(!handshakeDone && (state & BR_SSL_SENDAPP)) {
 			handshakeDone = true;
-			context.handshakeComplete(true);
+			context.getSession().handshakeComplete(true);
 			continue;
 		}
 
@@ -210,7 +214,6 @@ int BrClientConnection::runUntil(unsigned target)
 				br_ssl_engine_sendrec_ack(engine, wlen);
 			}
 
-			debug_i("runUntil: SENDREC");
 			continue;
 		}
 
@@ -221,14 +224,7 @@ int BrClientConnection::runUntil(unsigned target)
 			return state;
 		}
 
-		/*
-		 * If some application data must be read, and we did not
-		 * exit, then this means that we are trying to write data,
-		 * and that's not possible until the application data is
-		 * read. This may happen if using a shared in/out buffer,
-		 * and the underlying protocol is not strictly half-duplex.
-		 * This is unrecoverable here, so we report an error.
-		 */
+		// Conflict: Application data hasn't been read
 		if(state & BR_SSL_RECVAPP) {
 			debug_e("SSL: Protocol Error");
 			return -1;
@@ -242,23 +238,16 @@ int BrClientConnection::runUntil(unsigned target)
 				return state;
 			}
 
+#ifdef SSL_DEBUG
 			debug_hex(INFO, "READ", buf, len);
+#endif
 			br_ssl_engine_recvrec_ack(engine, len);
 
-			debug_i("runUntil: RECVREC");
 			continue;
 		}
 
-		/*
-		 * We can reach that point if the target RECVAPP, and
-		 * the state contains SENDAPP only. This may happen with
-		 * a shared in/out buffer. In that case, we must flush
-		 * the buffered data to "make room" for a new incoming
-		 * record.
-		 */
+		// Make room for new incoming records
 		br_ssl_engine_flush(engine, 0);
-
-		debug_i("runUntil: flush");
 	}
 }
 
