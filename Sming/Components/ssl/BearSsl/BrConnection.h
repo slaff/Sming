@@ -54,7 +54,7 @@ public:
 		if(handshakeDone) {
 			return CipherSuite(clientContext.eng.session.cipher_suite);
 		} else {
-			return CipherSuite::TLS_NULL_WITH_NULL_NULL;
+			return CipherSuite::NULL_WITH_NULL_NULL;
 		}
 	}
 
@@ -80,7 +80,7 @@ public:
 
 private:
 	br_ssl_client_context clientContext;
-	uint8_t buffer[BR_SSL_BUFSIZE_BIDI];
+	uint8_t buffer[BR_SSL_BUFSIZE_MONO];
 	X509Context* x509Context = nullptr;
 	ValidatorList* validators = nullptr;
 	mutable BrCertificate* certificate = nullptr;

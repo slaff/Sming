@@ -88,7 +88,9 @@ public:
 	 */
 	virtual Connection* createServer() = 0;
 
-	virtual bool handshakeComplete();
+	bool validateCertificate();
+
+	void handshakeComplete(bool success);
 
 	Extension& getExtension();
 

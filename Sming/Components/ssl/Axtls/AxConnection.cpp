@@ -70,9 +70,12 @@ int AxConnection::decrypt(uint8_t*& buffer)
 	bool connected = isHandshakeDone();
 	int readBytes = ssl_read(ssl, &buffer);
 	if(!connected && isHandshakeDone()) {
-		if(!context.handshakeComplete()) {
+		if(!context.validateCertificate()) {
+			context.handshakeComplete(false);
 			return SSL_ERROR_BAD_CERTIFICATE;
 		}
+
+		context.handshakeComplete(true);
 	}
 
 	return readBytes;

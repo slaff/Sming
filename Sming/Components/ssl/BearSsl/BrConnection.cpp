@@ -36,35 +36,43 @@ String BrConnection::getErrorString(int error) const
 
 int BrClientConnection::init()
 {
+	DEFINE_FSTR_ARRAY_LOCAL(FS_suitesBasic, CipherSuite, CipherSuite::RSA_WITH_AES_128_CBC_SHA256,
+							CipherSuite::RSA_WITH_AES_256_CBC_SHA256, CipherSuite::RSA_WITH_AES_128_CBC_SHA,
+							CipherSuite::RSA_WITH_AES_256_CBC_SHA);
+
 	DEFINE_FSTR_ARRAY_LOCAL(
-		FS_suites, uint16_t, BR_TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-		BR_TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, BR_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-		BR_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, BR_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-		BR_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, BR_TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
-		BR_TLS_ECDHE_ECDSA_WITH_AES_256_CCM, BR_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8,
-		BR_TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8, BR_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
-		BR_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, BR_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
-		BR_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, BR_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-		BR_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, BR_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-		BR_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, BR_TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
-		BR_TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256, BR_TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,
-		BR_TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384, BR_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
-		BR_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256, BR_TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384,
-		BR_TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384, BR_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
-		BR_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA, BR_TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
-		BR_TLS_ECDH_RSA_WITH_AES_256_CBC_SHA, BR_TLS_RSA_WITH_AES_128_GCM_SHA256, BR_TLS_RSA_WITH_AES_256_GCM_SHA384,
-		BR_TLS_RSA_WITH_AES_128_CCM, BR_TLS_RSA_WITH_AES_256_CCM, BR_TLS_RSA_WITH_AES_128_CCM_8,
-		BR_TLS_RSA_WITH_AES_256_CCM_8, BR_TLS_RSA_WITH_AES_128_CBC_SHA256, BR_TLS_RSA_WITH_AES_256_CBC_SHA256,
-		BR_TLS_RSA_WITH_AES_128_CBC_SHA, BR_TLS_RSA_WITH_AES_256_CBC_SHA, BR_TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA,
-		BR_TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA, BR_TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA,
-		BR_TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA, BR_TLS_RSA_WITH_3DES_EDE_CBC_SHA);
+		FS_suitesFull, CipherSuite, CipherSuite::ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+		CipherSuite::ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, CipherSuite::ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+		CipherSuite::ECDHE_RSA_WITH_AES_128_GCM_SHA256, CipherSuite::ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+		CipherSuite::ECDHE_RSA_WITH_AES_256_GCM_SHA384, CipherSuite::ECDHE_ECDSA_WITH_AES_128_CCM,
+		CipherSuite::ECDHE_ECDSA_WITH_AES_256_CCM, CipherSuite::ECDHE_ECDSA_WITH_AES_128_CCM_8,
+		CipherSuite::ECDHE_ECDSA_WITH_AES_256_CCM_8, CipherSuite::ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,
+		CipherSuite::ECDHE_RSA_WITH_AES_128_CBC_SHA256, CipherSuite::ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,
+		CipherSuite::ECDHE_RSA_WITH_AES_256_CBC_SHA384, CipherSuite::ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+		CipherSuite::ECDHE_RSA_WITH_AES_128_CBC_SHA, CipherSuite::ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+		CipherSuite::ECDHE_RSA_WITH_AES_256_CBC_SHA, CipherSuite::ECDH_ECDSA_WITH_AES_128_GCM_SHA256,
+		CipherSuite::ECDH_RSA_WITH_AES_128_GCM_SHA256, CipherSuite::ECDH_ECDSA_WITH_AES_256_GCM_SHA384,
+		CipherSuite::ECDH_RSA_WITH_AES_256_GCM_SHA384, CipherSuite::ECDH_ECDSA_WITH_AES_128_CBC_SHA256,
+		CipherSuite::ECDH_RSA_WITH_AES_128_CBC_SHA256, CipherSuite::ECDH_ECDSA_WITH_AES_256_CBC_SHA384,
+		CipherSuite::ECDH_RSA_WITH_AES_256_CBC_SHA384, CipherSuite::ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+		CipherSuite::ECDH_RSA_WITH_AES_128_CBC_SHA, CipherSuite::ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+		CipherSuite::ECDH_RSA_WITH_AES_256_CBC_SHA, CipherSuite::RSA_WITH_AES_128_GCM_SHA256,
+		CipherSuite::RSA_WITH_AES_256_GCM_SHA384, CipherSuite::RSA_WITH_AES_128_CCM, CipherSuite::RSA_WITH_AES_256_CCM,
+		CipherSuite::RSA_WITH_AES_128_CCM_8, CipherSuite::RSA_WITH_AES_256_CCM_8,
+		CipherSuite::RSA_WITH_AES_128_CBC_SHA256, CipherSuite::RSA_WITH_AES_256_CBC_SHA256,
+		CipherSuite::RSA_WITH_AES_128_CBC_SHA, CipherSuite::RSA_WITH_AES_256_CBC_SHA,
+		CipherSuite::ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA, CipherSuite::ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+		CipherSuite::ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, CipherSuite::ECDH_RSA_WITH_3DES_EDE_CBC_SHA,
+		CipherSuite::RSA_WITH_3DES_EDE_CBC_SHA);
+
+	auto& FS_suites = FS_suitesFull;
 
 	br_ssl_client_zero(&clientContext);
 	auto engine = &clientContext.eng;
 	br_ssl_engine_set_versions(engine, BR_TLS10, BR_TLS12);
 
 	LOAD_FSTR_ARRAY(suites, FS_suites);
-	br_ssl_engine_set_suites(engine, suites, FS_suites.length());
+	br_ssl_engine_set_suites(engine, (uint16_t*)suites, FS_suites.length());
 	br_ssl_client_set_default_rsapub(&clientContext);
 	br_ssl_engine_set_default_rsavrfy(engine);
 	br_ssl_engine_set_default_ecdsa(engine);
@@ -95,7 +103,7 @@ int BrClientConnection::init()
 	x509Context = new X509Context(context);
 	br_ssl_engine_set_x509(engine, *x509Context);
 
-	br_ssl_engine_set_buffer(&clientContext.eng, buffer, sizeof(buffer), 1);
+	br_ssl_engine_set_buffer(&clientContext.eng, buffer, sizeof(buffer), 0);
 	br_ssl_client_reset(&clientContext, context.getExtension().hostName.c_str(), 0);
 
 	return runUntil(BR_SSL_SENDAPP | BR_SSL_RECVAPP);
@@ -109,25 +117,6 @@ const Certificate* BrClientConnection::getCertificate() const
 	}
 
 	return certificate;
-
-	/*
-	if(validators == nullptr) {
-		// No validation
-		return true;
-	}
-
-	assert(certificate == nullptr);
-	certificate = new BrCertificate();
-
-	x509Context->getCertificateHash(certificate->sha1Hash);
-	return validators->validate(certificate);
-
-	//	Check self-signed
-	//	char issuerSig[SHA256_SIZE];
-	//	char subjectSig[SHA256_SIZE];
-	//	return memcmp(x509Context->getSubjectHash(subjectSig), x509Context->getIssuerHash(issuerSig),
-	//				  sizeof(SHA256_SIZE)) == 0;
-*/
 }
 
 int BrClientConnection::decrypt(uint8_t*& buffer)
@@ -137,16 +126,13 @@ int BrClientConnection::decrypt(uint8_t*& buffer)
 		return state;
 	}
 
-	if(state != BR_SSL_RECVAPP) {
+	if((state & BR_SSL_RECVAPP) == 0) {
 		return 0;
 	}
 
 	size_t len = 0;
-	size_t avail = 0;
-	buffer = br_ssl_engine_recvapp_buf(&clientContext.eng, &avail);
-	debug_i("avail = %u", avail);
-	len = readTcpData(buffer, avail);
-	//		debug_hex(INFO, "READ", buffer, len);
+	buffer = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
+	debug_hex(INFO, "READ", buffer, len);
 	br_ssl_engine_recvapp_ack(&clientContext.eng, len);
 
 	return len;
@@ -159,21 +145,23 @@ int BrClientConnection::write(const uint8_t* data, size_t length)
 		return state;
 	}
 
-	if(state != BR_SSL_SENDAPP) {
-		return 0;
+	if((state & BR_SSL_SENDAPP) == 0) {
+		return -1;
 	}
 
 	size_t available;
 	auto buf = br_ssl_engine_sendapp_buf(&clientContext.eng, &available);
 	debug_d("SSL: Expected: %d, Available: %u", length, available);
 	if(available < length) {
-		return ERR_MEM;
+		return -1;
 	}
 
 	memcpy(buf, data, length);
 	br_ssl_engine_sendapp_ack(&clientContext.eng, length);
+	br_ssl_engine_flush(&clientContext.eng, 0);
+	runUntil(BR_SSL_SENDAPP | BR_SSL_RECVAPP);
 
-	return length;
+	return ERR_OK;
 }
 
 int BrClientConnection::runUntil(unsigned target)
@@ -188,6 +176,12 @@ int BrClientConnection::runUntil(unsigned target)
 			debug_w("SSL CLOSED, last error = %d (%s), heap free = %u", err, getErrorString(err).c_str(),
 					system_get_free_heap_size());
 			return SSL_CLOSE_NOTIFY;
+		}
+
+		if(!handshakeDone && (state & BR_SSL_SENDAPP)) {
+			handshakeDone = true;
+			context.handshakeComplete(true);
+			continue;
 		}
 
 		/*
@@ -215,6 +209,8 @@ int BrClientConnection::runUntil(unsigned target)
 			if(wlen > 0) {
 				br_ssl_engine_sendrec_ack(engine, wlen);
 			}
+
+			debug_i("runUntil: SENDREC");
 			continue;
 		}
 
@@ -222,7 +218,7 @@ int BrClientConnection::runUntil(unsigned target)
 		 * If we reached our target, then we are finished.
 		 */
 		if(state & target) {
-			return state & target;
+			return state;
 		}
 
 		/*
@@ -234,6 +230,7 @@ int BrClientConnection::runUntil(unsigned target)
 		 * This is unrecoverable here, so we report an error.
 		 */
 		if(state & BR_SSL_RECVAPP) {
+			debug_e("SSL: Protocol Error");
 			return -1;
 		}
 
@@ -242,11 +239,13 @@ int BrClientConnection::runUntil(unsigned target)
 			auto buf = br_ssl_engine_recvrec_buf(engine, &avail);
 			auto len = readTcpData(buf, avail);
 			if(len == 0) {
-				return 0;
+				return state;
 			}
 
-			//		debug_hex(INFO, "READ", buf, len);
+			debug_hex(INFO, "READ", buf, len);
 			br_ssl_engine_recvrec_ack(engine, len);
+
+			debug_i("runUntil: RECVREC");
 			continue;
 		}
 
@@ -258,6 +257,8 @@ int BrClientConnection::runUntil(unsigned target)
 		 * record.
 		 */
 		br_ssl_engine_flush(engine, 0);
+
+		debug_i("runUntil: flush");
 	}
 }
 

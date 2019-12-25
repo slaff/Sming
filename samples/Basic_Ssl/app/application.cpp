@@ -11,8 +11,10 @@ HttpClient downloadClient;
 
 int onDownload(HttpConnection& connection, bool success)
 {
-	debugf("Got response code: %d", connection.getResponse()->code);
-	debugf("Success: %d", success);
+	Serial.print(F("Got response code: "));
+	Serial.print(connection.getResponse()->code);
+	Serial.print(F(", success: "));
+	Serial.println(success);
 
 	auto ssl = connection.getSsl();
 	if(ssl) {
@@ -32,7 +34,8 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 		0xEB, 0xA0, 0xFE, 0x70, 0xFE, 0xCB, 0xF8, 0xA8, 0x7A, 0xB9, 0x1D, 0xAC, 0x1E, 0xAC, 0xA0, 0xF6,
 		0x62, 0xCB, 0xCD, 0xE4, 0x16, 0x72, 0xE6, 0xBC, 0x82, 0x9B, 0x32, 0x39, 0x43, 0x15, 0x76, 0xD4};
 
-	debugf("Connected. Got IP: %s", ip.toString().c_str());
+	Serial.print(F("Connected. Got IP: "));
+	Serial.println(ip.toString());
 
 	HttpRequest* request = new HttpRequest(F("https://www.grc.com/fingerprints.htm"));
 	request->setSslOptions(SSL_SERVER_VERIFY_LATER);
@@ -64,7 +67,7 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 
 void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason)
 {
-	debugf("I'm NOT CONNECTED!");
+	Serial.println(F("I'm NOT CONNECTED!"));
 }
 
 void init()

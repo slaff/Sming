@@ -20,4 +20,5 @@ COMPONENT_INCDIRS := bearssl/inc
 EXTRA_INCDIR := bearssl/src
 
 COMPONENT_CFLAGS := \
-	-Wno-undef
+	-Wno-undef \
+	-O2

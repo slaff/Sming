@@ -81,23 +81,10 @@ public:
 	 * @param length
 	 * @retval int Quantity of bytes actually written, or tcp error code
 	 */
-	int write(const uint8_t* data, size_t length)
-	{
-		if(connection == nullptr) {
-			return ERR_CONN;
-		}
+	int write(const uint8_t* data, size_t length);
 
-		int res = connection->write(data, length);
-		if(res < 0) {
-			// @todo Add a method to obtain a more appropriate TCP error code
-			return ERR_BUF;
-		}
-
-		return res;
-	}
-
-	// Called by connection to perform certificate validation
-	bool handshakeComplete();
+	bool validateCertificate();
+	void handshakeComplete(bool success);
 
 private:
 	void beginHandshake();

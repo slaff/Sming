@@ -4,7 +4,7 @@
 namespace Ssl
 {
 const br_x509_class X509Context::vt PROGMEM = {
-	sizeof(br_x509_class*), start_chain, start_cert, append, end_cert, end_chain, get_pkey,
+	sizeof(X509Context), start_chain, start_cert, append, end_cert, end_chain, get_pkey,
 };
 
 void X509Context::startChain(const char* serverName)
@@ -34,12 +34,10 @@ unsigned X509Context::endChain()
 		return BR_ERR_X509_EMPTY_CHAIN;
 	}
 
-	if(!context.handshakeComplete()) {
-		debug_br("Validation failed");
+	if(!context.validateCertificate()) {
 		return BR_ERR_X509_NOT_TRUSTED;
 	}
 
-	debug_br("Validation passed");
 	return BR_ERR_OK;
 }
 

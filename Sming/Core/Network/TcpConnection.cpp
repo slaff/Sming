@@ -450,10 +450,9 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 			closeTcpConnection(tcp);
 			return res;
 		}
-		p = out;
 
 		if(isConnecting && ssl->isConnected()) {
-			assert(p == nullptr);
+			assert(out == nullptr);
 			err = onConnected(ERR_OK);
 			checkSelfFree();
 			return err;
@@ -465,6 +464,7 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 		}
 
 		// Proceed with received decrypted data
+		p = out;
 	}
 
 	err = onReceive(p);

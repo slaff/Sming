@@ -122,10 +122,10 @@ private:
 	const br_x509_class* vtable = &vt;
 	static const br_x509_class vt;
 	Context& context;
-	br_sha1_context certificateSha1 = {0};
-	br_sha256_context subjectSha256 = {0};
-	br_sha256_context issuerSha256 = {0};
-	br_x509_decoder_context x509Decoder = {0};
+	br_sha1_context certificateSha1 = {};
+	br_sha256_context subjectSha256 = {};
+	br_sha256_context issuerSha256 = {};
+	br_x509_decoder_context x509Decoder = {};
 	bool allowSelfSigned = false;
 	uint8_t certificateCount = 0;
 };

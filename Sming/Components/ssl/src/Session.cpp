@@ -1,7 +1,6 @@
 
 #include <Network/Ssl/Session.h>
 #include <Network/Ssl/Factory.h>
-#include <Platform/WDT.h>
 #include <Network/TcpConnection.h>
 
 namespace Ssl
@@ -115,11 +114,11 @@ void Session::close()
 {
 	debug_d("SSL: closing ...");
 
-	delete context;
-	context = nullptr;
-
 	delete connection;
 	connection = nullptr;
+
+	delete context;
+	context = nullptr;
 
 	extension.clear();
 
@@ -136,9 +135,6 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 		pbuf_free(encrypted);
 		return ERR_CONN;
 	}
-
-	/* SSL handshake needs time. In theory we have max 8 seconds before the hardware watchdog resets the device */
-	WDT.alive();
 
 	int read_bytes = connection->read(encrypted, decrypted);
 
@@ -158,15 +154,39 @@ int Session::read(pbuf* encrypted, pbuf*& decrypted)
 	return read_bytes;
 }
 
-bool Session::handshakeComplete()
+int Session::write(const uint8_t* data, size_t length)
+{
+	if(connection == nullptr) {
+		return ERR_CONN;
+	}
+
+	int res = connection->write(data, length);
+	if(res < 0) {
+		// @todo Add a method to obtain a more appropriate TCP error code
+		return ERR_BUF;
+	}
+
+	return res;
+}
+
+bool Session::validateCertificate()
+{
+	if(validators.validate(connection->getCertificate())) {
+		debug_i("SSL validation passed, heap free = %u", system_get_free_heap_size());
+		return true;
+	}
+
+	debug_w("SSL Validation failed");
+	return false;
+}
+
+void Session::handshakeComplete(bool success)
 {
 	assert(!connected);
 
 	endHandshake();
 
-	bool validated = validators.validate(connection->getCertificate());
-
-	if(validated) {
+	if(success) {
 		connected = true;
 
 		// If requested, take a copy of the session ID for later re-use
@@ -177,14 +197,12 @@ bool Session::handshakeComplete()
 			*sessionId = connection->getSessionId();
 		}
 	} else {
-		debug_w("SSL Validation failed");
+		debug_w("SSL Handshake failed");
 	}
 
 	if(freeKeyCertAfterHandshake) {
 		connection->freeCertificate();
 	}
-
-	return validated;
 }
 
 }; // namespace Ssl

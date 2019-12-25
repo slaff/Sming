@@ -8,9 +8,14 @@ Extension& Context::getExtension()
 	return session.extension;
 }
 
-bool Context::handshakeComplete()
+bool Context::validateCertificate()
 {
-	return session.handshakeComplete();
+	return session.validateCertificate();
+}
+
+void Context::handshakeComplete(bool success)
+{
+	session.handshakeComplete(success);
 }
 
 } // namespace Ssl

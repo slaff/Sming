@@ -1,22 +1,42 @@
 #include <Network/Ssl/Context.h>
+#include <FlashString/Map.hpp>
 #include <Print.h>
 
 namespace Ssl
 {
+#define XX(tag, code) DEFINE_FSTR_LOCAL(cipherSuite_##tag, #tag)
+SSL_CIPHER_SUITE_MAP(XX)
+#undef XX
+
+#define XX(tag, code) {CipherSuite::tag, &cipherSuite_##tag},
+DEFINE_FSTR_MAP_LOCAL(cipherSuiteNames, CipherSuite, FSTR::String, SSL_CIPHER_SUITE_MAP(XX));
+#undef XX
+
 String cipherSuiteName(CipherSuite id)
 {
+	auto entry = cipherSuiteNames[id];
+	if(entry) {
+		return String(entry);
+	}
+
+	char buf[32];
+	auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%04X }"), unsigned(id));
+	return String(buf, len);
+
+/*
 	switch(id) {
-#define XX(n1, n2, tag)                                                                                                \
+#define XX(tag, code)                                                                                                  \
 	case CipherSuite::tag:                                                                                             \
 		return F(#tag);
 		SSL_CIPHER_SUITE_MAP(XX)
 #undef XX
 	default: {
 		char buf[32];
-		auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%02X, 0x%02X }"), unsigned(id) >> 8, unsigned(id) & 0xFF);
+		auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%04X }"), unsigned(id));
 		return String(buf, len);
 	}
 	}
+*/
 }
 
 size_t Connection::printTo(Print& p) const
@@ -49,12 +69,15 @@ int Connection::read(pbuf* encrypted, pbuf*& decrypted)
 	tcpData.buf = encrypted;
 	tcpData.offset = 0;
 
+	debug_i("Connection::read %u", encrypted->tot_len);
+
 	int totalBytes = 0;
 	uint8_t* totalReadBuffer = nullptr;
 	do {
 		uint8_t* readBuffer = nullptr;
 		int readBytes = decrypt(readBuffer);
 		if(readBytes == 0) {
+			debug_w("SSL read: 0");
 			continue;
 		}
 
@@ -142,7 +165,7 @@ int Connection::writeTcpData(uint8_t* data, size_t length)
 		return 0;
 	}
 
-	debug_hex(INFO, "WRITE", data, length);
+	//	debug_hex(INFO, "WRITE", data, length);
 
 	auto tcp = context.getTcp();
 	int tcp_len = 0;
