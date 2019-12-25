@@ -22,21 +22,31 @@ AxContext::~AxContext()
 	ssl_ctx_free(context);
 }
 
-bool AxContext::init(uint32_t options, size_t sessionCacheSize)
+bool AxContext::init()
 {
 	assert(context == nullptr);
 
-	context = ssl_ctx_new(SSL_CONNECT_IN_PARTS | (options & 0xFFFF0000), sessionCacheSize);
+	uint32_t options = SSL_CONNECT_IN_PARTS;
+	if(session.options & eSO_CLIENT_AUTHENTICATION) {
+		options |= SSL_CLIENT_AUTHENTICATION;
+	}
+	if(session.options & eSO_SERVER_VERIFY_LATER) {
+		options |= SSL_SERVER_VERIFY_LATER;
+	}
+
+#ifdef SSL_DEBUG
+	options |= SSL_DISPLAY_STATES | SSL_DISPLAY_BYTES | SSL_DISPLAY_CERTS;
+	debug_d("SSL: Show debug data ...");
+#endif
+
+	context = ssl_ctx_new(options, session.cacheSize);
 	if(context == nullptr) {
 		debug_e("SSL: Unable to allocate context");
 		return false;
 	}
 
-	return true;
-}
+	auto keyCert = session.keyCert;
 
-bool AxContext::setKeyCert(KeyCertPair& keyCert)
-{
 	if(!keyCert.isValid()) {
 		debug_w("Ignoring invalid keyCert");
 		return true;

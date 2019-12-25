@@ -36,7 +36,7 @@ void setSslFingerprints(HttpRequest* request)
 	 * Note: SSL is not compiled by default. In our example we set the ENABLE_SSL directive to 1
 	 * (See: ../Makefile-user.mk )
 	 */
-	request->setSslOptions(SSL_SERVER_VERIFY_LATER);
+	request->setSslOptions(Ssl::eSO_SERVER_VERIFY_LATER);
 
 	// These are the fingerprints for httpbin.org
 	static const uint8_t sha1Fingerprint[] PROGMEM = {0x2B, 0xF0, 0x48, 0x9D, 0x78, 0xB4, 0xDE, 0xE9, 0x69, 0xE2,

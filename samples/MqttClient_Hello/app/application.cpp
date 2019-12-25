@@ -79,7 +79,7 @@ void startMqttClient()
 	mqtt.setCallback(onMessageReceived);
 
 #ifdef ENABLE_SSL
-	mqtt.addSslOptions(SSL_SERVER_VERIFY_LATER);
+	mqtt.addSslOptions(Ssl::eSO_SERVER_VERIFY_LATER);
 
 #include <ssl/private_key.h>
 #include <ssl/cert.h>

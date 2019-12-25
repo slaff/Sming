@@ -44,19 +44,9 @@ public:
 	/**
 	 * @brief Initializer method that must be called after object creation and before the creation
 	 * 		  of server or client connections
-	 * @param options
-	 *
-	 * @param sessionCacheSize
-	 * 		Server: When the context is used to create a server connection this indicates how many
-	 * 			client sessions will be cached. Suggested value: 10
-	 * 		Client: When used to create a client connection this indicates how many ssl session ids
-	 * 			should be cached. Suggested value: 1
-	 *
 	 * @retval bool true on success
 	 */
-	virtual bool init(uint32_t options, size_t sessionCacheSize) = 0;
-
-	virtual bool setKeyCert(KeyCertPair& keyCert) = 0;
+	virtual bool init() = 0;
 
 	/**
 	 * @brief Creates client SSL connection.

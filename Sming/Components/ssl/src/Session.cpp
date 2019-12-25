@@ -7,9 +7,10 @@ namespace Ssl
 {
 bool Session::listen(tcp_pcb* tcp)
 {
-#ifdef SSL_DEBUG
-	options |= SSL_DISPLAY_STATES | SSL_DISPLAY_BYTES | SSL_DISPLAY_CERTS;
-#endif
+	if(!keyCert.isValid()) {
+		debug_e("SSL: server certificate and key are not provided!");
+		return false;
+	}
 
 	delete context;
 	assert(factory != nullptr);
@@ -18,16 +19,9 @@ bool Session::listen(tcp_pcb* tcp)
 		return false;
 	}
 
-	if(!context->init(options, cacheSize)) {
+	if(!context->init()) {
 		return false;
 	}
-
-	if(!keyCert.isValid()) {
-		debug_e("SSL: server certificate and key are not provided!");
-		return false;
-	}
-
-	context->setKeyCert(keyCert);
 
 	// TODO: test: free the certificate data on server destroy...
 	freeKeyCertAfterHandshake = true;
@@ -55,18 +49,9 @@ bool Session::onConnect(tcp_pcb* tcp)
 		return false;
 	}
 
-	uint32_t localOptions = options;
-#ifdef SSL_DEBUG
-	localOptions |= SSL_DISPLAY_STATES | SSL_DISPLAY_BYTES | SSL_DISPLAY_CERTS;
-	debug_d("SSL: Show debug data ...");
-#endif
+	cacheSize = 1;
 
-	if(!context->init(localOptions, 1)) {
-		return false;
-	}
-
-	if(!context->setKeyCert(keyCert)) {
-		debug_e("SSL: Error loading keyCert");
+	if(!context->init()) {
 		return false;
 	}
 
@@ -191,7 +176,7 @@ void Session::handshakeComplete(bool success)
 		connected = true;
 
 		// If requested, take a copy of the session ID for later re-use
-		if(options & SSL_SESSION_RESUME) {
+		if(options & eSO_SESSION_RESUME) {
 			if(sessionId == nullptr) {
 				sessionId = new SessionId;
 			}

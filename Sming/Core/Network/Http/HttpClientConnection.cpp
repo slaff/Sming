@@ -54,7 +54,7 @@ bool HttpClientConnection::send(HttpRequest* request)
 		if(!sslCreateSession()) {
 			return false;
 		}
-		ssl->options |= request->getSslOptions() | SSL_SESSION_RESUME;
+		ssl->options |= request->getSslOptions() | Ssl::eSO_SESSION_RESUME;
 		ssl->validators.add(request->sslFingerprints);
 		ssl->freeKeyCertAfterHandshake = false;
 		ssl->keyCert = request->sslKeyCertPair;

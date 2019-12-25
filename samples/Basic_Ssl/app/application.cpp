@@ -38,7 +38,7 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 	Serial.println(ip.toString());
 
 	HttpRequest* request = new HttpRequest(F("https://www.grc.com/fingerprints.htm"));
-	request->setSslOptions(SSL_SERVER_VERIFY_LATER);
+	request->setSslOptions(Ssl::eSO_SERVER_VERIFY_LATER);
 
 	/*
 	 * GET probably won't work as sites tend to use 16K blocks which we can't handle,

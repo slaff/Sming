@@ -27,22 +27,13 @@ class BrContext : public Context
 public:
 	using Context::Context;
 
-	bool init(uint32_t options, size_t sessionCacheSize) override
+	bool init() override
 	{
-		return true;
-	}
-
-	bool setKeyCert(KeyCertPair& keyCert) override
-	{
-		this->keyCert = &keyCert;
 		return true;
 	}
 
 	Connection* createClient() override;
 	Connection* createServer() override;
-
-private:
-	KeyCertPair* keyCert = nullptr;
 };
 
 } // namespace Ssl

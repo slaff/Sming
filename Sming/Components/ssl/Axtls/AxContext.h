@@ -23,8 +23,7 @@ public:
 	using Context::Context;
 	~AxContext();
 
-	bool init(uint32_t options, size_t sessionCacheSize) override;
-	bool setKeyCert(KeyCertPair& keyCert) override;
+	bool init() override;
 	Connection* createClient() override;
 	Connection* createServer() override;
 

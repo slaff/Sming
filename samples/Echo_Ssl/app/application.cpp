@@ -55,7 +55,7 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 {
 	debugf("IP: %s", ip.toString().c_str());
 	client = new TcpClient(TcpClientDataDelegate(onReceive));
-	client->addSslOptions(SSL_SERVER_VERIFY_LATER);
+	client->addSslOptions(Ssl::eSO_SERVER_VERIFY_LATER);
 	client->connect(IpAddress(SERVER_IP), 4444, true);
 }
 

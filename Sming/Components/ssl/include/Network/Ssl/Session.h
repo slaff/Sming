@@ -7,19 +7,16 @@
 
 class TcpConnection;
 
+namespace Ssl
+{
 /**
  * @brief SSL Options
- *
- * These are defined by AXTLS and handled also for other SSL implementations
  */
-#define SSL_SESSION_RESUME 0x0008
-#define SSL_CLIENT_AUTHENTICATION 0x00010000
-#define SSL_SERVER_VERIFY_LATER 0x00020000
-#define SSL_NO_DEFAULT_KEY 0x00040000
-#define SSL_DISPLAY_STATES 0x00080000
-#define SSL_DISPLAY_BYTES 0x00100000
-#define SSL_DISPLAY_CERTS 0x00200000
-#define SSL_DISPLAY_RSA 0x00400000
+enum Option {
+	eSO_SESSION_RESUME = 0x0008,
+	eSO_CLIENT_AUTHENTICATION = 0x00010000,
+	eSO_SERVER_VERIFY_LATER = 0x00020000,
+};
 
 /**
  * @brief Maximum Fragment Length Negotiation https://tools.ietf.org/html/rfc6066
@@ -39,8 +36,6 @@ enum FragmentSize {
 	eSEFS_16K,
 };
 
-namespace Ssl
-{
 class Session
 {
 public:
@@ -49,7 +44,10 @@ public:
 	KeyCertPair keyCert;
 	bool freeKeyCertAfterHandshake = false;
 	uint32_t options = 0;
-	// server
+	/**
+	 * Server: Number of cached client sessions. Suggested value: 10
+	 * Client: Number of cached session ids. Suggested value: 1
+	 */
 	int cacheSize = 10;
 	// client
 	ValidatorList validators;
