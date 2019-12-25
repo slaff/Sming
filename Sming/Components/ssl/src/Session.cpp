@@ -120,7 +120,8 @@ void Session::close()
 	delete context;
 	context = nullptr;
 
-	extension.clear();
+	hostName = nullptr;
+	fragmentSize = eSEFS_Off;
 
 	connected = false;
 }

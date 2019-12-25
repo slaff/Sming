@@ -12,9 +12,7 @@
 
 #pragma once
 
-#include "Extension.h"
 #include "Connection.h"
-#include "SessionId.h"
 #include "KeyCertPair.h"
 #include "Validator.h"
 
@@ -28,20 +26,6 @@ namespace Ssl
  * 		  The SSL context is the one that can later on be used to create client or server SSL connections
  * @{
  */
-
-/**
- * @brief SSL Options
- *
- * These are defined by AXTLS and handled also for other SSL implementations
- */
-#define SSL_SESSION_RESUME 0x0008
-#define SSL_CLIENT_AUTHENTICATION 0x00010000
-#define SSL_SERVER_VERIFY_LATER 0x00020000
-#define SSL_NO_DEFAULT_KEY 0x00040000
-#define SSL_DISPLAY_STATES 0x00080000
-#define SSL_DISPLAY_BYTES 0x00100000
-#define SSL_DISPLAY_CERTS 0x00200000
-#define SSL_DISPLAY_RSA 0x00400000
 
 class Session;
 
@@ -88,15 +72,14 @@ public:
 	 */
 	virtual Connection* createServer() = 0;
 
-	bool validateCertificate();
-
-	void handshakeComplete(bool success);
-
-	Extension& getExtension();
-
 	tcp_pcb* getTcp()
 	{
 		return tcp;
+	}
+
+	Session& getSession()
+	{
+		return session;
 	}
 
 protected:

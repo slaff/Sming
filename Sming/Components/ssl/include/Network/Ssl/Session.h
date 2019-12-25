@@ -7,17 +7,50 @@
 
 class TcpConnection;
 
+/**
+ * @brief SSL Options
+ *
+ * These are defined by AXTLS and handled also for other SSL implementations
+ */
+#define SSL_SESSION_RESUME 0x0008
+#define SSL_CLIENT_AUTHENTICATION 0x00010000
+#define SSL_SERVER_VERIFY_LATER 0x00020000
+#define SSL_NO_DEFAULT_KEY 0x00040000
+#define SSL_DISPLAY_STATES 0x00080000
+#define SSL_DISPLAY_BYTES 0x00100000
+#define SSL_DISPLAY_CERTS 0x00200000
+#define SSL_DISPLAY_RSA 0x00400000
+
+/**
+ * @brief Maximum Fragment Length Negotiation https://tools.ietf.org/html/rfc6066
+ *
+ * 0,1,2,3..6 corresponding to off,512,1024,2048..16384 bytes
+ *
+ * The allowed values for this field are: 2^9, 2^10, 2^11, and 2^12
+ *
+ */
+enum FragmentSize {
+	eSEFS_Off,
+	eSEFS_512, //<< 512 bytes
+	eSEFS_1K,  //<< 1024 bytes
+	eSEFS_2K,
+	eSEFS_4K,
+	eSEFS_8K,
+	eSEFS_16K,
+};
+
 namespace Ssl
 {
 class Session
 {
 public:
-	Extension extension;
+	String hostName;
+	FragmentSize fragmentSize = eSEFS_Off;
 	KeyCertPair keyCert;
 	bool freeKeyCertAfterHandshake = false;
 	uint32_t options = 0;
 	// server
-	int cacheSize = 50;
+	int cacheSize = 10;
 	// client
 	ValidatorList validators;
 

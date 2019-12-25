@@ -23,6 +23,7 @@
 #include "AxConnection.h"
 #include "AxError.h"
 #include "AxContext.h"
+#include <Network/Ssl/Session.h>
 #include <FlashString/Map.hpp>
 
 namespace Ssl
@@ -70,12 +71,13 @@ int AxConnection::decrypt(uint8_t*& buffer)
 	bool connected = isHandshakeDone();
 	int readBytes = ssl_read(ssl, &buffer);
 	if(!connected && isHandshakeDone()) {
-		if(!context.validateCertificate()) {
-			context.handshakeComplete(false);
+		auto& session = context.getSession();
+		if(!session.validateCertificate()) {
+			session.handshakeComplete(false);
 			return SSL_ERROR_BAD_CERTIFICATE;
 		}
 
-		context.handshakeComplete(true);
+		session.handshakeComplete(true);
 	}
 
 	return readBytes;

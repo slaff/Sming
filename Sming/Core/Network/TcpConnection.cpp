@@ -65,8 +65,8 @@ bool TcpConnection::connect(const String& server, int port, bool useSsl, uint32_
 			return false;
 		}
 		ssl->options |= sslOptions;
-		ssl->extension.hostName = server;
-		ssl->extension.fragmentSize = Ssl::Extension::eSEFS_4K; // 4K max size
+		ssl->hostName = server;
+		ssl->fragmentSize = Ssl::eSEFS_4K; // 4K max size
 	}
 
 	debug_d("connect to: %s", server.c_str());
