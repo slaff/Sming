@@ -66,10 +66,12 @@ int AxConnection::write(const uint8_t* data, size_t length)
 	return SSL_OK;
 }
 
-int AxConnection::decrypt(uint8_t*& buffer)
+int AxConnection::read(InputBuffer& input, uint8_t*& output)
 {
 	bool connected = isHandshakeDone();
-	int readBytes = ssl_read(ssl, &buffer);
+	this->input = &input;
+	int readBytes = ssl_read(ssl, &output);
+	this->input = nullptr;
 	if(!connected && isHandshakeDone()) {
 		auto& session = context.getSession();
 		if(!session.validateCertificate()) {
@@ -78,6 +80,10 @@ int AxConnection::decrypt(uint8_t*& buffer)
 		}
 
 		session.handshakeComplete(true);
+	}
+
+	if(readBytes == SSL_CLOSE_NOTIFY) {
+		readBytes = 0;
 	}
 
 	return readBytes;

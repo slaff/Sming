@@ -11,9 +11,9 @@
  ****/
 #pragma once
 
-#include <user_config.h>
 #include "SessionId.h"
 #include "Certificate.h"
+#include "InputBuffer.h"
 
 namespace Ssl
 {
@@ -227,15 +227,15 @@ public:
 
 	/**
 	 * @brief Reads encrypted information and decrypts it
-	 * @param encrypted Source encrypted data
-	 * @param decrypted Decrypted plaintext
+	 * @param input Source encrypted data
+	 * @param output Pointer to decrypted plaintext buffer
 	 *
 	 * @retval
-	 * 		 0 - when the handshake is still in progress
-	 * 		 > 0 - when the is decrypted data
-	 * 		 < 0 - in case of an error
+	 * 		   0 : handshake is still in progress
+	 * 		 > 0 : there is decrypted data
+	 * 		 < 0 : error
 	 */
-	virtual int read(pbuf* encrypted, pbuf*& decrypted);
+	virtual int read(InputBuffer& input, uint8_t*& output) = 0;
 
 	/**
 	 * @brief Converts and sends plaintext data
@@ -275,19 +275,7 @@ public:
 	 */
 	size_t printTo(Print& p) const override;
 
-	size_t readTcpData(uint8_t* buf, size_t bufSize);
-
 	int writeTcpData(uint8_t* data, size_t length);
-
-	/*
-	 * Called through from read() method.
-	 * Read incoming data from `decryptSource`, updating `offset` field,
-	 * and pass into SSL layer, then return a pointer to a block of
-	 * decrypted data with length. Zero-length block is fine.
-	 *
-	 * This method only returns application data so during initial handshake will return 0.
-	 */
-	virtual int decrypt(uint8_t*& buffer) = 0;
 
 	/**
 	 * @brief Get string for error code
@@ -296,10 +284,6 @@ public:
 
 protected:
 	Context& context;
-	struct {
-		struct pbuf* buf = nullptr;
-		uint16_t offset = 0;
-	} tcpData;
 };
 
 /** @} */

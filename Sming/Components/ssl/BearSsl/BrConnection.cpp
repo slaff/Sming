@@ -115,7 +115,8 @@ int BrClientConnection::init()
 	br_ssl_engine_set_buffer(&clientContext.eng, buffer, sizeof(buffer), 0);
 	br_ssl_client_reset(&clientContext, context.getSession().hostName.c_str(), 0);
 
-	return runUntil(BR_SSL_SENDAPP | BR_SSL_RECVAPP);
+	InputBuffer input(nullptr);
+	return runUntil(input, BR_SSL_SENDAPP | BR_SSL_RECVAPP);
 }
 
 const Certificate* BrClientConnection::getCertificate() const
@@ -128,9 +129,9 @@ const Certificate* BrClientConnection::getCertificate() const
 	return certificate;
 }
 
-int BrClientConnection::decrypt(uint8_t*& buffer)
+int BrClientConnection::read(InputBuffer& input, uint8_t*& output)
 {
-	int state = runUntil(BR_SSL_RECVAPP);
+	int state = runUntil(input, BR_SSL_RECVAPP);
 	if(state < 0) {
 		return state;
 	}
@@ -140,7 +141,7 @@ int BrClientConnection::decrypt(uint8_t*& buffer)
 	}
 
 	size_t len = 0;
-	buffer = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
+	output = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
 	debug_hex(DBG, "READ", output, len);
 	br_ssl_engine_recvapp_ack(&clientContext.eng, len);
 	return len;
@@ -148,7 +149,8 @@ int BrClientConnection::decrypt(uint8_t*& buffer)
 
 int BrClientConnection::write(const uint8_t* data, size_t length)
 {
-	int state = runUntil(BR_SSL_SENDAPP);
+	InputBuffer input(nullptr);
+	int state = runUntil(input, BR_SSL_SENDAPP);
 	if(state < 0) {
 		return state;
 	}
@@ -167,12 +169,12 @@ int BrClientConnection::write(const uint8_t* data, size_t length)
 	memcpy(buf, data, length);
 	br_ssl_engine_sendapp_ack(&clientContext.eng, length);
 	br_ssl_engine_flush(&clientContext.eng, 0);
-	runUntil(BR_SSL_SENDAPP | BR_SSL_RECVAPP);
+	runUntil(input, BR_SSL_SENDAPP | BR_SSL_RECVAPP);
 
 	return ERR_OK;
 }
 
-int BrClientConnection::runUntil(unsigned target)
+int BrClientConnection::runUntil(InputBuffer& input, unsigned target)
 {
 	auto engine = &clientContext.eng;
 
@@ -183,12 +185,13 @@ int BrClientConnection::runUntil(unsigned target)
 			int err = br_ssl_engine_last_error(engine);
 			debug_w("SSL CLOSED, last error = %d (%s), heap free = %u", err, getErrorString(err).c_str(),
 					system_get_free_heap_size());
-			return SSL_CLOSE_NOTIFY;
+			return -1;
 		}
 
 		if(!handshakeDone && (state & BR_SSL_SENDAPP)) {
 			handshakeDone = true;
 			context.getSession().handshakeComplete(true);
+			debug_i("Negotiated MFLN: %u", br_ssl_engine_get_mfln_negotiated(engine));
 			continue;
 		}
 
@@ -237,7 +240,7 @@ int BrClientConnection::runUntil(unsigned target)
 		if(state & BR_SSL_RECVREC) {
 			size_t avail = 0;
 			auto buf = br_ssl_engine_recvrec_buf(engine, &avail);
-			auto len = readTcpData(buf, avail);
+			auto len = input.read(buf, avail);
 			if(len == 0) {
 				return state;
 			}

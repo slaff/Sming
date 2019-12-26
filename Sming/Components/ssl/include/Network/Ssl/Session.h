@@ -98,13 +98,7 @@ public:
 	 */
 	void close();
 
-	/**
-	 * @brief Process received encrypted data
-	 * @param encrypted The input data, will be freed before returning
-	 * @param decrypted On success, the decrypted data
-	 * @retval int Number of bytes received, or error code
-	 */
-	int read(pbuf* encrypted, pbuf*& decrypted);
+	int read(InputBuffer& input, uint8_t*& output);
 
 	/**
 	 * @brief Write data to SSL connection

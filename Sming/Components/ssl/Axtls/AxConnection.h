@@ -70,13 +70,20 @@ public:
 		certificate = nullptr;
 	}
 
-	int decrypt(uint8_t*& buffer) override;
+	int read(InputBuffer& input, uint8_t*& output) override;
+
+	size_t readTcpData(uint8_t* buf, size_t count)
+	{
+		assert(input != nullptr);
+		return input->read(buf, count);
+	}
 
 	String getErrorString(int error) const override;
 
 private:
 	SSL* ssl;
 	mutable AxCertificate* certificate = nullptr;
+	InputBuffer* input = nullptr;
 };
 
 } // namespace Ssl

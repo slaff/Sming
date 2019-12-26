@@ -443,31 +443,39 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 
 	if(ssl != nullptr && p != nullptr) {
 		bool isConnecting = !ssl->isConnected();
-		pbuf* out;
-		int res = ssl->read(p, out);
-		if(res < 0) {
-			close();
-			closeTcpConnection(tcp);
-			return res;
+
+		Ssl::InputBuffer input(p);
+
+		pbuf pbufOut = {};
+		while(input.available() > 0) {
+			uint8_t* output;
+			int len = ssl->read(input, output);
+			if(len < 0) {
+				close();
+				closeTcpConnection(tcp);
+				err = ERR_CONN;
+				break;
+			}
+
+			if(isConnecting && ssl->isConnected()) {
+				assert(input.available() == 0);
+				err = onConnected(ERR_OK);
+			} else if(len != 0) {
+				// Proceed with received decrypted data
+				pbufOut.payload = output;
+				pbufOut.tot_len = len;
+				pbufOut.len = len;
+				err = onReceive(&pbufOut);
+			}
+
+			if(err < 0) {
+				break;
+			}
 		}
 
-		if(isConnecting && ssl->isConnected()) {
-			assert(out == nullptr);
-			err = onConnected(ERR_OK);
-			checkSelfFree();
-			return err;
-		}
-
-		// No data received
-		if(res == 0) {
-			return ERR_OK;
-		}
-
-		// Proceed with received decrypted data
-		p = out;
+	} else {
+		err = onReceive(p);
 	}
-
-	err = onReceive(p);
 
 	if(p != nullptr) {
 		pbuf_free(p);

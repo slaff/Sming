@@ -47,6 +47,8 @@ public:
 		certificate = nullptr;
 	}
 
+	int read(InputBuffer& input, uint8_t*& output) override;
+
 	int write(const uint8_t* data, size_t length) override;
 
 	CipherSuite getCipherSuite() const override
@@ -74,9 +76,7 @@ public:
 		return handshakeDone;
 	}
 
-	int runUntil(unsigned target);
-
-	int decrypt(uint8_t*& buffer) override;
+	int runUntil(InputBuffer& input, unsigned target);
 
 private:
 	br_ssl_client_context clientContext;

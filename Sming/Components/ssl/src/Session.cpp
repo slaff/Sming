@@ -111,33 +111,15 @@ void Session::close()
 	connected = false;
 }
 
-int Session::read(pbuf* encrypted, pbuf*& decrypted)
+int Session::read(InputBuffer& input, uint8_t*& output)
 {
-	assert(encrypted != nullptr);
-
-	decrypted = nullptr;
-
-	if(connection == nullptr) {
-		pbuf_free(encrypted);
-		return ERR_CONN;
+	assert(connection != nullptr);
+	int len = connection->read(input, output);
+	if(len < 0) {
+		debug_d("SSL: Got error: %d", len);
 	}
 
-	int read_bytes = connection->read(encrypted, decrypted);
-
-	if(read_bytes < 0) {
-		debug_d("SSL: Got error: %d", read_bytes);
-		// @todo Perhaps change this to returning read_bytes == 0, then call method
-		// on connection to determine alert code
-		// Implementation error codes should be opaque.
-		if(read_bytes == SSL_CLOSE_NOTIFY) {
-			read_bytes = 0;
-		}
-	} else if(read_bytes != 0) {
-		// we got some decrypted bytes...
-		debug_d("SSL: Decrypted data len %d", read_bytes);
-	}
-
-	return read_bytes;
+	return len;
 }
 
 int Session::write(const uint8_t* data, size_t length)
