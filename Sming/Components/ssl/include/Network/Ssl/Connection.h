@@ -23,56 +23,41 @@ namespace Ssl
  * @{
  */
 
-/* errors that can be generated - these are specific to AXTLS */
-#define SSL_OK 0
-#define SSL_NOT_OK -1
-#define SSL_ERROR_DEAD -2
-#define SSL_CLOSE_NOTIFY -3
-#define SSL_ERROR_CONN_LOST -256
-#define SSL_ERROR_RECORD_OVERFLOW -257
-#define SSL_ERROR_SOCK_SETUP_FAILURE -258
-#define SSL_ERROR_INVALID_HANDSHAKE -260
-#define SSL_ERROR_INVALID_PROT_MSG -261
-#define SSL_ERROR_INVALID_HMAC -262
-#define SSL_ERROR_INVALID_VERSION -263
-#define SSL_ERROR_UNSUPPORTED_EXTENSION -264
-#define SSL_ERROR_INVALID_SESSION -265
-#define SSL_ERROR_NO_CIPHER -266
-#define SSL_ERROR_INVALID_CERT_HASH_ALG -267
-#define SSL_ERROR_BAD_CERTIFICATE -268
-#define SSL_ERROR_INVALID_KEY -269
-#define SSL_ERROR_FINISHED_INVALID -271
-#define SSL_ERROR_NO_CERT_DEFINED -272
-#define SSL_ERROR_NO_CLIENT_RENOG -273
-#define SSL_ERROR_NOT_SUPPORTED -274
-#define SSL_X509_OFFSET -512
-
 #define SSL_ALERT_CODE_MAP(XX)                                                                                         \
 	XX(CLOSE_NOTIFY, 0)                                                                                                \
 	XX(UNEXPECTED_MESSAGE, 10)                                                                                         \
 	XX(BAD_RECORD_MAC, 20)                                                                                             \
 	XX(RECORD_OVERFLOW, 22)                                                                                            \
+	XX(DECOMPRESSION_FAILURE, 30)                                                                                      \
 	XX(HANDSHAKE_FAILURE, 40)                                                                                          \
 	XX(BAD_CERTIFICATE, 42)                                                                                            \
 	XX(UNSUPPORTED_CERTIFICATE, 43)                                                                                    \
+	XX(CERTIFICATE_REVOKED, 44)                                                                                        \
 	XX(CERTIFICATE_EXPIRED, 45)                                                                                        \
 	XX(CERTIFICATE_UNKNOWN, 46)                                                                                        \
 	XX(ILLEGAL_PARAMETER, 47)                                                                                          \
 	XX(UNKNOWN_CA, 48)                                                                                                 \
+	XX(ACCESS_DENIED, 49)                                                                                              \
 	XX(DECODE_ERROR, 50)                                                                                               \
 	XX(DECRYPT_ERROR, 51)                                                                                              \
 	XX(INVALID_VERSION, 70)                                                                                            \
+	XX(INSUFFICIENT_SECURITY, 71)                                                                                      \
+	XX(INTERNAL_ERROR, 80)                                                                                             \
+	XX(USER_CANCELLED, 90)                                                                                             \
 	XX(NO_RENEGOTIATION, 100)                                                                                          \
-	XX(UNSUPPORTED_EXTENSION, 110)
+	XX(UNSUPPORTED_EXTENSION, 110)                                                                                     \
+	XX(NO_APPLICATION_PROTOCOL, 120)
 
 /**
  * @brief Alert codes defined by the standard
  */
-enum AlertCode {
-#define XX(tag, code) SSL_ALERT##tag = code,
+enum class Alert {
+#define XX(tag, code) tag = code,
 	SSL_ALERT_CODE_MAP(XX)
 #undef XX
 };
+
+String getAlertString(Alert alert);
 
 /*
  * Cipher suites
@@ -122,7 +107,7 @@ enum AlertCode {
 	XX(DH_anon_WITH_AES_256_CBC_SHA, 0x003A)                                                                           \
 	XX(DH_anon_WITH_AES_128_CBC_SHA256, 0x006C)                                                                        \
 	XX(DH_anon_WITH_AES_256_CBC_SHA256, 0x006D)                                                                        \
-	/* From, RFC, 4492, */                                                                                            \
+	/* From, RFC, 4492, */                                                                                             \
 	XX(ECDH_ECDSA_WITH_NULL_SHA, 0xC001)                                                                               \
 	XX(ECDH_ECDSA_WITH_RC4_128_SHA, 0xC002)                                                                            \
 	XX(ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA, 0xC003)                                                                       \
@@ -148,7 +133,7 @@ enum AlertCode {
 	XX(ECDH_anon_WITH_3DES_EDE_CBC_SHA, 0xC017)                                                                        \
 	XX(ECDH_anon_WITH_AES_128_CBC_SHA, 0xC018)                                                                         \
 	XX(ECDH_anon_WITH_AES_256_CBC_SHA, 0xC019)                                                                         \
-	/* From, RFC, 5288, */                                                                                            \
+	/* From, RFC, 5288, */                                                                                             \
 	XX(RSA_WITH_AES_128_GCM_SHA256, 0x009C)                                                                            \
 	XX(RSA_WITH_AES_256_GCM_SHA384, 0x009D)                                                                            \
 	XX(DHE_RSA_WITH_AES_128_GCM_SHA256, 0x009E)                                                                        \
@@ -161,7 +146,7 @@ enum AlertCode {
 	XX(DH_DSS_WITH_AES_256_GCM_SHA384, 0x00A5)                                                                         \
 	XX(DH_anon_WITH_AES_128_GCM_SHA256, 0x00A6)                                                                        \
 	XX(DH_anon_WITH_AES_256_GCM_SHA384, 0x00A7)                                                                        \
-	/* From, RFC, 5289, */                                                                                            \
+	/* From, RFC, 5289, */                                                                                             \
 	XX(ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, 0xC023)                                                                    \
 	XX(ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, 0xC024)                                                                    \
 	XX(ECDH_ECDSA_WITH_AES_128_CBC_SHA256, 0xC025)                                                                     \
@@ -178,7 +163,7 @@ enum AlertCode {
 	XX(ECDHE_RSA_WITH_AES_256_GCM_SHA384, 0xC030)                                                                      \
 	XX(ECDH_RSA_WITH_AES_128_GCM_SHA256, 0xC031)                                                                       \
 	XX(ECDH_RSA_WITH_AES_256_GCM_SHA384, 0xC032)                                                                       \
-	/* From, RFC, 6655, and, 7251, */                                                                                 \
+	/* From, RFC, 6655, and, 7251, */                                                                                  \
 	XX(RSA_WITH_AES_128_CCM, 0xC09C)                                                                                   \
 	XX(RSA_WITH_AES_256_CCM, 0xC09D)                                                                                   \
 	XX(RSA_WITH_AES_128_CCM_8, 0xC0A0)                                                                                 \
@@ -187,7 +172,7 @@ enum AlertCode {
 	XX(ECDHE_ECDSA_WITH_AES_256_CCM, 0xC0AD)                                                                           \
 	XX(ECDHE_ECDSA_WITH_AES_128_CCM_8, 0xC0AE)                                                                         \
 	XX(ECDHE_ECDSA_WITH_AES_256_CCM_8, 0xC0AF)                                                                         \
-	/* From, RFC, 7905, */                                                                                            \
+	/* From, RFC, 7905, */                                                                                             \
 	XX(ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, 0xCCA8)                                                                \
 	XX(ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, 0xCCA9)                                                              \
 	XX(DHE_RSA_WITH_CHACHA20_POLY1305_SHA256, 0xCCAA)                                                                  \
@@ -195,7 +180,7 @@ enum AlertCode {
 	XX(ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256, 0xCCAC)                                                                \
 	XX(DHE_PSK_WITH_CHACHA20_POLY1305_SHA256, 0xCCAD)                                                                  \
 	XX(RSA_PSK_WITH_CHACHA20_POLY1305_SHA256, 0xCCAE)                                                                  \
-	/* From, RFC, 7507, */                                                                                            \
+	/* From, RFC, 7507, */                                                                                             \
 	XX(FALLBACK_SCSV, 0x5600)
 
 /**
@@ -219,7 +204,7 @@ enum class CipherSuite : uint16_t {
  * @param Cipher Suite identifier
  * @retval String
  */
-String cipherSuiteName(CipherSuite id);
+String getCipherSuiteName(CipherSuite id);
 
 class Context;
 

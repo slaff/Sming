@@ -20,6 +20,12 @@ else
 $(error Unsupported ENABLE_SSL value "$(ENABLE_SSL)")
 endif
 
+COMPONENT_RELINK_VARS	+= SSL_DEBUG
+SSL_DEBUG				?= 0
+ifeq ($(SSL_DEBUG),1)
+	COMPONENT_CXXFLAGS	+= -DSSL_DEBUG=1
+endif
+
 # Prints SSL status when App gets built
 CUSTOM_TARGETS			+= check-ssl
 .PHONY:check-ssl

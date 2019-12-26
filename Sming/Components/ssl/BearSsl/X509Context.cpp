@@ -30,7 +30,7 @@ void X509Context::startChain(const char* serverName)
 unsigned X509Context::endChain()
 {
 	if(certificateCount == 0) {
-		debug_br("No certificate processed");
+		debug_w("No certificate processed");
 		return BR_ERR_X509_EMPTY_CHAIN;
 	}
 

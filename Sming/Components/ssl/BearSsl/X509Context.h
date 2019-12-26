@@ -12,14 +12,11 @@
 
 #pragma once
 
-#include <debug_progmem.h>
+#include "debug.h"
 #include <bearssl.h>
-#include <assert.h>
 
 namespace Ssl
 {
-#define debug_br(fmt, ...) debug_i("BR: " fmt, ##__VA_ARGS__)
-
 #define GET_SELF() auto self = reinterpret_cast<X509Context*>(ctx)
 
 class X509Context
@@ -58,7 +55,7 @@ private:
 	// Callback on the first byte of any certificate
 	static void start_chain(const br_x509_class** ctx, const char* server_name)
 	{
-		debug_br("start_chain: %s", server_name);
+		debug_d("start_chain: %s", server_name);
 		GET_SELF();
 		self->startChain(server_name);
 	}
@@ -68,7 +65,7 @@ private:
 	// Callback for each certificate present in the chain
 	static void start_cert(const br_x509_class** ctx, uint32_t length)
 	{
-		debug_br("start_cert: %u", length);
+		debug_d("start_cert: %u", length);
 		(void)ctx;
 		(void)length;
 	}
@@ -76,7 +73,7 @@ private:
 	// Callback for each byte stream in the chain
 	static void append(const br_x509_class** ctx, const unsigned char* buf, size_t len)
 	{
-		debug_br("append: %u", len);
+		debug_d("append: %u", len);
 		GET_SELF();
 		// Don't process anything but the first certificate in the chain
 		if(self->certificateCount == 0) {
@@ -88,7 +85,7 @@ private:
 
 	static void end_cert(const br_x509_class** ctx)
 	{
-		debug_br("end_cert");
+		debug_d("end_cert");
 		GET_SELF();
 		++self->certificateCount;
 	}
@@ -96,7 +93,7 @@ private:
 	// Complete chain has been parsed, return 0 on validation success
 	static unsigned end_chain(const br_x509_class** ctx)
 	{
-		debug_br("end_chain");
+		debug_d("end_chain");
 		GET_SELF();
 		return self->endChain();
 	}

@@ -12,6 +12,7 @@
 
 /*
  */
+#include "debug.h"
 #include "BrConnection.h"
 #include "BrError.h"
 #include <Network/Ssl/Session.h>
@@ -30,8 +31,16 @@ DEFINE_FSTR_MAP_LOCAL(errorMap, int, FSTR::String, BR_ERROR_MAP(XX));
 
 String BrConnection::getErrorString(int error) const
 {
-	auto s = String(errorMap[error]);
-	return s ?: F("Unknown_") + String(error);
+	if(error >= BR_ERR_SEND_FATAL_ALERT) {
+		auto alert = Alert(error - BR_ERR_SEND_FATAL_ALERT);
+		return F("SEND_") + getAlertString(alert);
+	} else if(error >= BR_ERR_RECV_FATAL_ALERT) {
+		auto alert = Alert(error - BR_ERR_RECV_FATAL_ALERT);
+		return F("RECV_") + getAlertString(alert);
+	} else {
+		auto s = String(errorMap[error]);
+		return s ?: F("Unknown_") + String(error);
+	}
 }
 
 int BrClientConnection::init()
@@ -132,11 +141,8 @@ int BrClientConnection::decrypt(uint8_t*& buffer)
 
 	size_t len = 0;
 	buffer = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
-#ifdef SSL_DEBUG
-	debug_hex(INFO, "READ", buffer, len);
-#endif
+	debug_hex(DBG, "READ", output, len);
 	br_ssl_engine_recvapp_ack(&clientContext.eng, len);
-
 	return len;
 }
 
@@ -153,9 +159,7 @@ int BrClientConnection::write(const uint8_t* data, size_t length)
 
 	size_t available;
 	auto buf = br_ssl_engine_sendapp_buf(&clientContext.eng, &available);
-#ifdef SSL_DEBUG
 	debug_d("SSL: Expected: %d, Available: %u", length, available);
-#endif
 	if(available < length) {
 		return -1;
 	}
@@ -238,9 +242,7 @@ int BrClientConnection::runUntil(unsigned target)
 				return state;
 			}
 
-#ifdef SSL_DEBUG
-			debug_hex(INFO, "READ", buf, len);
-#endif
+			debug_hex(DBG, "READ", buf, len);
 			br_ssl_engine_recvrec_ack(engine, len);
 
 			continue;

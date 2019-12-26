@@ -12,7 +12,7 @@ SSL_CIPHER_SUITE_MAP(XX)
 DEFINE_FSTR_MAP_LOCAL(cipherSuiteNames, CipherSuite, FSTR::String, SSL_CIPHER_SUITE_MAP(XX));
 #undef XX
 
-String cipherSuiteName(CipherSuite id)
+String getCipherSuiteName(CipherSuite id)
 {
 	auto entry = cipherSuiteNames[id];
 	if(entry) {
@@ -22,21 +22,20 @@ String cipherSuiteName(CipherSuite id)
 	char buf[32];
 	auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%04X }"), unsigned(id));
 	return String(buf, len);
+}
 
-/*
-	switch(id) {
-#define XX(tag, code)                                                                                                  \
-	case CipherSuite::tag:                                                                                             \
-		return F(#tag);
-		SSL_CIPHER_SUITE_MAP(XX)
+#define XX(tag, code) DEFINE_FSTR_LOCAL(alertStr_##tag, #tag)
+SSL_ALERT_CODE_MAP(XX)
 #undef XX
-	default: {
-		char buf[32];
-		auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%04X }"), unsigned(id));
-		return String(buf, len);
-	}
-	}
-*/
+
+#define XX(tag, code) {Alert::tag, &alertStr_##tag},
+DEFINE_FSTR_MAP_LOCAL(alertCodeMap, Alert, FSTR::String, SSL_ALERT_CODE_MAP(XX));
+#undef XX
+
+String getAlertString(Alert alert)
+{
+	auto s = String(alertCodeMap[alert]);
+	return s ?: F("ALERT_") + String(unsigned(alert));
 }
 
 size_t Connection::printTo(Print& p) const
@@ -49,7 +48,7 @@ size_t Connection::printTo(Print& p) const
 		n += p.println(cert->getName(Certificate::Name::CERT_COMMON_NAME));
 	}
 	n += p.print(_F("  Cipher:       "));
-	n += p.println(cipherSuiteName(getCipherSuite()));
+	n += p.println(getCipherSuiteName(getCipherSuite()));
 	n += p.print(_F("  Session ID:   "));
 	n += p.println(getSessionId());
 	return n;
