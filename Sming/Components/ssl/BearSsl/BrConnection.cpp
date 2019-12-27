@@ -116,7 +116,18 @@ int BrClientConnection::init()
 	x509Context = new X509Context([this]() { return context.getSession().validateCertificate(); });
 	br_ssl_engine_set_x509(engine, *x509Context);
 
-	br_ssl_engine_set_buffer(&clientContext.eng, buffer, sizeof(buffer), 0);
+	// Set Mono-directional buffer size according to requested max. fragment size
+	auto fragSize = context.getSession().fragmentSize ?: eSEFS_4K;
+	size_t bufSize = (256U << fragSize) + (BR_SSL_BUFSIZE_MONO - 16384U);
+	debug_i("Using buffer size of %u bytes", bufSize);
+	delete buffer;
+	buffer = new uint8_t[bufSize];
+	if(buffer == nullptr) {
+		debug_e("Buffer allocation failed");
+		return BR_ERR_BAD_PARAM;
+	}
+	br_ssl_engine_set_buffer(&clientContext.eng, buffer, bufSize, 0);
+
 	br_ssl_client_reset(&clientContext, context.getSession().hostName.c_str(), 0);
 
 	InputBuffer input(nullptr);

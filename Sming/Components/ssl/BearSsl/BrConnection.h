@@ -35,6 +35,7 @@ public:
 	{
 		delete certificate;
 		delete x509Context;
+		delete[] buffer;
 	}
 
 	int init();
@@ -80,7 +81,7 @@ public:
 
 private:
 	br_ssl_client_context clientContext;
-	uint8_t buffer[BR_SSL_BUFSIZE_MONO];
+	uint8_t* buffer = nullptr;
 	X509Context* x509Context = nullptr;
 	mutable BrCertificate* certificate = nullptr;
 	bool handshakeDone = false;
