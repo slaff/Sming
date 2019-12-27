@@ -16,6 +16,7 @@
 #include "BrConnection.h"
 #include "BrError.h"
 #include <Network/Ssl/Session.h>
+#include <Network/Ssl/Alert.h>
 #include <FlashString/Map.hpp>
 #include <FlashString/Array.hpp>
 
@@ -31,6 +32,9 @@ DEFINE_FSTR_MAP_LOCAL(errorMap, int, FSTR::String, BR_ERROR_MAP(XX));
 
 String BrConnection::getErrorString(int error) const
 {
+	if(error < 0) {
+		error = -error;
+	}
 	if(error >= BR_ERR_SEND_FATAL_ALERT) {
 		auto alert = Alert(error - BR_ERR_SEND_FATAL_ALERT);
 		return F("SEND_") + getAlertString(alert);

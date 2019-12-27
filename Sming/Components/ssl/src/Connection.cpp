@@ -1,43 +1,18 @@
+/****
+ * Sming Framework Project - Open Source framework for high efficiency native ESP8266 development.
+ * Created 2015 by Skurydin Alexey
+ * http://github.com/SmingHub/Sming
+ * All files of the Sming Core are provided under the LGPL v3 license.
+ *
+ * Connection.cpp
+ *
+ ****/
+
 #include <Network/Ssl/Context.h>
-#include <FlashString/Map.hpp>
 #include <Print.h>
 
 namespace Ssl
 {
-#define XX(tag, code) DEFINE_FSTR_LOCAL(cipherSuite_##tag, #tag)
-SSL_CIPHER_SUITE_MAP(XX)
-#undef XX
-
-#define XX(tag, code) {CipherSuite::tag, &cipherSuite_##tag},
-DEFINE_FSTR_MAP_LOCAL(cipherSuiteNames, CipherSuite, FSTR::String, SSL_CIPHER_SUITE_MAP(XX));
-#undef XX
-
-String getCipherSuiteName(CipherSuite id)
-{
-	auto entry = cipherSuiteNames[id];
-	if(entry) {
-		return String(entry);
-	}
-
-	char buf[32];
-	auto len = m_snprintf(buf, sizeof(buf), _F("{ 0x%04X }"), unsigned(id));
-	return String(buf, len);
-}
-
-#define XX(tag, code) DEFINE_FSTR_LOCAL(alertStr_##tag, #tag)
-SSL_ALERT_CODE_MAP(XX)
-#undef XX
-
-#define XX(tag, code) {Alert::tag, &alertStr_##tag},
-DEFINE_FSTR_MAP_LOCAL(alertCodeMap, Alert, FSTR::String, SSL_ALERT_CODE_MAP(XX));
-#undef XX
-
-String getAlertString(Alert alert)
-{
-	auto s = String(alertCodeMap[alert]);
-	return s ?: F("ALERT_") + String(unsigned(alert));
-}
-
 size_t Connection::printTo(Print& p) const
 {
 	size_t n = 0;

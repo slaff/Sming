@@ -12,6 +12,7 @@
 
 #include "BrContext.h"
 #include "BrConnection.h"
+#include "BrError.h"
 
 namespace Ssl
 {
@@ -19,7 +20,12 @@ Connection* BrContext::createClient()
 {
 	auto connection = new BrClientConnection(*this);
 	if(connection != nullptr) {
-		connection->init();
+		int res = connection->init();
+		if(res < 0) {
+			debug_e("Connection init failed: %s", connection->getErrorString(res).c_str());
+			delete connection;
+			connection = nullptr;
+		}
 	}
 	return connection;
 }
