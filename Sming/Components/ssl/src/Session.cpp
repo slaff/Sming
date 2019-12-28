@@ -42,7 +42,7 @@ bool Session::onAccept(TcpConnection* client)
 {
 	assert(context != nullptr);
 	auto server = context->createServer();
-	client->setSsl(server);
+	client->setSslConnection(server);
 	return true;
 }
 

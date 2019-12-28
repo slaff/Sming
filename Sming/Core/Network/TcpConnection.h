@@ -172,7 +172,7 @@ public:
 	}
 
 	// Called by TcpServer
-	void setSsl(Ssl::Connection* connection)
+	void setSslConnection(Ssl::Connection* connection)
 	{
 		assert(ssl != nullptr);
 		ssl->setConnection(connection);

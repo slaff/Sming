@@ -26,6 +26,8 @@ public:
 	~AxConnection()
 	{
 		delete certificate;
+		// Typically sends out closing message
+		ssl_free(ssl);
 	}
 
 	void init(SSL* ssl)

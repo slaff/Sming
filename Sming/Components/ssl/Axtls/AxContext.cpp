@@ -18,7 +18,6 @@ namespace Ssl
 {
 AxContext::~AxContext()
 {
-	// Free context typically sends out closing message
 	ssl_ctx_free(context);
 }
 
