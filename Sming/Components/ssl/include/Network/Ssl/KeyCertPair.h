@@ -34,36 +34,18 @@ public:
 	 *  @param newKeyPassword
 	 *  @retval bool false on memory allocation failure
 	 *  @note We take a new copy of the certificate
+	 *  @{
 	 */
 	bool assign(const uint8_t* newKey, unsigned newKeyLength, const uint8_t* newCertificate,
-				unsigned newCertificateLength, const char* newKeyPassword = nullptr)
+				unsigned newCertificateLength, const char* newKeyPassword = nullptr);
+
+	bool assign(String newKey, String newCertificate, const char* newKeyPassword = nullptr)
 	{
-		free();
-
-		if(newKeyLength != 0 && newKey != nullptr) {
-			if(!key.setLength(newKeyLength)) {
-				return false;
-			}
-			memcpy(key.begin(), newKey, newKeyLength);
-		}
-
-		if(newCertificateLength != 0 && newCertificate != nullptr) {
-			if(!certificate.setLength(newCertificateLength)) {
-				return false;
-			}
-			memcpy(certificate.begin(), newCertificate, newCertificateLength);
-		}
-
-		unsigned passwordLength = (newKeyPassword == nullptr) ? 0 : strlen(newKeyPassword);
-		if(passwordLength != 0) {
-			keyPassword.setString(newKeyPassword, passwordLength);
-			if(!keyPassword) {
-				return false;
-			}
-		}
-
-		return true;
+		key = newKey;
+		certificate = newCertificate;
+		return key && certificate && setPassword(newKeyPassword);
 	}
+	/** @} */
 
 	/** @brief Assign another certificate to this structure
 	 *  @param keyCert
@@ -107,6 +89,9 @@ public:
 	{
 		return certificate.length();
 	}
+
+private:
+	bool setPassword(const char* newKeyPassword);
 
 private:
 	String key;
