@@ -55,8 +55,8 @@ public:
 	virtual ~TcpConnection();
 
 public:
-	virtual bool connect(const String& server, int port, bool useSsl = false, uint32_t sslOptions = 0);
-	virtual bool connect(IpAddress addr, uint16_t port, bool useSsl = false, uint32_t sslOptions = 0);
+	virtual bool connect(const String& server, int port, bool useSsl = false);
+	virtual bool connect(IpAddress addr, uint16_t port, bool useSsl = false);
 	virtual void close();
 
 	// return -1 on error
@@ -109,68 +109,6 @@ public:
 		this->destroyedDelegate = destroyedDelegate;
 	}
 
-	// [ SSL related methods]
-
-	void addSslOptions(uint32_t options)
-	{
-		if(sslCreateSession()) {
-			ssl->options |= options;
-		}
-	}
-
-	/**
-	 * @brief Sets private key, certificate and password from memory for the SSL connection
-	 * 		  If this methods is called from a client then it sets the client key and certificate
-	 * 		  If it is called from a server then it sets the server certificate and key.
-	 * 		  Server and Client certificates differ. Client certificate is used for identification.
-	 * 		  Server certificate is used for encrypt/decrypt the data.
-	 * 		  Make sure to use the correct certificate for the desired goal.
-	 *
-	 * @note  This method makes copy of the data.
-	 *
-	 * @param key
-	 * @param keyLength
-	 * @param certificate
-	 * @param certificateLength
-	 * @param keyPassword
-	 * @param freeAfterHandshake
-	 *
-	 * @return bool  true of success, false or failure
-	 */
-	bool setSslKeyCert(const uint8_t* key, int keyLength, const uint8_t* certificate, int certificateLength,
-					   const char* keyPassword = nullptr, bool freeAfterHandshake = false)
-	{
-		if(!sslCreateSession()) {
-			return false;
-		}
-		ssl->freeKeyCertAfterHandshake = freeAfterHandshake;
-		return ssl->keyCert.assign(key, keyLength, certificate, certificateLength, keyPassword);
-	}
-
-	/**
-	* @brief Sets private key, certificate and password from memory for the SSL connection
-	* 	 	 If this methods is called from a client then it sets the client key and certificate
-	* 		 If it is called from a server then it sets the server certificate and key.
-	* 		 Server and Client certificates differ. Client certificate is used for identification.
-	* 		 Server certificate is used for encrypt/decrypt the data.
-	* 		 Make sure to use the correct certificate for the desired goal.
-	*
-	* @note  This method passes the certificate key chain by reference
-	*
-	* @param keyCert
-	* @param freeAfterHandshake
-	*
-	* @retval bool  true of success, false or failure
-	*/
-	bool setSslKeyCert(const Ssl::KeyCertPair& keyCert, bool freeAfterHandshake = false)
-	{
-		if(!sslCreateSession()) {
-			return false;
-		}
-		ssl->freeKeyCertAfterHandshake = freeAfterHandshake;
-		return ssl->keyCert.assign(keyCert);
-	}
-
 	// Called by TcpServer
 	void setSslConnection(Ssl::Connection* connection)
 	{
@@ -179,16 +117,23 @@ public:
 		useSsl = true;
 	}
 
-	Ssl::Connection* getSsl()
+	Ssl::Session* getSsl()
 	{
-		return ssl ? ssl->getConnection() : nullptr;
+		return ssl;
 	}
 
 protected:
 	void initialize(tcp_pcb* pcb);
 	bool internalConnect(IpAddress addr, uint16_t port);
 
-	bool sslCreateSession();
+	/**
+	 * @brief Override in inherited classes to perform custom session initialisation
+	 *
+	 * Called when TCP connectoin is established before initating handshake.
+	 */
+	virtual void sslInitSession(Ssl::Session& session)
+	{
+	}
 
 	virtual err_t onConnected(err_t err);
 	virtual err_t onReceive(pbuf* buf);
@@ -208,6 +153,7 @@ protected:
 private:
 	static err_t staticOnPoll(void* arg, tcp_pcb* tcp);
 	static void closeTcpConnection(tcp_pcb* tpcb);
+	bool sslCreateSession();
 
 	inline void checkSelfFree()
 	{

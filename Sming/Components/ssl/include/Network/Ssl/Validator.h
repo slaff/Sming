@@ -74,6 +74,8 @@ public:
 	 * @retval bool  true on success, false on failure
 	 */
 	bool validate(const Certificate* certificate);
+
+	using Vector::count;
 };
 
 /** @} */

@@ -32,24 +32,24 @@ void TcpClient::setBuffer(ReadWriteStream* stream)
 	this->stream = buffer;
 }
 
-bool TcpClient::connect(const String& server, int port, bool useSsl, uint32_t sslOptions)
+bool TcpClient::connect(const String& server, int port, bool useSsl)
 {
 	if(isProcessing()) {
 		return false;
 	}
 
 	state = eTCS_Connecting;
-	return TcpConnection::connect(server.c_str(), port, useSsl, sslOptions);
+	return TcpConnection::connect(server.c_str(), port, useSsl);
 }
 
-bool TcpClient::connect(IpAddress addr, uint16_t port, bool useSsl, uint32_t sslOptions)
+bool TcpClient::connect(IpAddress addr, uint16_t port, bool useSsl)
 {
 	if(isProcessing()) {
 		return false;
 	}
 
 	state = eTCS_Connecting;
-	return TcpConnection::connect(addr, port, useSsl, sslOptions);
+	return TcpConnection::connect(addr, port, useSsl);
 }
 
 bool TcpClient::send(const char* data, uint16_t len, bool forceCloseAfterSent)

@@ -21,7 +21,7 @@ namespace Ssl
 class KeyCertPair
 {
 public:
-	bool isValid()
+	bool isValid() const
 	{
 		return key && certificate;
 	}
@@ -83,27 +83,27 @@ public:
 		certificate = nullptr;
 	}
 
-	const uint8_t* getKey()
+	const uint8_t* getKey() const
 	{
 		return reinterpret_cast<const uint8_t*>(key.c_str());
 	}
 
-	unsigned getKeyLength()
+	unsigned getKeyLength() const
 	{
 		return key.length();
 	}
 
-	const char* getKeyPassword()
+	const char* getKeyPassword() const
 	{
 		return keyPassword.c_str();
 	}
 
-	const uint8_t* getCertificate()
+	const uint8_t* getCertificate() const
 	{
 		return reinterpret_cast<const uint8_t*>(certificate.c_str());
 	}
 
-	unsigned getCertificateLength()
+	unsigned getCertificateLength() const
 	{
 		return certificate.length();
 	}

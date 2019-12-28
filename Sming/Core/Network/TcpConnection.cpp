@@ -51,7 +51,7 @@ bool TcpConnection::sslCreateSession()
 	return ssl != nullptr;
 }
 
-bool TcpConnection::connect(const String& server, int port, bool useSsl, uint32_t sslOptions)
+bool TcpConnection::connect(const String& server, int port, bool useSsl)
 {
 	if(tcp == nullptr) {
 		initialize(tcp_new());
@@ -64,9 +64,7 @@ bool TcpConnection::connect(const String& server, int port, bool useSsl, uint32_
 		if(!sslCreateSession()) {
 			return false;
 		}
-		ssl->options |= sslOptions;
 		ssl->hostName = server;
-		ssl->fragmentSize = Ssl::eSEFS_16K; // 4K max size
 	}
 
 	debug_d("connect to: %s", server.c_str());
@@ -95,18 +93,15 @@ bool TcpConnection::connect(const String& server, int port, bool useSsl, uint32_
 	return (dnslook == ERR_OK) ? internalConnect(addr, port) : false;
 }
 
-bool TcpConnection::connect(IpAddress addr, uint16_t port, bool useSsl, uint32_t sslOptions)
+bool TcpConnection::connect(IpAddress addr, uint16_t port, bool useSsl)
 {
 	if(tcp == nullptr) {
 		initialize(tcp_new());
 	}
 
 	this->useSsl = useSsl;
-	if(useSsl) {
-		if(!sslCreateSession()) {
-			return false;
-		}
-		ssl->options |= sslOptions;
+	if(useSsl && !sslCreateSession()) {
+		return false;
 	}
 
 	return internalConnect(addr, port);
@@ -400,6 +395,8 @@ err_t TcpConnection::internalOnConnected(err_t err)
 			return ERR_ABRT;
 		}
 
+		sslInitSession(*ssl);
+
 		if(!ssl->onConnect(tcp)) {
 			return ERR_ABRT;
 		}
@@ -458,7 +455,6 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 			}
 
 			if(isConnecting && ssl->isConnected()) {
-				assert(input.available() == 0);
 				err = onConnected(ERR_OK);
 			} else if(len != 0) {
 				// Proceed with received decrypted data

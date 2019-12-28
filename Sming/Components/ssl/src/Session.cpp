@@ -11,9 +11,32 @@
 #include <Network/Ssl/Session.h>
 #include <Network/Ssl/Factory.h>
 #include <Network/TcpConnection.h>
+#include <Print.h>
 
 namespace Ssl
 {
+String Options::toString() const
+{
+	String s;
+
+#define ADD(field)                                                                                                     \
+	if(field) {                                                                                                        \
+		if(s) {                                                                                                        \
+			s += ", ";                                                                                                 \
+			s += _F(#field);                                                                                           \
+		}                                                                                                              \
+	}
+
+	ADD(sessionResume);
+	ADD(clientAuthentication);
+	ADD(verifyLater);
+	ADD(freeKeyCertAfterHandshake);
+
+#undef ADD
+
+	return s;
+}
+
 bool Session::listen(tcp_pcb* tcp)
 {
 	if(!keyCert.isValid()) {
@@ -33,7 +56,7 @@ bool Session::listen(tcp_pcb* tcp)
 	}
 
 	// TODO: test: free the certificate data on server destroy...
-	freeKeyCertAfterHandshake = true;
+	options.freeKeyCertAfterHandshake = true;
 
 	return true;
 }
@@ -167,7 +190,7 @@ void Session::handshakeComplete(bool success)
 		connected = true;
 
 		// If requested, take a copy of the session ID for later re-use
-		if(options & eSO_SESSION_RESUME) {
+		if(options.sessionResume) {
 			if(sessionId == nullptr) {
 				sessionId = new SessionId;
 			}
@@ -177,9 +200,35 @@ void Session::handshakeComplete(bool success)
 		debug_w("SSL Handshake failed");
 	}
 
-	if(freeKeyCertAfterHandshake) {
+	if(options.freeKeyCertAfterHandshake) {
 		connection->freeCertificate();
 	}
+}
+
+size_t Session::printTo(Print& p) const
+{
+	size_t n = 0;
+
+	n += p.println(_F("SSL Session:"));
+	n += p.print(_F("  Options: "));
+	n += p.println(options.toString());
+	n += p.print(_F("  Host name: "));
+	n += p.println(hostName);
+	n += p.print(_F("  Cache Size: "));
+	n += p.println(cacheSize);
+	n += p.print(_F("  Fragment Size: "));
+	n += p.println(fragmentSize);
+	n += p.print(_F("  Validators: "));
+	n += p.println(validators.count());
+	n += p.print(_F("  Cert Length: "));
+	n += p.println(keyCert.getCertificateLength());
+	n += p.print(_F("  Cert PK Length: "));
+	n += p.println(keyCert.getKeyLength());
+	if(connection != nullptr) {
+		n += connection->printTo(p);
+	}
+
+	return n;
 }
 
 }; // namespace Ssl

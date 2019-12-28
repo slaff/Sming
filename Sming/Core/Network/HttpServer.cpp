@@ -33,9 +33,11 @@ void HttpServer::configure(const HttpServerSettings& settings)
 	}
 
 	setKeepAlive(settings.keepAliveSeconds);
-	if(sslCreateSession()) {
-		ssl->cacheSize = settings.sslSessionCacheSize;
-	}
+}
+
+void HttpServer::sslInitSession(Ssl::Session& session)
+{
+	session.cacheSize = settings.sslSessionCacheSize;
 }
 
 TcpConnection* HttpServer::createClient(tcp_pcb* clientTcp)

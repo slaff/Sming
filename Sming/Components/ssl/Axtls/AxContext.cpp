@@ -26,10 +26,10 @@ bool AxContext::init()
 	assert(context == nullptr);
 
 	uint32_t options = SSL_CONNECT_IN_PARTS;
-	if(session.options & eSO_CLIENT_AUTHENTICATION) {
+	if(session.options.clientAuthentication) {
 		options |= SSL_CLIENT_AUTHENTICATION;
 	}
-	if(session.options & eSO_SERVER_VERIFY_LATER) {
+	if(session.options.verifyLater) {
 		options |= SSL_SERVER_VERIFY_LATER;
 	}
 

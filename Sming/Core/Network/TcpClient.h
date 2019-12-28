@@ -17,7 +17,6 @@
 #pragma once
 
 #include "TcpConnection.h"
-#include <Network/Ssl/Validator.h>
 
 class TcpClient;
 class ReadWriteStream;
@@ -71,8 +70,8 @@ public:
 	}
 
 public:
-	bool connect(const String& server, int port, bool useSsl = false, uint32_t sslOptions = 0) override;
-	bool connect(IpAddress addr, uint16_t port, bool useSsl = false, uint32_t sslOptions = 0) override;
+	bool connect(const String& server, int port, bool useSsl = false) override;
+	bool connect(IpAddress addr, uint16_t port, bool useSsl = false) override;
 	void close() override;
 
 	/**	@brief	Set or clear the callback for received data
@@ -89,6 +88,15 @@ public:
 	void setCompleteDelegate(TcpClientCompleteDelegate completeCb = nullptr)
 	{
 		completed = completeCb;
+	}
+
+	/**
+	 * @brief Set the SSL session initialisation callback
+	 * @param handler
+	 */
+	void setSslInitHandler(Ssl::Session::InitDelegate handler)
+	{
+		sslInit = handler;
 	}
 
 	bool send(const char* data, uint16_t len, bool forceCloseAfterSent = false);
@@ -117,12 +125,22 @@ public:
 		closeAfterSent = ignoreIncomingData ? eTCCASS_AfterSent_Ignore_Received : eTCCASS_AfterSent;
 	}
 
+	using TcpConnection::getRemoteIp;
+	using TcpConnection::getRemotePort;
+
 protected:
 	err_t onConnected(err_t err) override;
 	err_t onReceive(pbuf* buf) override;
 	err_t onSent(uint16_t len) override;
 	void onError(err_t err) override;
 	void onReadyToSendData(TcpConnectionEvent sourceEvent) override;
+
+	void sslInitSession(Ssl::Session& session) override
+	{
+		if(sslInit) {
+			sslInit(session);
+		}
+	}
 
 	virtual void onFinished(TcpClientState finishState);
 
@@ -137,9 +155,10 @@ protected:
 
 private:
 	TcpClientState state = eTCS_Ready;
-	TcpClientCompleteDelegate completed = nullptr;
-	TcpClientEventDelegate ready = nullptr;
-	TcpClientDataDelegate receive = nullptr;
+	TcpClientCompleteDelegate completed;
+	TcpClientEventDelegate ready;
+	TcpClientDataDelegate receive;
+	Ssl::Session::InitDelegate sslInit;
 
 	TcpClientCloseAfterSentState closeAfterSent = eTCCASS_None;
 	uint16_t totalSentConfirmedBytes = 0;
