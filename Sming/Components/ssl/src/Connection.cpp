@@ -38,16 +38,15 @@ int Connection::writeTcpData(uint8_t* data, size_t length)
 
 	//	debug_hex(INFO, "WRITE", data, length);
 
-	auto tcp = context.getTcp();
-	int tcp_len = 0;
-	if(tcp_sndbuf(tcp) < length) {
-		tcp_len = tcp_sndbuf(tcp);
+	size_t tcp_len = tcp_sndbuf(tcp);
+	if(tcp_len < length) {
 		if(tcp_len == 0) {
 			tcp_output(tcp);
+#ifdef SSL_DEBUG
 			debug_e("writeTcpData: The send buffer is full! We have problem.");
+#endif
 			return 0;
 		}
-
 	} else {
 		tcp_len = length;
 	}

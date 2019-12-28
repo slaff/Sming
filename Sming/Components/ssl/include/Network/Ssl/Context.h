@@ -32,9 +32,8 @@ class Session;
 class Context
 {
 public:
-	Context(Session& session, tcp_pcb* tcp) : session(session), tcp(tcp)
+	Context(Session& session) : session(session)
 	{
-		assert(tcp != nullptr);
 	}
 
 	virtual ~Context()
@@ -53,19 +52,14 @@ public:
 	 *        Your SSL client use this call to make create a client connection to remote server.
 	 * @retval Connection*
 	 */
-	virtual Connection* createClient() = 0;
+	virtual Connection* createClient(tcp_pcb* tcp) = 0;
 
 	/**
 	 * @brief Creates server SSL connection.
 	 *        Your SSL servers use this call to allow remote clients to connect to them and use SSL.
 	 * @retval Connection*
 	 */
-	virtual Connection* createServer() = 0;
-
-	tcp_pcb* getTcp()
-	{
-		return tcp;
-	}
+	virtual Connection* createServer(tcp_pcb* tcp) = 0;
 
 	Session& getSession()
 	{
@@ -74,7 +68,6 @@ public:
 
 protected:
 	Session& session;
-	tcp_pcb* tcp = nullptr;
 };
 
 /** @} */

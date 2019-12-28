@@ -52,17 +52,6 @@ bool TcpServer::listen(int port, bool useSsl)
 
 	this->useSsl = useSsl;
 
-	if(useSsl) {
-		if(ssl == nullptr) {
-			debug_e("Unable to create SSL connection without SSL implementation.");
-			return false;
-		}
-
-		if(!ssl->listen(tcp)) {
-			return false;
-		}
-	}
-
 	tcp = tcp_listen(tcp);
 	tcp_accept(tcp, staticAccept);
 
@@ -95,9 +84,15 @@ err_t TcpServer::onAccept(tcp_pcb* clientTcp, err_t err)
 	client->setTimeOut(keepAlive);
 
 	if(useSsl) {
-		debug_d("SSL: handshake start.");
-		assert(ssl != nullptr);
-		if(!ssl->onAccept(client)) {
+		if(!sslCreateSession()) {
+			delete client;
+			return ERR_ABRT;
+		}
+
+		sslInitSession(*ssl);
+
+		if(!ssl->onAccept(client, clientTcp)) {
+			delete client;
 			return ERR_ABRT;
 		}
 	}

@@ -26,26 +26,28 @@ namespace Ssl
 {
 int AxConnection::write(const uint8_t* data, size_t length)
 {
-	int expected = ssl_calculate_write_length(ssl, length);
-	if(expected < 0) {
-		return expected;
+	int required = ssl_calculate_write_length(ssl, length);
+	if(required < 0) {
+		return required;
 	}
 
-	auto tcp = context.getTcp();
-	u16_t available = tcp ? tcp_sndbuf(tcp) : 0;
-	if(int(available) < expected) {
-		debug_d("SSL: Expected: %d, Available: %u", expected, available);
+	int available = tcp_sndbuf(tcp);
+	if(available < required) {
+#ifdef SSL_DEBUG
+		debug_i("SSL: Required: %d, Available: %d", required, available);
+#endif
 		return SSL_NOT_OK;
 	}
 
 	int written = ssl_write(ssl, data, length);
+#ifdef SSL_DEBUG
 	debug_d("SSL: Write len: %d, Written: %d", length, written);
+#endif
 	if(written < 0) {
 		debug_e("SSL: Write Error: %d", written);
-		return written;
 	}
 
-	return SSL_OK;
+	return written;
 }
 
 int AxConnection::read(InputBuffer& input, uint8_t*& output)
@@ -56,12 +58,13 @@ int AxConnection::read(InputBuffer& input, uint8_t*& output)
 	this->input = nullptr;
 	if(!connected && isHandshakeDone()) {
 		auto& session = context.getSession();
-		if(!session.validateCertificate()) {
-			session.handshakeComplete(false);
-			return SSL_ERROR_BAD_CERTIFICATE;
+		if(session.getConnection() != nullptr) {
+			if(!session.validateCertificate()) {
+				session.handshakeComplete(false);
+				return SSL_ERROR_BAD_CERTIFICATE;
+			}
+			session.handshakeComplete(true);
 		}
-
-		session.handshakeComplete(true);
 	}
 
 	if(readBytes == SSL_CLOSE_NOTIFY) {

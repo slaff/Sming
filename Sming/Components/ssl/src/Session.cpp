@@ -37,46 +37,47 @@ String Options::toString() const
 	return s;
 }
 
-bool Session::listen(tcp_pcb* tcp)
+bool Session::onAccept(TcpConnection* client, tcp_pcb* tcp)
 {
+	debug_i("SSL %p onAccept(%p, %p)", this, client, tcp);
+
 	if(!keyCert.isValid()) {
 		debug_e("SSL: server certificate and key are not provided!");
 		return false;
 	}
 
-	delete context;
-	assert(factory != nullptr);
-	context = factory->createContext(*this, tcp);
 	if(context == nullptr) {
-		return false;
+		assert(factory != nullptr);
+		context = factory->createContext(*this);
+		if(context == nullptr) {
+			return false;
+		}
+
+		if(!context->init()) {
+			return false;
+		}
+
+		// TODO: test: free the certificate data on server destroy...
+		options.freeKeyCertAfterHandshake = true;
 	}
 
-	if(!context->init()) {
-		return false;
-	}
+	beginHandshake();
 
-	// TODO: test: free the certificate data on server destroy...
-	options.freeKeyCertAfterHandshake = true;
-
-	return true;
-}
-
-bool Session::onAccept(TcpConnection* client)
-{
-	assert(context != nullptr);
-	auto server = context->createServer();
-	client->setSslConnection(server);
-	return true;
+	auto server = context->createServer(tcp);
+	return client->setSslConnection(server);
 }
 
 bool Session::onConnect(tcp_pcb* tcp)
 {
-	debug_d("SSL: Starting connection...");
+	debug_d("SSL %p: Starting connection...", this);
+
+	assert(connection == nullptr);
+	assert(context == nullptr);
 
 	// Client Session
 	delete context;
 	assert(factory != nullptr);
-	context = factory->createContext(*this, tcp);
+	context = factory->createContext(*this);
 	if(context == nullptr) {
 		return false;
 	}
@@ -95,7 +96,7 @@ bool Session::onConnect(tcp_pcb* tcp)
 
 	beginHandshake();
 
-	connection = context->createClient();
+	connection = context->createClient(tcp);
 	if(connection == nullptr) {
 		endHandshake();
 		return false;
@@ -129,7 +130,7 @@ void Session::endHandshake()
 
 void Session::close()
 {
-	debug_d("SSL: closing ...");
+	debug_d("SSL %p: closing ...", this);
 
 	delete connection;
 	connection = nullptr;
@@ -139,8 +140,6 @@ void Session::close()
 
 	hostName = nullptr;
 	fragmentSize = eSEFS_Off;
-
-	connected = false;
 }
 
 int Session::read(InputBuffer& input, uint8_t*& output)
@@ -157,12 +156,15 @@ int Session::read(InputBuffer& input, uint8_t*& output)
 int Session::write(const uint8_t* data, size_t length)
 {
 	if(connection == nullptr) {
+		debug_e("!! SSL Session connection is NULL");
 		return ERR_CONN;
 	}
 
 	int res = connection->write(data, length);
 	if(res < 0) {
-		// @todo Add a method to obtain a more appropriate TCP error code
+#ifdef SSL_DEBUG
+		debug_i("SSL: write returned %d (%s)", res, connection->getErrorString(res).c_str());
+#endif
 		return ERR_BUF;
 	}
 
@@ -171,6 +173,11 @@ int Session::write(const uint8_t* data, size_t length)
 
 bool Session::validateCertificate()
 {
+	if(connection == nullptr) {
+		debug_w("SSL: connection not set, assuming cert. is OK");
+		return true;
+	}
+
 	if(validators.validate(connection->getCertificate())) {
 		debug_i("SSL validation passed, heap free = %u", system_get_free_heap_size());
 		return true;
@@ -182,13 +189,9 @@ bool Session::validateCertificate()
 
 void Session::handshakeComplete(bool success)
 {
-	assert(!connected);
-
 	endHandshake();
 
 	if(success) {
-		connected = true;
-
 		// If requested, take a copy of the session ID for later re-use
 		if(options.sessionResume) {
 			if(sessionId == nullptr) {
@@ -200,7 +203,7 @@ void Session::handshakeComplete(bool success)
 		debug_w("SSL Handshake failed");
 	}
 
-	if(options.freeKeyCertAfterHandshake) {
+	if(options.freeKeyCertAfterHandshake && connection != nullptr) {
 		connection->freeCertificate();
 	}
 }

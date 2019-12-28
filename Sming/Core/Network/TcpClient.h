@@ -90,15 +90,6 @@ public:
 		completed = completeCb;
 	}
 
-	/**
-	 * @brief Set the SSL session initialisation callback
-	 * @param handler
-	 */
-	void setSslInitHandler(Ssl::Session::InitDelegate handler)
-	{
-		sslInit = handler;
-	}
-
 	bool send(const char* data, uint16_t len, bool forceCloseAfterSent = false);
 
 	bool sendString(const String& data, bool forceCloseAfterSent = false)
@@ -135,13 +126,6 @@ protected:
 	void onError(err_t err) override;
 	void onReadyToSendData(TcpConnectionEvent sourceEvent) override;
 
-	void sslInitSession(Ssl::Session& session) override
-	{
-		if(sslInit) {
-			sslInit(session);
-		}
-	}
-
 	virtual void onFinished(TcpClientState finishState);
 
 	void pushAsyncPart();
@@ -158,7 +142,6 @@ private:
 	TcpClientCompleteDelegate completed;
 	TcpClientEventDelegate ready;
 	TcpClientDataDelegate receive;
-	Ssl::Session::InitDelegate sslInit;
 
 	TcpClientCloseAfterSentState closeAfterSent = eTCCASS_None;
 	uint16_t totalSentConfirmedBytes = 0;

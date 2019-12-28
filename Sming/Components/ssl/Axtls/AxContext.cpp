@@ -72,7 +72,7 @@ bool AxContext::init()
 	return true;
 }
 
-Connection* AxContext::createClient()
+Connection* AxContext::createClient(tcp_pcb* tcp)
 {
 	assert(context != nullptr);
 
@@ -81,7 +81,7 @@ Connection* AxContext::createClient()
 	ssl_ext_set_max_fragment_size(ssl_ext, session.fragmentSize);
 
 	auto id = session.getSessionId();
-	auto connection = new AxConnection(*this);
+	auto connection = new AxConnection(*this, tcp);
 	auto client =
 		ssl_client_new(context, int(connection), id ? id->getValue() : nullptr, id ? id->getLength() : 0, ssl_ext);
 	if(client == nullptr) {
@@ -94,11 +94,11 @@ Connection* AxContext::createClient()
 	return connection;
 }
 
-Connection* AxContext::createServer()
+Connection* AxContext::createServer(tcp_pcb* tcp)
 {
 	assert(context != nullptr);
 
-	auto connection = new AxConnection(*this);
+	auto connection = new AxConnection(*this, tcp);
 	auto server = ssl_server_new(context, int(connection));
 	if(server == nullptr) {
 		delete connection;

@@ -24,8 +24,8 @@ public:
 	~AxContext();
 
 	bool init() override;
-	Connection* createClient() override;
-	Connection* createServer() override;
+	Connection* createClient(tcp_pcb* pcb) override;
+	Connection* createServer(tcp_pcb* pcb) override;
 
 private:
 	SSL_CTX* context = nullptr;

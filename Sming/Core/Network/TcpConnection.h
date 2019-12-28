@@ -109,12 +109,24 @@ public:
 		this->destroyedDelegate = destroyedDelegate;
 	}
 
-	// Called by TcpServer
-	void setSslConnection(Ssl::Connection* connection)
+	/**
+	 * @brief Set the SSL session initialisation callback
+	 * @param handler
+	 */
+	void setSslInitHandler(Ssl::Session::InitDelegate handler)
 	{
-		assert(ssl != nullptr);
+		sslInit = handler;
+	}
+
+	// Called by TcpServer
+	bool setSslConnection(Ssl::Connection* connection)
+	{
+		if(!sslCreateSession()) {
+			return false;
+		}
 		ssl->setConnection(connection);
 		useSsl = true;
+		return true;
 	}
 
 	Ssl::Session* getSsl()
@@ -126,6 +138,8 @@ protected:
 	void initialize(tcp_pcb* pcb);
 	bool internalConnect(IpAddress addr, uint16_t port);
 
+	bool sslCreateSession();
+
 	/**
 	 * @brief Override in inherited classes to perform custom session initialisation
 	 *
@@ -133,6 +147,9 @@ protected:
 	 */
 	virtual void sslInitSession(Ssl::Session& session)
 	{
+		if(sslInit) {
+			sslInit(session);
+		}
 	}
 
 	virtual err_t onConnected(err_t err);
@@ -165,7 +182,6 @@ protected:
 private:
 	static err_t staticOnPoll(void* arg, tcp_pcb* tcp);
 	static void closeTcpConnection(tcp_pcb* tpcb);
-	bool sslCreateSession();
 
 	inline void checkSelfFree()
 	{
@@ -181,6 +197,7 @@ protected:
 	bool canSend = true;
 	bool autoSelfDestruct = true;
 	Ssl::Session* ssl = nullptr;
+	Ssl::Session::InitDelegate sslInit;
 	bool useSsl = false;
 
 private:

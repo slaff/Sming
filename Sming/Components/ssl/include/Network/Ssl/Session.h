@@ -82,16 +82,11 @@ public:
 		return sessionId;
 	}
 
-	/**
-	 * @brief Called by server to prepare for listening
-	 */
-	bool listen(tcp_pcb* tcp);
-
-	bool onAccept(TcpConnection* client);
+	bool onAccept(TcpConnection* client, tcp_pcb* tcp);
 
 	void setConnection(Connection* connection)
 	{
-		delete this->connection;
+		assert(this->connection == nullptr);
 		this->connection = connection;
 	}
 
@@ -108,7 +103,7 @@ public:
 
 	bool isConnected() const
 	{
-		return connected;
+		return connection ? connection->isHandshakeDone() : false;
 	}
 
 	/**
@@ -143,7 +138,6 @@ private:
 	Connection* connection = nullptr;
 	SessionId* sessionId = nullptr;
 	CpuFrequency curFreq = CpuFrequency(0);
-	bool connected = false;
 };
 
 }; // namespace Ssl

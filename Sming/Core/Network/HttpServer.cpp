@@ -37,6 +37,7 @@ void HttpServer::configure(const HttpServerSettings& settings)
 
 void HttpServer::sslInitSession(Ssl::Session& session)
 {
+	TcpServer::sslInitSession(session);
 	session.cacheSize = settings.sslSessionCacheSize;
 }
 

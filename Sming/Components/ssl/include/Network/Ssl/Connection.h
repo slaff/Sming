@@ -30,8 +30,9 @@ class Context;
 class Connection : public Printable
 {
 public:
-	Connection(Context& context) : context(context)
+	Connection(Context& context, tcp_pcb* tcp) : context(context), tcp(tcp)
 	{
+		assert(tcp != nullptr);
 	}
 
 	virtual ~Connection()
@@ -103,6 +104,7 @@ public:
 
 protected:
 	Context& context;
+	tcp_pcb* tcp;
 };
 
 /** @} */
