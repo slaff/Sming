@@ -14,39 +14,11 @@
  */
 #include "debug.h"
 #include "BrConnection.h"
-#include "BrError.h"
 #include <Network/Ssl/Session.h>
-#include <Network/Ssl/Alert.h>
-#include <FlashString/Map.hpp>
 #include <FlashString/Array.hpp>
 
 namespace Ssl
 {
-#define XX(tag, text) DEFINE_FSTR_LOCAL(errStr_##tag, #tag)
-BR_ERROR_MAP(XX)
-#undef XX
-
-#define XX(tag, text) {BR_ERR_##tag, &errStr_##tag},
-DEFINE_FSTR_MAP_LOCAL(errorMap, int, FSTR::String, BR_ERROR_MAP(XX));
-#undef XX
-
-String BrConnection::getErrorString(int error) const
-{
-	if(error < 0) {
-		error = -error;
-	}
-	if(error >= BR_ERR_SEND_FATAL_ALERT) {
-		auto alert = Alert(error - BR_ERR_SEND_FATAL_ALERT);
-		return F("SEND_") + getAlertString(alert);
-	} else if(error >= BR_ERR_RECV_FATAL_ALERT) {
-		auto alert = Alert(error - BR_ERR_RECV_FATAL_ALERT);
-		return F("RECV_") + getAlertString(alert);
-	} else {
-		auto s = String(errorMap[error]);
-		return s ?: F("Unknown_") + String(error);
-	}
-}
-
 int BrClientConnection::init()
 {
 	DEFINE_FSTR_ARRAY_LOCAL(FS_suitesBasic, CipherSuite, CipherSuite::RSA_WITH_AES_128_CBC_SHA256,

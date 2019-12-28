@@ -15,6 +15,7 @@
 #include <Network/Ssl/Connection.h>
 #include <Network/Ssl/Validator.h>
 #include "AxCertificate.h"
+#include "AxError.h"
 
 namespace Ssl
 {
@@ -80,7 +81,10 @@ public:
 		return input->read(buf, count);
 	}
 
-	String getErrorString(int error) const override;
+	String getErrorString(int error) const override
+	{
+		return Ssl::getErrorString(error);
+	}
 
 private:
 	SSL* ssl;

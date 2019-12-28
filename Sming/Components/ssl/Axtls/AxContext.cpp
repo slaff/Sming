@@ -34,7 +34,10 @@ bool AxContext::init()
 	}
 
 #ifdef SSL_DEBUG
-	options |= SSL_DISPLAY_STATES | SSL_DISPLAY_BYTES | SSL_DISPLAY_CERTS;
+	options |= SSL_DISPLAY_STATES | SSL_DISPLAY_CERTS;
+#if DEBUG_VERBOSE_LEVEL == DBG
+	options |= SSL_DISPLAY_BYTES;
+#endif
 	debug_d("SSL: Show debug data ...");
 #endif
 

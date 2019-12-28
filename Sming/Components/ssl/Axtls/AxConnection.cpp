@@ -18,30 +18,12 @@
  *
  ****/
 
-/*
- */
 #include "AxConnection.h"
-#include "AxError.h"
 #include "AxContext.h"
 #include <Network/Ssl/Session.h>
-#include <FlashString/Map.hpp>
 
 namespace Ssl
 {
-#define XX(tag) DEFINE_FSTR_LOCAL(errStr_##tag, #tag)
-AX_ERROR_MAP(XX)
-#undef XX
-
-#define XX(tag) {SSL_##tag, &errStr_##tag},
-DEFINE_FSTR_MAP_LOCAL(errorMap, int, FSTR::String, AX_ERROR_MAP(XX));
-#undef XX
-
-String AxConnection::getErrorString(int error) const
-{
-	auto s = String(errorMap[error]);
-	return s ?: F("Unknown_") + String(error);
-}
-
 int AxConnection::write(const uint8_t* data, size_t length)
 {
 	int expected = ssl_calculate_write_length(ssl, length);

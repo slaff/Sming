@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Network/Ssl/Connection.h>
+#include "BrError.h"
 #include "BrCertificate.h"
 #include "X509Context.h"
 
@@ -23,7 +24,10 @@ class BrConnection : public Connection
 public:
 	using Connection::Connection;
 
-	String getErrorString(int error) const override;
+	String getErrorString(int error) const override
+	{
+		return Ssl::getErrorString(error);
+	}
 };
 
 class BrClientConnection : public BrConnection
