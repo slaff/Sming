@@ -162,13 +162,7 @@ void TcpClient::pushAsyncPart()
 	if(stream->isFinished()) {
 		debug_d("TcpClient stream finished");
 		freeStreams();
-
-		if(getAvailableWriteSize() > 0) {
-			// if there is space in the output buffer
-			// then don't wait for tcp sent confirmation and try sending more data now
-			onReadyToSendData(TcpConnectionEvent::eTCE_Poll);
-		}
-
+		trySend(eTCE_Poll);
 		flush();
 	}
 }

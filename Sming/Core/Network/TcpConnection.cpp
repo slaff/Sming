@@ -124,9 +124,7 @@ err_t TcpConnection::onReceive(pbuf* buf)
 		debug_tcp_d("received: (null)");
 	} else {
 		debug_tcp_d("received: %d bytes", buf->tot_len);
-		if(getAvailableWriteSize() > 0) {
-			onReadyToSendData(eTCE_Received);
-		}
+		trySend(eTCE_Received);
 	}
 
 	return ERR_OK;
@@ -138,10 +136,7 @@ err_t TcpConnection::onSent(uint16_t len)
 
 	if(tcp != nullptr) {
 		debug_tcp_ext("%d %d", tcp->state, tcp->flags); // WRONG!
-
-		if(getAvailableWriteSize() > 0) {
-			onReadyToSendData(eTCE_Sent);
-		}
+		trySend(eTCE_Sent);
 	}
 
 	return ERR_OK;
@@ -156,9 +151,7 @@ err_t TcpConnection::onPoll()
 		return ERR_TIMEOUT;
 	}
 
-	if(tcp != nullptr && getAvailableWriteSize() > 0) { //(tcp->state >= SYN_SENT && tcp->state <= ESTABLISHED))
-		onReadyToSendData(eTCE_Poll);
-	}
+	trySend(eTCE_Poll);
 
 	return ERR_OK;
 }
@@ -173,7 +166,7 @@ err_t TcpConnection::onConnected(err_t err)
 
 	canSend = true;
 	if(err == ERR_OK) {
-		onReadyToSendData(eTCE_Connected);
+		trySend(eTCE_Connected);
 	} else {
 		close();
 	}

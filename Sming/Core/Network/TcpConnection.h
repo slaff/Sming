@@ -142,6 +142,18 @@ protected:
 	virtual void onError(err_t err);
 	virtual void onReadyToSendData(TcpConnectionEvent sourceEvent);
 
+	/*
+	 * If there is space in the TCP output buffer, then don't wait for TCP
+	 * sent confirmation but try to send more data now
+	 * (Invoked from within other TCP callbacks.)
+	 */
+	void trySend(TcpConnectionEvent event)
+	{
+		if(tcp != nullptr && getAvailableWriteSize() > 0) {
+			onReadyToSendData(event);
+		}
+	}
+
 	// These methods are called via LWIP handlers
 	err_t internalOnConnected(err_t err);
 	err_t internalOnReceive(pbuf* p, err_t err);
