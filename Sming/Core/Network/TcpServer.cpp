@@ -74,12 +74,12 @@ err_t TcpServer::onAccept(tcp_pcb* clientTcp, err_t err)
 {
 	// Anti DDoS :-)
 	if(system_get_free_heap_size() < minHeapSize) {
-		debug_w("\r\n\r\nCONNECTION DROPPED\r\n\t(%d)\r\n\r\n", system_get_free_heap_size());
+		debug_w("\r\n\r\nCONNECTION DROPPED\r\n\t(free heap: %u)\r\n\r\n", system_get_free_heap_size());
 		return ERR_MEM;
 	}
 
 #ifdef NETWORK_DEBUG
-	debug_d("onAccept state: %d K=%d", err, connections.count());
+	debug_d("onAccept, tcp: %p, state: %d K=%d", clientTcp, err, connections.count());
 	list_mem();
 #endif
 
