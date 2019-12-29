@@ -11,14 +11,15 @@
  ****/
 
 #include "BrContext.h"
-#include "BrConnection.h"
+#include "BrClientConnection.h"
+#include "BrServerConnection.h"
 #include "BrError.h"
 
 namespace Ssl
 {
-Connection* BrContext::createClient()
+Connection* BrContext::createClient(tcp_pcb* tcp)
 {
-	auto connection = new BrClientConnection(*this);
+	auto connection = new BrClientConnection(*this, tcp);
 	if(connection != nullptr) {
 		int res = connection->init();
 		if(res < 0) {
@@ -30,27 +31,18 @@ Connection* BrContext::createClient()
 	return connection;
 }
 
-Connection* BrContext::createServer()
+Connection* BrContext::createServer(tcp_pcb* tcp)
 {
-	return nullptr;
-
-	/*
-	context = ssl_ctx_new(SSL_CONNECT_IN_PARTS | options, sessionCacheSize);
-	if(context == nullptr) {
-		debug_e("SSL: Unable to allocate context");
-		return false;
+	auto connection = new BrServerConnection(*this, tcp);
+	if(connection != nullptr) {
+		int res = connection->init();
+		if(res < 0) {
+			debug_e("Connection init failed: %s", connection->getErrorString(res).c_str());
+			delete connection;
+			connection = nullptr;
+		}
 	}
-
-	auto connection = new ConnectionImpl(tcp);
-	auto server = ssl_server_new(context, int(connection));
-	if(server == nullptr) {
-		delete connection;
-		return nullptr;
-	}
-
-	connection->init(server);
 	return connection;
-*/
 }
 
 } // namespace Ssl

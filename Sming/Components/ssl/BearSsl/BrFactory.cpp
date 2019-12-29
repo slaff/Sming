@@ -18,9 +18,9 @@ namespace Ssl
 class BrFactory : public Factory
 {
 public:
-	Context* createContext(Session& session, tcp_pcb* tcp) override
+	Context* createContext(Session& session) override
 	{
-		return new BrContext(session, tcp);
+		return new BrContext(session);
 	}
 };
 

@@ -15,4 +15,5 @@
 namespace Ssl
 {
 String getErrorString(int error);
-}
+Alert getAlert(int error);
+} // namespace Ssl

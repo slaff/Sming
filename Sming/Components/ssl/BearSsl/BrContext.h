@@ -13,7 +13,6 @@
 #pragma once
 
 #include <Network/Ssl/Context.h>
-#include <bearssl.h>
 
 namespace Ssl
 {
@@ -32,8 +31,8 @@ public:
 		return true;
 	}
 
-	Connection* createClient() override;
-	Connection* createServer() override;
+	Connection* createClient(tcp_pcb* tcp) override;
+	Connection* createServer(tcp_pcb* tcp) override;
 };
 
 } // namespace Ssl

@@ -105,4 +105,18 @@ String getErrorString(int error)
 	}
 }
 
+Alert getAlert(int error)
+{
+	if(error < 0) {
+		error = -error;
+	}
+	if(error >= BR_ERR_SEND_FATAL_ALERT) {
+		return Alert(error - BR_ERR_SEND_FATAL_ALERT);
+	} else if(error >= BR_ERR_RECV_FATAL_ALERT) {
+		return Alert(error - BR_ERR_RECV_FATAL_ALERT);
+	} else {
+		return Alert::Invalid;
+	}
+}
+
 } // namespace Ssl

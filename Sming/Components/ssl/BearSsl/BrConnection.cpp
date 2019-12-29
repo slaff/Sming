@@ -19,7 +19,7 @@
 
 namespace Ssl
 {
-int BrClientConnection::init()
+int BrConnection::init()
 {
 	DEFINE_FSTR_ARRAY_LOCAL(FS_suitesBasic, CipherSuite, CipherSuite::RSA_WITH_AES_128_CBC_SHA256,
 							CipherSuite::RSA_WITH_AES_256_CBC_SHA256, CipherSuite::RSA_WITH_AES_128_CBC_SHA,
@@ -52,13 +52,11 @@ int BrClientConnection::init()
 
 	auto& FS_suites = FS_suitesFull;
 
-	br_ssl_client_zero(&clientContext);
-	auto engine = &clientContext.eng;
+	auto engine = getEngine();
 	br_ssl_engine_set_versions(engine, BR_TLS10, BR_TLS12);
 
 	LOAD_FSTR_ARRAY(suites, FS_suites);
 	br_ssl_engine_set_suites(engine, (uint16_t*)suites, FS_suites.length());
-	br_ssl_client_set_default_rsapub(&clientContext);
 	br_ssl_engine_set_default_rsavrfy(engine);
 	br_ssl_engine_set_default_ecdsa(engine);
 
@@ -84,10 +82,6 @@ int BrClientConnection::init()
 	br_ssl_engine_set_default_des_cbc(engine);
 	br_ssl_engine_set_default_chapol(engine);
 
-	// X509 verification
-	x509Context = new X509Context([this]() { return context.getSession().validateCertificate(); });
-	br_ssl_engine_set_x509(engine, *x509Context);
-
 	// Set Mono-directional buffer size according to requested max. fragment size
 	auto fragSize = context.getSession().fragmentSize ?: eSEFS_4K;
 	size_t bufSize = (256U << fragSize) + (BR_SSL_BUFSIZE_MONO - 16384U);
@@ -96,27 +90,14 @@ int BrClientConnection::init()
 	buffer = new uint8_t[bufSize];
 	if(buffer == nullptr) {
 		debug_e("Buffer allocation failed");
-		return BR_ERR_BAD_PARAM;
+		return -BR_ERR_BAD_PARAM;
 	}
-	br_ssl_engine_set_buffer(&clientContext.eng, buffer, bufSize, 0);
+	br_ssl_engine_set_buffer(engine, buffer, bufSize, 0);
 
-	br_ssl_client_reset(&clientContext, context.getSession().hostName.c_str(), 0);
-
-	InputBuffer input(nullptr);
-	return runUntil(input, BR_SSL_SENDAPP | BR_SSL_RECVAPP);
+	return BR_ERR_OK;
 }
 
-const Certificate* BrClientConnection::getCertificate() const
-{
-	if(certificate == nullptr) {
-		certificate = new BrCertificate();
-		x509Context->getCertificateHash(certificate->sha1Hash);
-	}
-
-	return certificate;
-}
-
-int BrClientConnection::read(InputBuffer& input, uint8_t*& output)
+int BrConnection::read(InputBuffer& input, uint8_t*& output)
 {
 	int state = runUntil(input, BR_SSL_RECVAPP);
 	if(state < 0) {
@@ -127,14 +108,16 @@ int BrClientConnection::read(InputBuffer& input, uint8_t*& output)
 		return 0;
 	}
 
+	auto engine = getEngine();
+
 	size_t len = 0;
-	output = br_ssl_engine_recvapp_buf(&clientContext.eng, &len);
+	output = br_ssl_engine_recvapp_buf(engine, &len);
 	debug_hex(DBG, "READ", output, len);
-	br_ssl_engine_recvapp_ack(&clientContext.eng, len);
+	br_ssl_engine_recvapp_ack(engine, len);
 	return len;
 }
 
-int BrClientConnection::write(const uint8_t* data, size_t length)
+int BrConnection::write(const uint8_t* data, size_t length)
 {
 	InputBuffer input(nullptr);
 	int state = runUntil(input, BR_SSL_SENDAPP);
@@ -143,27 +126,30 @@ int BrClientConnection::write(const uint8_t* data, size_t length)
 	}
 
 	if((state & BR_SSL_SENDAPP) == 0) {
-		return -1;
+		return -BR_ERR_BAD_STATE;
 	}
 
+	auto engine = getEngine();
+
 	size_t available;
-	auto buf = br_ssl_engine_sendapp_buf(&clientContext.eng, &available);
-	debug_d("SSL: Expected: %d, Available: %u", length, available);
+	auto buf = br_ssl_engine_sendapp_buf(engine, &available);
+	debug_d("SSL: Required: %d, Available: %u", length, available);
 	if(available < length) {
-		return -1;
+		return -BR_ERR_IO;
 	}
 
 	memcpy(buf, data, length);
-	br_ssl_engine_sendapp_ack(&clientContext.eng, length);
-	br_ssl_engine_flush(&clientContext.eng, 0);
+	br_ssl_engine_sendapp_ack(engine, length);
+	br_ssl_engine_flush(engine, 0);
+
 	runUntil(input, BR_SSL_SENDAPP | BR_SSL_RECVAPP);
 
-	return ERR_OK;
+	return length;
 }
 
-int BrClientConnection::runUntil(InputBuffer& input, unsigned target)
+int BrConnection::runUntil(InputBuffer& input, unsigned target)
 {
-	auto engine = &clientContext.eng;
+	auto engine = getEngine();
 
 	for(;;) {
 		unsigned state = br_ssl_engine_current_state(engine);
@@ -172,7 +158,7 @@ int BrClientConnection::runUntil(InputBuffer& input, unsigned target)
 			int err = br_ssl_engine_last_error(engine);
 			debug_w("SSL CLOSED, last error = %d (%s), heap free = %u", err, getErrorString(err).c_str(),
 					system_get_free_heap_size());
-			return -1;
+			return err ? -err : -BR_ERR_BAD_STATE;
 		}
 
 		if(!handshakeDone && (state & BR_SSL_SENDAPP)) {
@@ -202,7 +188,7 @@ int BrClientConnection::runUntil(InputBuffer& input, unsigned target)
 				if(!engine->shutdown_recv) {
 					//				br_ssl_engine_fail(engine, BR_ERR_IO);
 				}
-				return -1;
+				return BR_ERR_IO;
 			}
 			if(wlen > 0) {
 				br_ssl_engine_sendrec_ack(engine, wlen);
