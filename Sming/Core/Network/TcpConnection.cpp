@@ -201,7 +201,8 @@ int TcpConnection::write(const char* data, int len, uint8_t apiflags)
 	err_t err;
 
 	if(ssl != nullptr) {
-		err = ssl->write(reinterpret_cast<const uint8_t*>(data), len);
+		len = ssl->write(reinterpret_cast<const uint8_t*>(data), len);
+		err = (len < 0) ? len : ERR_OK;
 	} else {
 		u16_t available = getAvailableWriteSize();
 		if(available < len) {
@@ -232,45 +233,39 @@ int TcpConnection::write(IDataSourceStream* stream)
 	}
 
 	// Send data from DataStream
-	bool repeat;
+	size_t total = 0;
+	unsigned pushCount = 0;
 	bool space;
-	int total = 0;
-
-	do {
-		space = (tcp_sndqueuelen(tcp) < TCP_SND_QUEUELEN);
-		if(!space) {
-			// don't try to send buffers if no free space available
-			debug_tcp_d("WAIT FOR FREE SPACE");
+	while((space = (tcp_sndqueuelen(tcp) < TCP_SND_QUEUELEN)) && !stream->isFinished() && (pushCount < 25)) {
+		uint16_t available = getAvailableWriteSize();
+		if(available == 0) {
 			break;
 		}
 
-		// Join small fragments
-		int pushCount = 0;
-		do {
-			pushCount++;
-			size_t available;
-			char buffer[NETWORK_SEND_BUFFER_SIZE];
-			auto read = std::min((uint16_t)NETWORK_SEND_BUFFER_SIZE, getAvailableWriteSize());
-			if(read > 0) {
-				available = stream->readMemoryBlock(buffer, read);
-			} else {
-				available = 0;
-			}
+		++pushCount;
 
-			if(available > 0) {
-				int written = write(buffer, available, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
-				total += written;
-				stream->seek(std::max(written, 0));
-				debug_d("TCP Written: %d, Available: %d, isFinished: %d, PushCount: %d [TcpBuf: %d]", written,
-						available, (stream->isFinished() ? 1 : 0), pushCount, tcp_sndbuf(tcp));
-				repeat = written == available && !stream->isFinished() && pushCount < 25;
-			} else {
-				repeat = false;
-			}
-		} while(repeat);
+		char buffer[NETWORK_SEND_BUFFER_SIZE];
+		auto bytesRead = stream->readMemoryBlock(buffer, std::min(uint16_t(NETWORK_SEND_BUFFER_SIZE), available));
+		if(bytesRead == 0) {
+			break;
+		}
 
-		space = (tcp_sndqueuelen(tcp) < TCP_SND_QUEUELEN); // && tcp_sndbuf(tcp) >= FILE_STREAM_BUFFER_SIZE;
-	} while(repeat && space);
+		int bytesWritten = write(buffer, bytesRead, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
+		debug_tcp_d("Written: %d, Available: %u, isFinished: %d, PushCount: %u", bytesWritten, available,
+					stream->isFinished(), pushCount);
+		if(bytesWritten <= 0) {
+			continue;
+		}
+
+		if(bytesWritten > 0) {
+			total += size_t(bytesWritten);
+			stream->seek(bytesWritten);
+		}
+	}
+
+	if(pushCount == 0) {
+		debug_tcp_d("WAIT FOR FREE SPACE");
+	}
 
 	if(!space) {
 		flush();
