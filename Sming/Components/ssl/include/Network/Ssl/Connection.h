@@ -16,6 +16,7 @@
 #include "Certificate.h"
 #include "InputBuffer.h"
 #include "CipherSuite.h"
+#include "Alert.h"
 
 namespace Ssl
 {
@@ -101,6 +102,13 @@ public:
 	 * @brief Get string for error code
 	 */
 	virtual String getErrorString(int error) const = 0;
+
+	/**
+	 * @brief Get alert code from error
+	 * @param error
+	 * @retval Alert Alert::INVALID if not an alert
+	 */
+	virtual Alert getAlert(int error) const = 0;
 
 protected:
 	Context& context;

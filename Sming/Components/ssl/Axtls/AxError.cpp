@@ -10,7 +10,6 @@
 
 #include "AxError.h"
 #include <axtls-8266/ssl/ssl.h>
-#include <Network/Ssl/Alert.h>
 #include <FlashString/Map.hpp>
 
 #define AX_ERROR_MAP(XX)                                                                                               \
@@ -74,13 +73,26 @@ String getErrorString(int error)
 	// X509 error ?
 	if(error < SSL_X509_OFFSET) {
 		s = String(x509ErrorMap[error - SSL_X509_OFFSET]);
-	} else if(error > SSL_ERROR_CONN_LOST) {
+	} else if(error < SSL_CLOSE_NOTIFY && error > SSL_ERROR_CONN_LOST) {
 		auto alert = Alert(-error);
 		s = getAlertString(alert);
 	} else {
 		s = String(errorMap[error]);
 	}
 	return s ?: F("Unknown_") + String(error);
+}
+
+Alert getAlert(int error)
+{
+	if(error == SSL_CLOSE_NOTIFY) {
+		return Alert::CLOSE_NOTIFY;
+	}
+
+	if(error > SSL_ERROR_CONN_LOST && error < SSL_CLOSE_NOTIFY) {
+		return Alert(-error);
+	}
+
+	return Alert::Invalid;
 }
 
 } // namespace Ssl

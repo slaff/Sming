@@ -48,6 +48,7 @@ namespace Ssl
  * @brief Alert codes defined by the standard
  */
 enum class Alert {
+	Invalid = -1,
 #define XX(tag, code) tag = code,
 	SSL_ALERT_CODE_MAP(XX)
 #undef XX

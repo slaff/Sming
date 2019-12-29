@@ -86,6 +86,11 @@ public:
 		return Ssl::getErrorString(error);
 	}
 
+	Alert getAlert(int error) const override
+	{
+		return Ssl::getAlert(error);
+	}
+
 private:
 	SSL* ssl;
 	mutable AxCertificate* certificate = nullptr;

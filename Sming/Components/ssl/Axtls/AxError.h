@@ -11,8 +11,10 @@
 #pragma once
 
 #include <WString.h>
+#include <Network/Ssl/Alert.h>
 
 namespace Ssl
 {
 String getErrorString(int error);
-}
+Alert getAlert(int error);
+} // namespace Ssl

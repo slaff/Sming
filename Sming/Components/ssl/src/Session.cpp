@@ -148,6 +148,11 @@ int Session::read(InputBuffer& input, uint8_t*& output)
 	int len = connection->read(input, output);
 	if(len < 0) {
 		debug_w("SSL: Got error: %d (%s)", len, connection->getErrorString(len).c_str());
+		auto alert = connection->getAlert(len);
+		if(alert == Alert::CERTIFICATE_UNKNOWN) {
+			debug_w("SSL: Client didn't like certificate, continue anyway");
+			len = ERR_OK;
+		}
 	}
 
 	return len;
