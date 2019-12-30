@@ -6,13 +6,11 @@
  *
  * X509Context.h
  *
- * @author: 2019 - Slavey Karadzhov <slav@attachix.com>
- *
  ****/
 
 #pragma once
 
-#include "debug.h"
+#include <SslDebug.h>
 #include <bearssl.h>
 
 namespace Ssl

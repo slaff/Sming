@@ -12,7 +12,7 @@
 
 /*
  */
-#include "debug.h"
+#include <SslDebug.h>
 #include "BrClientConnection.h"
 #include <Network/Ssl/Session.h>
 
