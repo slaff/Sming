@@ -24,7 +24,7 @@ String X509Name::getRDN(uint8_t type) const
 {
 	Asn1Parser parser(reinterpret_cast<const uint8_t*>(dn.c_str()), dn.length());
 
-	if(parser.getNextObject(ASN1_SEQUENCE) < 0) {
+	if(parser.getNextObject(ASN1_SEQUENCE) == 0) {
 		return nullptr;
 	}
 
