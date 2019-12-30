@@ -57,7 +57,7 @@ void scanBus()
 
 			nDevices++;
 		} else if(error == 4) {
-			Serial.print("Unknow error at address 0x");
+			Serial.print("Unknown error at address 0x");
 			if(address < 16)
 				Serial.print("0");
 			Serial.println(address, HEX);
@@ -79,7 +79,7 @@ void init()
 	// Default I2C pins (SDA: 2, SCL:0)
 
 	// You can change pins:
-	//Wire.pins(14, 12); // SDA, SCL
+	Wire.pins(4, 5); // SDA, SCL
 
 	Wire.begin();
 	procTimer.initializeMs(3000, scanBus).start();
