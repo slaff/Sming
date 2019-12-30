@@ -232,20 +232,19 @@ int TcpConnection::write(IDataSourceStream* stream)
 	// Send data from DataStream
 	size_t total = 0;
 	unsigned pushCount = 0;
-	bool space;
-	while((space = (tcp_sndqueuelen(tcp) < TCP_SND_QUEUELEN)) && !stream->isFinished() && (pushCount < 25)) {
-		uint16_t available = getAvailableWriteSize();
+	while((tcp_sndqueuelen(tcp) < TCP_SND_QUEUELEN) && !stream->isFinished() && (pushCount < 25)) {
+		size_t available = getAvailableWriteSize();
 		if(available == 0) {
 			break;
 		}
 
-		++pushCount;
-
 		char buffer[NETWORK_SEND_BUFFER_SIZE];
-		auto bytesRead = stream->readMemoryBlock(buffer, std::min(uint16_t(NETWORK_SEND_BUFFER_SIZE), available));
+		auto bytesRead = stream->readMemoryBlock(buffer, std::min(sizeof(buffer), available));
 		if(bytesRead == 0) {
 			break;
 		}
+
+		++pushCount;
 
 		int bytesWritten = write(buffer, bytesRead, TCP_WRITE_FLAG_COPY | TCP_WRITE_FLAG_MORE);
 		debug_tcp_d("Written: %d, Available: %u, isFinished: %d, PushCount: %u", bytesWritten, available,
@@ -262,9 +261,7 @@ int TcpConnection::write(IDataSourceStream* stream)
 
 	if(pushCount == 0) {
 		debug_tcp_d("WAIT FOR FREE SPACE");
-	}
-
-	if(!space) {
+	} else {
 		flush();
 	}
 
