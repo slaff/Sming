@@ -17,12 +17,11 @@ namespace Ssl
 size_t Connection::printTo(Print& p) const
 {
 	size_t n = 0;
-	n += p.println(_F("SSL Connection Information:"));
 	auto cert = getCertificate();
 	if(cert != nullptr) {
-		n += p.print(_F("  Certificate:  "));
-		n += p.println(cert->getName(Certificate::Name::CERT_COMMON_NAME));
+		n += cert->printTo(p);
 	}
+	n += p.println(_F("SSL Connection Information:"));
 	n += p.print(_F("  Cipher:       "));
 	n += p.println(getCipherSuiteName(getCipherSuite()));
 	n += p.print(_F("  Session ID:   "));

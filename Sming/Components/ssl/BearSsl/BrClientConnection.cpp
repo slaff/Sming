@@ -38,14 +38,4 @@ int BrClientConnection::init()
 	return startHandshake();
 }
 
-const Certificate* BrClientConnection::getCertificate() const
-{
-	if(certificate == nullptr) {
-		certificate = new BrCertificate();
-		x509Context->getCertificateHash(certificate->sha1Hash);
-	}
-
-	return certificate;
-}
-
 } // namespace Ssl
