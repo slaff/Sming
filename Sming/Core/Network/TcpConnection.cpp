@@ -52,8 +52,12 @@ bool TcpConnection::sslCreateSession()
 	}
 
 	ssl = new Ssl::Session;
+	if(ssl == nullptr) {
+		return false;
+	}
 
-	return ssl != nullptr;
+	sslInitSession(*ssl);
+	return true;
 }
 
 bool TcpConnection::connect(const String& server, int port, bool useSsl)
@@ -388,9 +392,6 @@ err_t TcpConnection::internalOnConnected(err_t err)
 			debug_tcp_e("SSL disabled: aborting connection");
 			return ERR_ABRT;
 		}
-
-		sslInitSession(*ssl);
-
 		if(!ssl->onConnect(tcp)) {
 			return ERR_ABRT;
 		}
