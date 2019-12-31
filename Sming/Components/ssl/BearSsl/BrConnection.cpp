@@ -131,8 +131,8 @@ int BrConnection::write(const uint8_t* data, size_t length)
 	size_t available;
 	auto buf = br_ssl_engine_sendapp_buf(engine, &available);
 	if(available == 0) {
-		debug_e("SSL: Send buffer full");
-		return -BR_ERR_BAD_STATE;
+		debug_w("SSL: Send buffer full");
+		return 0;
 	}
 
 	if(available < length) {
