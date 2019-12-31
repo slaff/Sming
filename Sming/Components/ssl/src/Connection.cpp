@@ -36,13 +36,10 @@ int Connection::writeTcpData(uint8_t* data, size_t length)
 		return 0;
 	}
 
-	//	debug_hex(INFO, "WRITE", data, length);
-
 	size_t tcp_len = tcp_sndbuf(tcp);
 	if(tcp_len < length) {
 		if(tcp_len == 0) {
 			tcp_output(tcp);
-			debug_e("writeTcpData: The send buffer is full! We have problem.");
 			return 0;
 		}
 	} else {
