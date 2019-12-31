@@ -183,9 +183,6 @@ int BrConnection::runUntil(InputBuffer& input, unsigned target)
 			size_t len;
 			auto buf = br_ssl_engine_sendrec_buf(engine, &len);
 			int wlen = writeTcpData(buf, len);
-			if(wlen == 0) {
-				return 0;
-			}
 			if(wlen < 0) {
 				debug_w("SSL SHUTDOWN");
 				/*
@@ -199,6 +196,14 @@ int BrConnection::runUntil(InputBuffer& input, unsigned target)
 					//				br_ssl_engine_fail(engine, BR_ERR_IO);
 				}
 				return BR_ERR_IO;
+			}
+
+			if(wlen == 0) {
+				if(target & BR_SSL_SENDAPP) {
+					return len;
+				}
+
+				return 0;
 			}
 
 			br_ssl_engine_sendrec_ack(engine, wlen);
@@ -233,7 +238,9 @@ int BrConnection::runUntil(InputBuffer& input, unsigned target)
 		}
 
 		// Make room for new incoming records
+		//if ((state & BR_SSL_SENDAPP) && (target & BR_SSL_RECVAPP)) {
 		br_ssl_engine_flush(engine, 0);
+		//}
 	}
 }
 

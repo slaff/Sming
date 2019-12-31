@@ -454,6 +454,8 @@ err_t TcpConnection::internalOnReceive(pbuf* p, err_t err)
 				pbufOut.tot_len = len;
 				pbufOut.len = len;
 				err = onReceive(&pbufOut);
+			} else if(len == 0) {
+				debug_e("Error reading SSL data.") break; // That should not happen !?
 			}
 
 			if(err < 0) {
