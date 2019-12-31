@@ -40,6 +40,7 @@ int Connection::writeTcpData(uint8_t* data, size_t length)
 	if(tcp_len < length) {
 		if(tcp_len == 0) {
 			tcp_output(tcp);
+			debug_d("writeTcpData: Send buffer full, will retry later.");
 			return 0;
 		}
 	} else {
