@@ -108,8 +108,18 @@ private:
 
 } // namespace Ssl
 
-typedef Ssl::FingerprintType SslFingerprintType;
-typedef Ssl::Fingerprints SslFingerprints;
+/**
+ * @deprecated Use Ssl::FingerprintType instead
+ * @{
+ */
+typedef Ssl::FingerprintType SslFingerprintType SMING_DEPRECATED;
+typedef Ssl::FingerprintType SSLFingerprintType SMING_DEPRECATED;
+/** @} */
 
-typedef Ssl::FingerprintType SSLFingerprintType SMING_DEPRECATED; ///< @deprecated Use SslFingerprintType instead
-typedef Ssl::Fingerprints SSLFingerprints SMING_DEPRECATED;		  ///< @deprecated Use SslFingerprints instead
+/**
+ * @deprecated Use Ssl::Fingerprints instead
+ * @{
+ */
+typedef Ssl::Fingerprints SslFingerprints SMING_DEPRECATED;
+typedef Ssl::Fingerprints SSLFingerprints SMING_DEPRECATED;
+/** @} */

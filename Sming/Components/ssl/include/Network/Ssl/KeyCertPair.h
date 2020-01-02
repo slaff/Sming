@@ -101,6 +101,10 @@ private:
 
 } // namespace Ssl
 
-typedef Ssl::KeyCertPair SslKeyCertPair SMING_DEPRECATED; ///< @deprecated Use Ssl::KeyCertPair instead
-
-typedef Ssl::KeyCertPair SSLKeyCertPair SMING_DEPRECATED; ///< @deprecated Use Ssl::KeyCertPair instead
+/**
+ * @deprecated Use Ssl::KeyCertPair instead
+ * @{
+ */
+typedef Ssl::KeyCertPair SslKeyCertPair SMING_DEPRECATED;
+typedef Ssl::KeyCertPair SSLKeyCertPair SMING_DEPRECATED;
+/** @} */

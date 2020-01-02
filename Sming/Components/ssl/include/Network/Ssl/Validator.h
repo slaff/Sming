@@ -33,7 +33,7 @@ struct Validator {
 	 *  @note Callback must ALWAYS release any allocate memory before returning.
 	 *  If called with certificate = NULL then just release memory and return false.
 	 */
-	typedef Delegate<bool(const Certificate* certificate, void* data)> Callback;
+	using Callback = Delegate<bool(const Certificate* certificate, void* data)>;
 
 	Callback callback;
 	void* data; ///< Callback-specific data, e.g. fingerprint to compare against
@@ -81,3 +81,8 @@ public:
 /** @} */
 
 } // namespace Ssl
+
+/**
+ * @deprecated Use `Ssl::Validator::Callback` instead
+ */
+typedef Ssl::Validator::Callback SslValidatorCallback SMING_DEPRECATED;
