@@ -202,8 +202,6 @@ protected:
 
 private:
 	TcpConnectionDestroyedDelegate destroyedDelegate = nullptr;
-
-	void closeSsl();
 };
 
 /** @} */

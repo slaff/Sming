@@ -69,7 +69,6 @@ public:
 		freeStreams();
 	}
 
-public:
 	bool connect(const String& server, int port, bool useSsl = false) override;
 	bool connect(IpAddress addr, uint16_t port, bool useSsl = false) override;
 	void close() override;
@@ -115,9 +114,6 @@ public:
 	{
 		closeAfterSent = ignoreIncomingData ? eTCCASS_AfterSent_Ignore_Received : eTCCASS_AfterSent;
 	}
-
-	using TcpConnection::getRemoteIp;
-	using TcpConnection::getRemotePort;
 
 protected:
 	err_t onConnected(err_t err) override;
