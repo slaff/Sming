@@ -16,7 +16,6 @@ namespace Ssl
 {
 /**
  * @brief Class to manage an SSL key certificate with optional password
- * @ingroup ssl
  */
 class KeyCertPair
 {

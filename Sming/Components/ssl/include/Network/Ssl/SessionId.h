@@ -17,7 +17,6 @@ namespace Ssl
 {
 /**
  * @brief Manages buffer to store SSL Session ID
- * @ingroup ssl
  */
 class SessionId
 {

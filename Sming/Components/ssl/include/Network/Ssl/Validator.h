@@ -21,10 +21,8 @@
 namespace Ssl
 {
 /**
- * @ingroup ssl
- * @{
+ * @brief Defines a validator instance
  */
-
 struct Validator {
 	/** @brief Validator callback function
 	 *  @param ssl Contains certificate to validate (may be NULL)
@@ -39,6 +37,9 @@ struct Validator {
 	void* data; ///< Callback-specific data, e.g. fingerprint to compare against
 };
 
+/**
+ * @brief List of validators to perform certificate checking
+ */
 class ValidatorList : private Vector<Validator>
 {
 public:
@@ -77,8 +78,6 @@ public:
 
 	using Vector::count;
 };
-
-/** @} */
 
 } // namespace Ssl
 

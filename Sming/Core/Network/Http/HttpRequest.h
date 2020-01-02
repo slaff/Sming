@@ -234,11 +234,14 @@ public:
 	/** @brief Clear buffers and reset to default state in preparation for another request */
 	void reset();
 
+	/**
+	 * @brief Callback delegate type used to initialise an SSL session for a given request
+	 */
 	using SslInitDelegate = Delegate<void(Ssl::Session& session, HttpRequest& request)>;
 
 	/**
 	 * @brief To customise SSL session options, provide a callback
-	 * @param callback Invoked before creating SSL connection
+	 * @param delegate Invoked before creating SSL connection
 	 */
 	HttpRequest* onSslInit(SslInitDelegate delegate)
 	{
