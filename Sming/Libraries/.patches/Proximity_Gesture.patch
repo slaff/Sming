@@ -1,0 +1,13 @@
+diff --git a/src/tof_gestures_platform.h b/src/tof_gestures_platform.h
+index 03d0312..6165b28 100644
+--- a/src/tof_gestures_platform.h
++++ b/src/tof_gestures_platform.h
+@@ -47,7 +47,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #define GET_TIME_STAMP()  millis()
+
+ #define ROMABLE_DATA
+-typedef float float_t;
++//typedef float float_t;
+
+
+ enum gestures_modules_mask{
