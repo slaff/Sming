@@ -60,6 +60,11 @@ typedef ObjectMap<String, ReadWriteStream> HttpFiles;
  */
 String httpGetErrorName(enum http_errno err);
 
+static inline String toString(enum http_errno err)
+{
+	return httpGetErrorName(err);
+}
+
 /**
  * @brief Return a descriptive string for the given error
  * @param err
@@ -74,6 +79,11 @@ String httpGetErrorDescription(enum http_errno err);
  */
 String httpGetStatusText(enum http_status code);
 
+static inline String toString(enum http_status code)
+{
+	return httpGetStatusText(code);
+}
+
 /**
  * @brief Return a descriptive string for an HTTP status code
  * @param code
@@ -82,6 +92,11 @@ String httpGetStatusText(enum http_status code);
 static inline String httpGetStatusText(unsigned code)
 {
 	return httpGetStatusText((enum http_status)code);
+}
+
+static inline String toString(HttpMethod method)
+{
+	return http_method_str(method);
 }
 
 /** @} */
