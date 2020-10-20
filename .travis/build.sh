@@ -1,15 +1,18 @@
 #!/bin/bash
 set -ex # exit with nonzero exit code if anything fails
 
-# Build times benefit from parallel building
-export MAKE_PARALLEL="make -j3"
-
 export SMING_HOME=$TRAVIS_BUILD_DIR/Sming
 
 # Setup ARCH SDK
 cd $SMING_HOME
-if [ -f "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/build.setup.sh" ]; then
-   source "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/build.setup.sh"
+
+# Build times benefit from parallel building
+export MAKE_PARALLEL="make -j3"
+
+SETUP="$TRAVIS_OS_NAME/build.setup.sh"
+
+if [ -f "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/$SETUP" ]; then
+       source "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/$SETUP"
 fi
 
 env
@@ -30,6 +33,9 @@ make list-config
 
 # Run ARCH SDK tests
 cd $SMING_HOME
-if [ -f "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/build.run.sh" ]; then
-   source "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/build.run.sh"
+
+RUNNER="$TRAVIS_OS_NAME/build.run.sh"
+
+if [ -f "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/$RUNNER" ]; then
+   source "$SMING_HOME/Arch/$SMING_ARCH/Tools/travis/$RUNNER"
 fi

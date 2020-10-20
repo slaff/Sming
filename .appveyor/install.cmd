@@ -4,6 +4,12 @@ rmdir /s /q c:\MinGW
 curl -LO %SMINGTOOLS%/MinGW.7z
 7z -oC:\ x MinGW.7z
 
+set
+
+echo %SMING_ARCH%
+
+REM ======
+
 goto :%SMING_ARCH%
 
 :Esp8266

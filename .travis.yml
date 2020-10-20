@@ -1,79 +1,113 @@
 language: cpp
-os: linux
+os:
+  - linux
+  - windows
 env:
   global:
-  - SMINGTOOLS=https://github.com/SmingHub/SmingTools/releases/download/1.0
-  - secure: D/cPk+sL2MNHLtfuU/rMiVN63+CTFpo9Chqa39LEH5VloGqC5f7RyIi2Maa3C/U2JQfM01HlsNR7E5bB0W8DQYbtzBDTqbZ4C7ppZRU5jCQ+L51ERKJ0EAV3KkaravQCRbWt3tlgOp6Xk6xaRMBaHEGrdbFjHYgEMPVteUQNr0A=
-  - secure: pc8Yqwmn6AM+iBjLNNnknmOoi+AxoyvcVy128b2WXSdj6Q4bOIXgj4WUg8I52i1fgyh0Rxg19WUB6qSVyykCXVdSRajIU1MsKZI+0q44Q83wnwVeYm7nPWxDqS3FKMajucZCg4p0BTE4T6tpnm7zZNHduHnggua/NpP2h7B/Sqs=
-  - secure: TX0IxYV3tTocCaJcgIA2xzJyHIzbxo7sAkLLYL+OITgWPD1VDUrEqEe7konQA5NIDJJ0VjoHxpdfti2LHG1fw45vrEMfBIOmZG6nW2gxD8ZS2G8KlYIxFB93oNNB6qJRHps1uIANk2hM+Ju6Pnqfc+lLh8oabs974ziAxoYuAJQ=
-jobs:
-  include:
-  - stage: test
-    addons:
-      apt:
-        packages:
-        - clang-format-6.0
-        - gcc-multilib
-        - g++-multilib
-        - doxygen
-        - python3-sphinx
-        - python3-pip
-        - python3-setuptools
-        - python3-cairocffi
-        - graphviz-dev
-        - xmlstarlet
-        - jq
-    env:
-    - SMING_ARCH=Host
-
-  - stage: build
-    name: C++11
-    env:
-    - SMING_ARCH=Esp8266
-    - SDK_VERSION=3.0.1
-    - ESP_HOME=$TRAVIS_BUILD_DIR/opt/esp-alt-sdk
-
-  - stage: build
-    name: C++17
-    env:
-    - SMING_ARCH=Esp8266
-    - SDK_VERSION=3.0.1
-    - ESP_HOME=$TRAVIS_BUILD_DIR/opt/esp-quick-toolchain
-
-  - stage: build
-    name: ESP-IDF
-    env:
-    - SMING_ARCH=Esp32
-
-
+    - SMINGTOOLS=https://github.com/SmingHub/SmingTools/releases/download/1.0
+    - secure: D/cPk+sL2MNHLtfuU/rMiVN63+CTFpo9Chqa39LEH5VloGqC5f7RyIi2Maa3C/U2JQfM01HlsNR7E5bB0W8DQYbtzBDTqbZ4C7ppZRU5jCQ+L51ERKJ0EAV3KkaravQCRbWt3tlgOp6Xk6xaRMBaHEGrdbFjHYgEMPVteUQNr0A=
+    - secure: pc8Yqwmn6AM+iBjLNNnknmOoi+AxoyvcVy128b2WXSdj6Q4bOIXgj4WUg8I52i1fgyh0Rxg19WUB6qSVyykCXVdSRajIU1MsKZI+0q44Q83wnwVeYm7nPWxDqS3FKMajucZCg4p0BTE4T6tpnm7zZNHduHnggua/NpP2h7B/Sqs=
+    - secure: TX0IxYV3tTocCaJcgIA2xzJyHIzbxo7sAkLLYL+OITgWPD1VDUrEqEe7konQA5NIDJJ0VjoHxpdfti2LHG1fw45vrEMfBIOmZG6nW2gxD8ZS2G8KlYIxFB93oNNB6qJRHps1uIANk2hM+Ju6Pnqfc+lLh8oabs974ziAxoYuAJQ=
 git:
   submodules: false
 addons:
   apt:
     sources:
-    - ubuntu-toolchain-r-test
-    - sourceline: ppa:libreoffice/libreoffice-4-2
-    - llvm-toolchain-trusty-6.0
+      - ubuntu-toolchain-r-test
+      - sourceline: ppa:libreoffice/libreoffice-4-2
+      - llvm-toolchain-trusty-6.0
     packages:
-    - bsdtar
-    - doxygen
-    - doxygen-doc
-    - doxygen-latex
-    - doxygen-gui
-    - graphviz
-    - xmlstarlet
+      - bsdtar
+      - doxygen
+      - doxygen-doc
+      - doxygen-latex
+      - doxygen-gui
+      - graphviz
+      - xmlstarlet
+
+# the following line is needed to enable the TravisCI build conditions
+conditions: v1
+        
+stages:
+  - name: test
+    if: os = linux
+  - name: build
+
+jobs:
+  include:
+    - stage: test
+      os: linux
+      addons:
+        apt:
+          packages:
+            - clang-format-6.0
+            - gcc-multilib
+            - g++-multilib
+            - doxygen
+            - python3-sphinx
+            - python3-pip
+            - python3-setuptools
+            - python3-cairocffi
+            - graphviz-dev
+            - xmlstarlet
+            - jq
+      env:
+        - SMING_ARCH=Host
+    - stage: test
+      os: windows
+      env:
+        - SMING_ARCH=Host
+
+#    - stage: build
+#      os: linux
+#      name: C++11
+#      env:
+#        - SMING_ARCH=Esp8266
+#        - SDK_VERSION=3.0.1
+#        - ESP_HOME=$TRAVIS_BUILD_DIR/opt/esp-alt-sdk
+#
+#    - stage: build
+#      os: linux
+#      name: C++17
+#      env:
+#        - SMING_ARCH=Esp8266
+#        - SDK_VERSION=3.0.1
+#        - ESP_HOME=$TRAVIS_BUILD_DIR/opt/esp-quick-toolchain
+#
+#    - stage: build
+#      os: linux
+#      name: ESP-IDF
+#      env:
+#        - SMING_ARCH=Esp32
+
+    - stage: build
+      os: windows
+      name: C++17
+      env:
+        - SMING_ARCH=Esp8266
+        - SDK_VERSION=3.0.1
+        - UDK_ROOT=/C/Espressif
+        - EQT_ROOT=/C/esp-quick-toolchain
+        - BUILD_COMPILER=eqt
+
+cache:
+  directories:
+    - $HOME/AppData/Local/Temp/chocolatey
+#    - /C/MinGW/
+
+
 install: ".travis/install.sh"
 script: ".travis/build.sh"
-deploy:
-  provider: script
-  script: ".travis/deploy.sh $TRAVIS_TAG"
-  skip_cleanup: true
-  on:
-    tags: true
-    condition: $TRAVIS_BUILD_STAGE_NAME = test
-notifications:
-  webhooks:
-    urls:
-    - https://webhooks.gitter.im/e/c1a5e8bc97d3794a0417
-    on_success: always
-    on_failure: always
+#deploy:
+#  provider: script
+#  script: ".travis/deploy.sh $TRAVIS_TAG"
+#  skip_cleanup: true
+#  on:
+#    tags: true
+#    condition: $TRAVIS_BUILD_STAGE_NAME = test
+#notifications:
+#  webhooks:
+#    urls:
+#      - https://webhooks.gitter.im/e/c1a5e8bc97d3794a0417
+#    on_success: always
+#    on_failure: always
