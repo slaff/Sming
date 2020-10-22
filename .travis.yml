@@ -86,8 +86,8 @@ jobs:
       env:
         - SMING_ARCH=Esp8266
         - SDK_VERSION=3.0.1
-        - UDK_ROOT=/C/Espressif
-        - EQT_ROOT=/C/esp-quick-toolchain
+        - UDK_ROOT=C:\Espressif
+        - EQT_ROOT=C:\esp-quick-toolchain
         - BUILD_COMPILER=eqt
 
 cache:
