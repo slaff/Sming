@@ -1,3 +1,5 @@
+Thanks to: https://github.com/g30r93g/viera.js/
+
 CH_DOWN     - channel down
 CH_UP       - channel up
 VOLUP       - volume up

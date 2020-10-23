@@ -16,6 +16,7 @@ void onConnected(Client& client)
 	Serial.println(_F("New Viera TV is found!"));
 	client.setMute(true);
 	client.sendCommand(CommandAction::ACTION_CH_UP);
+	client.sendAppCommand(ApplicationId::APP_YOUTUBE);
 }
 
 // Will be called when WiFi station was connected to AP
@@ -27,7 +28,7 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 	delete client;
 	client = new Client();
 	client->connect(onConnected); // search for a Viera TV in the local network.
-								   // as soon as one is found the onConnected callback will be called and you can start sending commands.
+		// as soon as one is found the onConnected callback will be called and you can start sending commands.
 }
 
 // Will be called when WiFi station was disconnected

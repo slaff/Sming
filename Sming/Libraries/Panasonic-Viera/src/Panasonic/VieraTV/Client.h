@@ -55,6 +55,31 @@ using namespace rapidxml;
 	XX(STOP, "stop")                                                                                                   \
 	XX(REC, "record")
 
+#define VIERA_APP_MAP(XX)                                                                                              \
+	/** id, name, code */                                                                                              \
+	XX(NETFLIX, "Netflix", 0010000200000001)                                                                           \
+	XX(YOUTUBE, "YouTube", 0070000200170001)                                                                           \
+	XX(AMAZON, "Amazon Prime Video", 0010000100170001)                                                                 \
+	XX(PLEX, "Plex", 0076010507000001)                                                                                 \
+	XX(BBC_IPLAYER, "BBC iPlayer", 0020000A00170010)                                                                   \
+	XX(BBC_NEWS, "BBC News", 0020000A00170006)                                                                         \
+	XX(BBC_SPORT, "BBC Sport", 0020000A00170007)                                                                       \
+	XX(ITV_HUB, "ITV Hub", 0387878700000124)                                                                           \
+	XX(TUNE_INE, "TuneIn", 0010001800000001)                                                                           \
+	XX(ACCU_WATHER, "AccuWeather", 0070000C00000001)                                                                   \
+	XX(ALL_4, "All 4", 0387878700000125)                                                                               \
+	XX(DEMAND_5, "Demand 5", 0020009300000002)                                                                         \
+	XX(RAKUTEN, "Rakuten TV", 0020002A00000001)                                                                        \
+	XX(CHILI, "CHILI", 0020004700000001)                                                                               \
+	XX(STV_PLAYER, "STV Player", 0387878700000132)                                                                     \
+	XX(DIGITAL_CONCERT_HALL, "Digital Concert Hall", 0076002307170001)                                                 \
+	XX(APPS_MARKET, "Apps Market", 0387878700000102)                                                                   \
+	XX(BROWSER, "Browser", 0077777700160002)                                                                           \
+	XX(CALENDAR, "Calendar", 0387878700150020)                                                                         \
+	XX(VIERA_LINK, "VIERA Link", 0387878700000016)                                                                     \
+	XX(RECORDED_TV, "Recorded TV", 0387878700000013)                                                                   \
+	XX(FREEVIEW_CATCH_UP, "Freeview Catch Up", 0387878700000109)
+
 namespace Panasonic
 {
 namespace VieraTV
@@ -65,9 +90,16 @@ enum class CommandAction {
 #undef XX
 };
 
-String toString(enum CommandAction a);
+enum class ApplicationId {
+#define XX(id, name, code) APP_##id,
+	VIERA_APP_MAP(XX)
+#undef XX
+};
 
-class Client: public UPnP::RootDevice
+String toString(enum CommandAction a);
+String toString(enum ApplicationId a);
+
+class Client : public UPnP::RootDevice
 {
 public:
 	using ConnectedCallback = Delegate<void(Client&)>;
@@ -108,6 +140,16 @@ public:
 	 * @param input
 	 */
 	bool switchToHdmi(size_t input);
+
+	/**
+	 * Send command to open app on the TV
+	 *
+	 * @param id
+	 */
+	bool sendAppCommand(enum ApplicationId id)
+	{
+		return sendAppCommand(toString(id));
+	}
 
 	/**
 	 * Send command to open app on the TV
@@ -173,6 +215,6 @@ private:
 	}
 };
 
-} // namespace Viera
+} // namespace VieraTV
 
 } // namespace Panasonic

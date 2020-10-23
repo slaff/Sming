@@ -8,9 +8,18 @@ namespace VieraTV
 DEFINE_FSTR_LOCAL(fstr_commands, VIERA_COMMAND_MAP(XX))
 #undef XX
 
+#define XX(id, name, code) #code "\0"
+DEFINE_FSTR_LOCAL(fstr_apps, VIERA_APP_MAP(XX))
+#undef XX
+
 String toString(enum CommandAction a)
 {
 	return CStringArray(fstr_commands)[(int)a];
+}
+
+String toString(enum ApplicationId a)
+{
+	return CStringArray(fstr_apps)[(int)a];
 }
 
 void Client::onNotify(SSDP::BasicMessage& msg)
@@ -59,7 +68,6 @@ bool Client::sendCommand(CommandAction action)
 	return sendRequest(cmd);
 }
 
-
 bool Client::switchToHdmi(size_t input)
 {
 	Command cmd;
@@ -80,8 +88,7 @@ bool Client::sendAppCommand(const String& applicationId)
 	cmd.type = Command::Type::REMOTE;
 	cmd.name = "X_LaunchApp";
 
-	setParams(cmd,
-			  "<X_AppType>vc_app<X_AppType><X_LaunchKeyword>product_id=" + applicationId + "</X_LaunchKeyword>");
+	setParams(cmd, "<X_AppType>vc_app<X_AppType><X_LaunchKeyword>product_id=" + applicationId + "</X_LaunchKeyword>");
 
 	return sendRequest(cmd);
 }
@@ -209,7 +216,7 @@ bool Client::sendRequest(Command command)
 	HttpHeaders headers;
 	headers[HTTP_HEADER_CONTENT_LENGTH] = content.length();
 	headers[HTTP_HEADER_CONTENT_TYPE] = "text/xml; charset=\"utf-8\"";
-	headers["SOAPACTION"] = "\"urn:" +urn +'#' + command.name +'"' ;
+	headers["SOAPACTION"] = "\"urn:" + urn + '#' + command.name + '"';
 
 	HttpRequest* request = new HttpRequest;
 	request->method = HTTP_POST;
@@ -221,7 +228,6 @@ bool Client::sendRequest(Command command)
 	return http.send(request);
 }
 
-
-} // namespace Viera
+} // namespace VieraTV
 
 } // namespace Panasonic
