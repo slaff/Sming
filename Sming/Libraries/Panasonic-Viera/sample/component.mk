@@ -1,0 +1,3 @@
+ARDUINO_LIBRARIES := Panasonic-Viera
+
+DISABLE_SPIFFS = 1
