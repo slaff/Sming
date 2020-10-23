@@ -1,0 +1,107 @@
+426856229 [SSDP] RX 192.168.0.241:27016 NOTIFY: 7 headers
+NOTIFY * HTTP/1.1
+HOST: 239.255.255.250:1900
+CACHE-CONTROL: max-age=1800
+LOCATION: http://192.168.0.241:55000/nrc/ddd.xml
+NT: urn:panasonic-com:device:p00RemoteController:1
+NTS: ssdp:alive
+SERVER: FreeBSD/8.0 UPnP/1.0 Panasonic-MIL-DLNA-SV/1.0
+USN: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX::urn:panasonic-com:device:p00RemoteController:1
+
+
+426891546 [SSDP] RX 192.168.0.241:27016 NOTIFY: 7 headers
+426896427 TV message received:
+426899048 HOST
+426900428 CACHE-CONTROL
+426902596 LOCATION
+426904331 NT
+426905546 NTS
+426906847 SERVER
+426908409 USN
+426909711 Fetching 'http://192.168.0.241:55000/nrc/ddd.xml'
+NOTIFY * HTTP/1.1
+HOST: 239.255.255.250:1900
+CACHE-CONTROL: max-age=1800
+LOCATION: http://192.168.0.241:55000/nrc/ddd.xml
+NT: upnp:rootdevice
+NTS: ssdp:alive
+SERVER: FreeBSD/8.0 UPnP/1.0 Panasonic-MIL-DLNA-SV/1.0
+USN: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX::upnp:rootdevice
+
+
+426940784 [SSDP] RX 192.168.0.241:27016 NOTIFY: 7 headers
+NOTIFY * HTTP/1.1
+HOST: 239.255.255.250:1900
+CACHE-CONTROL: max-age=1800
+LOCATION: http://192.168.0.241:55000/nrc/ddd.xml
+NT: urn:panasonic-com:service:p00NetworkControl:1
+NTS: ssdp:alive
+SERVER: FreeBSD/8.0 UPnP/1.0 Panasonic-MIL-DLNA-SV/1.0
+USN: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX::urn:panasonic-com:service:p00NetworkControl:1
+
+
+426975666 [SSDP] RX 192.168.0.241:27016 NOTIFY: 7 headers
+NOTIFY * HTTP/1.1
+HOST: 239.255.255.250:1900
+CACHE-CONTROL: max-age=1800
+LOCATION: http://192.168.0.241:55000/nrc/ddd.xml
+NT: urn:dial-multiscreen-org:service:dial:1
+NTS: ssdp:alive
+SERVER: FreeBSD/8.0 UPnP/1.0 Panasonic-MIL-DLNA-SV/1.0
+USN: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX::urn:dial-multiscreen-org:service:dial:1
+
+
+427010046 [SSDP] RX 192.168.0.241:27016 NOTIFY: 7 headers
+427301613 Received description
+427303521 Found Viera TV
+New Viera TV found.
+Friendly name: .
+Content XML: <?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+	<s:Body>
+		<u:SetMute xmlns:u="schemas-upnp-org:service:RenderingControl:1">
+			<InstanceID>0</InstanceID>
+			<Channel>Master</Channel>
+			<DesiredMute>1</DesiredMute>
+		</u:SetMute>
+	</s:Body>
+</s:Envelope>
+
+
+Content XML: <?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+	<s:Body>
+		<u:GetMute xmlns:u="schemas-upnp-org:service:RenderingControl:1">
+			<�?�=�?eID></�?�=�?eID>
+			<?
+Content XML: <?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+	<s:Body>
+		<u:X_SendKey xmlns:u="panasonic-com:service:p00NetworkControl:1">
+			<X_KeyEvent>NRC_CH_UP-ONOFF</X_KeyEvent>
+		</u:X_SendKey>
+	</s:Body>
+</s:Envelope>
+
+
+Content XML: <?xml version="1.0"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+	<s:Body>
+		<u:X_LaunchApp xmlns:u="panasonic-com:service:p00NetworkControl:1">
+			<.xmlsoap.>rg/soa</.xmlsoap.>
+			<
+M-SEARCH * HTTP/1.1
+HOST: 239.255.255.250:1900
+MAN: "ssdp:discover"
+MX: 1
+ST: urn:dial-multiscreen-org:service:dial:1
+USER-AGENT: Google Chrome/86.0.4240.75 Linux
+
+
+492614762 [SSDP] RX 192.168.0.182:45827 MSEARCH: 5 headers
+NOTIFY * HTTP/1.1
+HOST: 239.255.255.250:1900
+NT: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX
+NTS: ssdp:byebye
+USN: uuid:XXXXXXXXxx-XXXXXXXXXx-XXXXXXXXXXX
+
