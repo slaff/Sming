@@ -11,10 +11,21 @@ using namespace Panasonic::VieraTV;
 
 Client* client = nullptr;
 
-void onConnected(Client& client)
+void onConnected(Client& client, const XML::Document& doc, const HttpHeaders& headers)
 {
-	Serial.println(_F("New Viera TV is found!"));
-	client.setMute(true);
+	CStringArray path("device");
+	path.add("friendlyName");
+	auto node = client.getNode(doc, path);
+	Serial.println(_F("New Viera TV found."));
+	if(node != nullptr) {
+		Serial.printf(_F("Friendly name: %s.\n"), node->value());
+	}
+
+	client.setMute(true);					// mute the TV
+	client.getMute([](bool muted) -> void { // check the mute state
+		Serial.printf("Muted state: %d", muted ? 1 : 0);
+	});
+
 	client.sendCommand(CommandAction::ACTION_CH_UP);
 	client.sendAppCommand(ApplicationId::APP_YOUTUBE);
 }
@@ -27,8 +38,7 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 
 	delete client;
 	client = new Client();
-	client->connect(onConnected); // search for a Viera TV in the local network.
-		// as soon as one is found the onConnected callback will be called and you can start sending commands.
+	client->connect(onConnected);
 }
 
 // Will be called when WiFi station was disconnected

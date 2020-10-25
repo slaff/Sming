@@ -1,37 +1,94 @@
 #include "Client.h"
+#include <Network/SSDP/Server.h>
 
 namespace Panasonic
 {
 namespace VieraTV
 {
 #define XX(action, description) #action "\0"
-DEFINE_FSTR_LOCAL(fstr_commands, VIERA_COMMAND_MAP(XX))
+DEFINE_FSTR_LOCAL(vieraCommands, VIERA_COMMAND_MAP(XX))
 #undef XX
 
 #define XX(id, name, code) #code "\0"
-DEFINE_FSTR_LOCAL(fstr_apps, VIERA_APP_MAP(XX))
+DEFINE_FSTR_LOCAL(vieraApps, VIERA_APP_MAP(XX))
 #undef XX
+
+DEFINE_FSTR(panasonicRemoteUrn, "urn:panasonic-com:device:p00RemoteController:1");
 
 String toString(enum CommandAction a)
 {
-	return CStringArray(fstr_commands)[(int)a];
+	return CStringArray(vieraCommands)[(int)a];
 }
 
 String toString(enum ApplicationId a)
 {
-	return CStringArray(fstr_apps)[(int)a];
+	return CStringArray(vieraApps)[(int)a];
 }
 
-void Client::onNotify(SSDP::BasicMessage& msg)
+bool Client::formatMessage(SSDP::Message& message, SSDP::MessageSpec& ms)
 {
-	tvUrl = Url(msg[HTTP_HEADER_LOCATION]);
+	// Override the search target
+	message["ST"] = panasonicRemoteUrn;
+	return true;
+}
 
-	// TODO: get the description and extract the XML elements. We are interested in the friendlyName
+void Client::onNotify(SSDP::BasicMessage& message)
+{
+	if(panasonicRemoteUrn != message["NT"] && panasonicRemoteUrn != message["ST"]) {
+		return;
+	}
+
+	auto location = message[HTTP_HEADER_LOCATION];
+	if(location == nullptr) {
+		debug_d("No valid Location header found.");
+		return;
+	}
+
+	if(locations.contains(location)) {
+		return; // Already found
+	}
+	locations += location;
+
+	debug_d("TV message received:");
+	for(unsigned i = 0; i < message.count(); ++i) {
+		debug_d("%s", message[i]);
+	}
+
+	debug_d("Fetching '%s'", location);
+	Url url(location);
+	auto request = new HttpRequest(url);
+	request->setResponseStream(new LimitedMemoryStream(maxDescriptionSize));
+	request->onRequestComplete(RequestCompletedDelegate(&Client::onDescription, this));
+	http.send(request);
+}
+
+int Client::onDescription(HttpConnection& conn, bool success)
+{
+	if(!success) {
+		debug_e("Fetch failed");
+		return 0;
+	}
+
+	debug_i("Received description");
+	auto response = conn.getResponse();
+	if(response->stream == nullptr) {
+		debug_e("No body");
+		return 0;
+	}
+
+	auto stream = reinterpret_cast<LimitedMemoryStream*>(response->stream);
+	stream->print('\0');
+	XML::Document doc;
+	XML::deserialize(doc, stream->getStreamPointer());
+
+	tvUrl = Url(conn.getRequest()->uri);
 
 	debug_d("Found Viera TV");
-	if(tvUrl.Port != 0) {
-		onConnected(*this);
+	if(onConnected) {
+		onConnected(*this, doc, response->headers);
 	}
+
+	return 0;
 }
 
 bool Client::connect(ConnectedCallback callback)
@@ -41,27 +98,28 @@ bool Client::connect(ConnectedCallback callback)
 		return false;
 	}
 
-	UPnP::deviceHost.registerDevice(this);
+	UPnP::deviceHost.registerControlPoint(this);
+
+	auto message = new SSDP::MessageSpec(SSDP::MESSAGE_MSEARCH);
+	message->object = this;
+	message->repeat = 2;
+	message->target = SSDP::TARGET_ROOT;
+	SSDP::server.messageQueue.add(message, 0);
+
 	onConnected = callback;
 
 	return true;
-}
-
-void Client::connect(IpAddress ip, uint16_t port)
-{
-	tvUrl.Host = ip.toString();
-	tvUrl.Port = port;
 }
 
 bool Client::sendCommand(CommandAction action)
 {
 	Command cmd;
 	cmd.type = Command::Type::REMOTE;
-	cmd.name = "X_SendKey";
+	cmd.name = F("X_SendKey");
 
-	String text = "<X_KeyEvent>NRC_";
+	String text = F("<X_KeyEvent>NRC_");
 	text += toString(action);
-	text += "-ONOFF</X_KeyEvent>";
+	text += F("-ONOFF</X_KeyEvent>");
 
 	setParams(cmd, text);
 
@@ -72,10 +130,10 @@ bool Client::switchToHdmi(size_t input)
 {
 	Command cmd;
 	cmd.type = Command::Type::REMOTE;
-	cmd.name = "X_SendKey";
-	String text = "<X_KeyEvent>NRC_HDMI";
+	cmd.name = F("X_SendKey");
+	String text = F("<X_KeyEvent>NRC_HDMI");
 	text += (input - 1);
-	text += "-ONOFF</X_KeyEvent>";
+	text += F("-ONOFF</X_KeyEvent>");
 
 	setParams(cmd, text);
 
@@ -86,36 +144,43 @@ bool Client::sendAppCommand(const String& applicationId)
 {
 	Command cmd;
 	cmd.type = Command::Type::REMOTE;
-	cmd.name = "X_LaunchApp";
+	cmd.name = F("X_LaunchApp");
 
-	setParams(cmd, "<X_AppType>vc_app<X_AppType><X_LaunchKeyword>product_id=" + applicationId + "</X_LaunchKeyword>");
+	String text =
+		F("<X_AppType>vc_app</X_AppType><X_LaunchKeyword>product_id=") + applicationId + F("</X_LaunchKeyword>");
+
+	setParams(cmd, text);
 
 	return sendRequest(cmd);
 }
 
-bool Client::getVolume(/* callback */)
+bool Client::getVolume(GetVolumeCallback onVolume)
 {
-	//		var self = this;
-	//		self.volumeCallback = callback;
-	//
-	//		this.sendRequest('render', 'GetVolume', '<InstanceID>0</InstanceID><Channel>Master</Channel>',
-	//		{
-	//			callback: function(data) {
-	//				var match = /<CurrentVolume>(\d*)<\/CurrentVolume>/gm.exec(data);
-	//				if (match !== null) {
-	//					var volume = match[1];
-	//					self.volumeCallback(volume);
-	//				}
-	//			}
-	//		});
+	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {
+		/* @see: docs/RequestResponse.txt for sample communication */
+		CStringArray path("s:Body");
+		path.add("u:GetVolumeResponse");
+		path.add("CurrentVolume");
+
+		auto node = this->getNode(connection, path);
+		if(node != nullptr) {
+			onVolume((int)node->value());
+
+			return true;
+		}
+
+		return false;
+	};
 
 	Command cmd;
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetVolume";
 
-	setParams(cmd, "<InstanceID>0</InstanceID><Channel>Master</Channel>");
+	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel>";
 
-	return sendRequest(cmd);
+	setParams(cmd, text);
+
+	return sendRequest(cmd, requestCallback);
 }
 
 bool Client::setVolume(size_t volume)
@@ -137,30 +202,32 @@ bool Client::setVolume(size_t volume)
 	return sendRequest(cmd);
 }
 
-bool Client::getMute(/* callback */)
+bool Client::getMute(GetMuteCallback onMute)
 {
-	//		var self = this;
-	//		self.muteCallback = callback;
+	RequestCompletedDelegate requestCallback = [this, onMute](HttpConnection& connection, bool successful) -> int {
+		/* @see: docs/RequestResponse.txt for sample communication */
+		CStringArray path("s:Body");
+		path.add("u:GetMuteResponse");
+		path.add("CurrentMute");
+		auto node = this->getNode(connection, path);
+		if(node != nullptr) {
+			onMute((bool)node->value());
 
-	//		this.sendRequest('render', 'GetMute', '<InstanceID>0</InstanceID><Channel>Master</Channel>',
-	//		{
-	//			callback: function(data) {
-	//				var regex = /<CurrentMute>([0-1])<\/CurrentMute>/gm;
-	//				var match = regex.exec(data);
-	//				if (match !== null) {
-	//					var mute = (match[1] === '1');
-	//					self.muteCallback(mute);
-	//				}
-	//			}
-	//		});
+			return true;
+		}
+
+		return false;
+	};
 
 	Command cmd;
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetMute";
 
-	setParams(cmd, "<InstanceID>0</InstanceID><Channel>Master</Channel>");
+	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel>";
 
-	return sendRequest(cmd);
+	setParams(cmd, text);
+
+	return sendRequest(cmd, requestCallback);
 }
 
 bool Client::setMute(bool enable)
@@ -178,7 +245,7 @@ bool Client::setMute(bool enable)
 	return sendRequest(cmd);
 }
 
-bool Client::sendRequest(Command command)
+bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallack)
 {
 	String path = F("/nrc/control_0");
 	String urn = F("panasonic-com:service:p00NetworkControl:1");
@@ -211,11 +278,12 @@ bool Client::sendRequest(Command command)
 		}
 	}
 
-	String content = XML::serialize(envelope.doc, true);
+	const String content = XML::serialize(envelope.doc, false);
+
+	debug_d("Content XML: %s\n", content.c_str());
 
 	HttpHeaders headers;
-	headers[HTTP_HEADER_CONTENT_LENGTH] = content.length();
-	headers[HTTP_HEADER_CONTENT_TYPE] = "text/xml; charset=\"utf-8\"";
+	headers[HTTP_HEADER_CONTENT_TYPE] = F("text/xml; charset=\"utf-8\"");
 	headers["SOAPACTION"] = "\"urn:" + urn + '#' + command.name + '"';
 
 	HttpRequest* request = new HttpRequest;
@@ -225,7 +293,42 @@ bool Client::sendRequest(Command command)
 	request->uri.Port = tvUrl.Port;
 	request->uri.Host = tvUrl.Host;
 
+	if(requestCallack != nullptr) {
+		request->onRequestComplete(requestCallack);
+	}
+
 	return http.send(request);
+}
+
+XML::Node* Client::getNode(HttpConnection& connection, const CStringArray& path)
+{
+	HttpResponse* response = connection.getResponse();
+	if(response->stream == nullptr) {
+		debug_e("No body");
+		return nullptr;
+	}
+
+	auto stream = reinterpret_cast<LimitedMemoryStream*>(response->stream);
+	stream->print('\0');
+	XML::Document doc;
+	XML::deserialize(doc, stream->getStreamPointer());
+
+	return getNode(doc, path);
+}
+
+XML::Node* Client::getNode(const XML::Document& doc, const CStringArray& path)
+{
+	auto node = doc.first_node();
+	if(node != nullptr) {
+		for(size_t i = 0; i < path.count(); i++) {
+			node = node->first_node(path[i]);
+			if(node != nullptr) {
+				break;
+			}
+		}
+	}
+
+	return node;
 }
 
 } // namespace VieraTV

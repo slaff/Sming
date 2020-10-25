@@ -1,0 +1,102 @@
+Thanks to: https://forum.fhem.de/index.php?topic=48878.0
+
+POST /dmr/control_0 HTTP/1.0
+Host: 192.168.2.20:55000
+SOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#GetVolume"
+Content-Type: text/xml; charset="utf-8"
+Content-Length: 379
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<u:GetVolume xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+<InstanceID>0</InstanceID>
+<Channel>Master</Channel>
+<DesiredVolume></DesiredVolume>
+</u:GetVolume>
+</s:Body>
+</s:Envelope>
+
+2016.02.08 20:41:03 5: VIERA[Blocking-VIERA_connection()]: 192.168.2.20 buffer response:
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 343
+Content-Type: text/xml; charset="utf-8"
+EXT:
+SERVER: Panasonic-VIErA/1, UPnP/1.0, Panasonic MIL DLNA SERVER
+CONNECTION: close
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+ <s:Body>
+  <u:GetVolumeResponse xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+   <CurrentVolume>30</CurrentVolume>
+  </u:GetVolumeResponse>
+ </s:Body>
+</s:Envelope>
+
+2016.02.08 20:41:03 5: VIERA[VIERA_GetStatus]: Vol-Request returned: HTTP/1.1 200 OK
+CONTENT-LENGTH: 343
+Content-Type: text/xml; charset="utf-8"
+EXT:
+SERVER: Panasonic-VIErA/1, UPnP/1.0, Panasonic MIL DLNA SERVER
+CONNECTION: close
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+ <s:Body>
+  <u:GetVolumeResponse xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+   <CurrentVolume>30</CurrentVolume>
+  </u:GetVolumeResponse>
+ </s:Body>
+</s:Envelope>
+
+2016.02.08 20:41:03 5: VIERA[Blocking-VIERA_connection()]: Send Data to 192.168.2.20:55000:
+POST /dmr/control_0 HTTP/1.0
+Host: 192.168.2.20:55000
+SOAPACTION: "urn:schemas-upnp-org:service:RenderingControl:1#GetMute"
+Content-Type: text/xml; charset="utf-8"
+Content-Length: 371
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+<s:Body>
+<u:GetMute xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+<InstanceID>0</InstanceID>
+<Channel>Master</Channel>
+<DesiredMute></DesiredMute>
+</u:GetMute>
+</s:Body>
+</s:Envelope>
+
+2016.02.08 20:41:03 5: VIERA[Blocking-VIERA_connection()]: 192.168.2.20 buffer response:
+HTTP/1.1 200 OK
+CONTENT-LENGTH: 334
+Content-Type: text/xml; charset="utf-8"
+EXT:
+SERVER: Panasonic-VIErA/1, UPnP/1.0, Panasonic MIL DLNA SERVER
+CONNECTION: close
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+ <s:Body>
+  <u:GetMuteResponse xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+   <CurrentMute>0</CurrentMute>
+  </u:GetMuteResponse>
+ </s:Body>
+</s:Envelope>
+
+2016.02.08 20:41:03 5: VIERA[VIERA_GetStatus]: Mute-Request returned: HTTP/1.1 200 OK
+CONTENT-LENGTH: 334
+Content-Type: text/xml; charset="utf-8"
+EXT:
+SERVER: Panasonic-VIErA/1, UPnP/1.0, Panasonic MIL DLNA SERVER
+CONNECTION: close
+
+<?xml version="1.0" encoding="utf-8"?>
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+ <s:Body>
+  <u:GetMuteResponse xmlns:u="urn:schemas-upnp-org:service:RenderingControl:1">
+   <CurrentMute>0</CurrentMute>
+  </u:GetMuteResponse>
+ </s:Body>
+</s:Envelope>

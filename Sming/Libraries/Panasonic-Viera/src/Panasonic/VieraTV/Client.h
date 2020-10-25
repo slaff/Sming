@@ -1,9 +1,10 @@
 #pragma once
 
 #include <SmingCore.h>
+#include <Data/CStringArray.h>
+#include <Network/UPnP/ControlPoint.h>
 #include <Network/UPnP/DeviceHost.h>
 #include <Network/UPnP/Soap.h>
-#include <Data/CStringArray.h>
 
 using namespace rapidxml;
 
@@ -99,10 +100,12 @@ enum class ApplicationId {
 String toString(enum CommandAction a);
 String toString(enum ApplicationId a);
 
-class Client : public UPnP::RootDevice
+class Client : public UPnP::ControlPoint
 {
 public:
-	using ConnectedCallback = Delegate<void(Client&)>;
+	using ConnectedCallback = Delegate<void(Client&, const XML::Document& doc, const HttpHeaders& headers)>;
+	using GetMuteCallback = Delegate<void(bool muted)>;
+	using GetVolumeCallback = Delegate<void(int volume)>;
 
 	struct Command {
 		enum class Type {
@@ -115,17 +118,14 @@ public:
 		XML::Document* params;
 	};
 
+	Client(size_t maxDescriptionSize = 4096) : maxDescriptionSize(maxDescriptionSize)
+	{
+	}
+
 	/**
 	 * @brief Searches for Viera TVs and connects to the first that is found.
 	 */
 	bool connect(ConnectedCallback callback);
-
-	/**
-	 * @brief Connect to a desired ip and port where Viera TV should be up and running.
-	 * @param ip
-	 * @param port
-	 */
-	void connect(IpAddress ip, uint16_t port);
 
 	/**
 	 * Send a command to the TV
@@ -161,9 +161,10 @@ public:
 	/**
 	 * Get volume from TV
 	 *
-	 * @param {Function} callback
+	 * @param callback
+	 * @return bool - true on success false otherwise
 	 */
-	bool getVolume(/* callback */);
+	bool getVolume(GetVolumeCallback onVolume);
 
 	/**
 	 * Set volume
@@ -175,9 +176,10 @@ public:
 	/**
 	 * Get the current mute setting
 	 *
-	 * @param {Function} callback
+	 * @param callback
+	 * @return bool - true on success false otherwise
 	 */
-	bool getMute(/* callback */);
+	bool getMute(GetMuteCallback onMute);
 
 	/**
 	 * Set mute to on/off
@@ -186,16 +188,23 @@ public:
 	 */
 	bool setMute(bool enable);
 
-	/* UPnP stuff helping us find the location of the TV */
-	bool formatMessage(SSDP::Message& msg, SSDP::MessageSpec& ms) override
-	{
-		msg["ST"] = F("urn:panasonic-com:device:p00RemoteController:1");
-		return true;
-	}
+	bool formatMessage(SSDP::Message& msg, SSDP::MessageSpec& ms) override;
 
 	void onNotify(SSDP::BasicMessage& msg) override;
 
+	/**
+	 * TODO: Move this method to XML::Document ...
+	 *
+	 * @brief Gets XML node by path
+	 * @param doc the XML document
+	 * @param path the paths that have to be traversed to get the node.
+	 *
+	 *
+	 */
+	XML::Node* getNode(const XML::Document& doc, const CStringArray& path);
+
 private:
+	size_t maxDescriptionSize; // <<< Maximum size of TV XML description that is stored.
 	SOAP::Envelope envelope;
 	XML::Node* actionTag = nullptr;
 	XML::Document paramsDoc;
@@ -205,7 +214,9 @@ private:
 	HttpClient http;
 	Url tvUrl;
 
-	bool sendRequest(Command command);
+	CStringArray locations;
+
+	bool sendRequest(Command command, RequestCompletedDelegate requestCallack = nullptr);
 
 	bool setParams(Command& cmd, const String& text)
 	{
@@ -213,6 +224,10 @@ private:
 		cmd.params->parse<0>((char*)text.c_str());
 		return true;
 	}
+
+	int onDescription(HttpConnection& conn, bool success);
+
+	XML::Node* getNode(HttpConnection& connection, const CStringArray& path);
 };
 
 } // namespace VieraTV
