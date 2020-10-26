@@ -103,9 +103,11 @@ String toString(enum ApplicationId a);
 class Client : public UPnP::ControlPoint
 {
 public:
+	using ApplicationList = HashMap<String, String>; // << list with name,numeric id of the available applications
 	using ConnectedCallback = Delegate<void(Client&, const XML::Document& doc, const HttpHeaders& headers)>;
 	using GetMuteCallback = Delegate<void(bool muted)>;
 	using GetVolumeCallback = Delegate<void(int volume)>;
+	using GetApplicationsCallback = Delegate<void(const ApplicationList& list)>;
 
 	struct Command {
 		enum class Type {
@@ -157,6 +159,11 @@ public:
 	 * @param {String} applicationId appId from codes.txt
 	 */
 	bool sendAppCommand(const String& applicationId);
+
+	/**
+	 * @brief Gets list of available applications on the TV
+	 */
+	bool getApplications(GetApplicationsCallback onList);
 
 	/**
 	 * Get volume from TV
