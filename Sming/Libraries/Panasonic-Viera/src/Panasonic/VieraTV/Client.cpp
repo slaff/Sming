@@ -154,38 +154,6 @@ bool Client::sendAppCommand(const String& applicationId)
 	return sendRequest(cmd);
 }
 
-bool Client::getApplications(GetApplicationsCallback onList)
-{
-	RequestCompletedDelegate requestCallback = [this, onList](HttpConnection& connection, bool successful) -> int {
-		/* @see: docs/RequestResponse.txt for sample communication */
-		CStringArray path("body");
-		path.add("GetAppListResponse");
-		// TODO: Find the right response information...
-		//		path.add("X_AppList");
-
-		auto node = this->getNode(connection, path);
-		if(node != nullptr) {
-			ApplicationList list;
-
-			// TODO: process the nodes...
-
-			onList(list);
-
-			return true;
-		}
-
-		return false;
-	};
-
-	Command cmd;
-	cmd.type = Command::Type::RENDER;
-	cmd.name = F("X_GetAppList");
-
-	setParams(cmd, "");
-
-	return sendRequest(cmd, requestCallback);
-}
-
 bool Client::getVolume(GetVolumeCallback onVolume)
 {
 	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {

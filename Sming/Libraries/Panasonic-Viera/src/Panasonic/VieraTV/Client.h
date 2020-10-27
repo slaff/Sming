@@ -103,11 +103,9 @@ String toString(enum ApplicationId a);
 class Client : public UPnP::ControlPoint
 {
 public:
-	using ApplicationList = HashMap<String, String>; // << list with name,numeric id of the available applications
 	using ConnectedCallback = Delegate<void(Client&, const XML::Document& doc, const HttpHeaders& headers)>;
 	using GetMuteCallback = Delegate<void(bool muted)>;
 	using GetVolumeCallback = Delegate<void(int volume)>;
-	using GetApplicationsCallback = Delegate<void(const ApplicationList& list)>;
 
 	struct Command {
 		enum class Type {
@@ -161,11 +159,6 @@ public:
 	bool sendAppCommand(const String& applicationId);
 
 	/**
-	 * @brief Gets list of available applications on the TV
-	 */
-	bool getApplications(GetApplicationsCallback onList);
-
-	/**
 	 * Get volume from TV
 	 *
 	 * @param callback
@@ -204,8 +197,9 @@ public:
 	 *
 	 * @brief Gets XML node by path
 	 * @param doc the XML document
-	 * @param path the paths that have to be traversed to get the node.
+	 * @param path the paths that have to be traversed to get the node (excluding the root node).
 	 *
+	 * @retval node
 	 *
 	 */
 	XML::Node* getNode(const XML::Document& doc, const CStringArray& path);
