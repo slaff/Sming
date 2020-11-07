@@ -13,19 +13,19 @@ using namespace Panasonic;
 
 VieraTV::Client client;
 
-void onConnected(HttpConnection& connection, const XML::Document& description)
+void onConnected(HttpConnection& connection, XML::Document& description)
 {
-	CStringArray path = F("device");
-	path.add(F("friendlyName"));
-	auto node = client.getNode(description, path);
+	auto node = XML::getNode(description, F("device/friendlyName"));
 	Serial.println(_F("New Viera TV found."));
 	if(node != nullptr) {
-		Serial.printf(_F("Friendly name: %s.\n"), node->value());
+		Serial.print(_F("Friendly name: "));
+		Serial.println(node->value());
 	}
 
-	client.setMute(true);					// mute the TV
-	client.getMute([](bool muted) -> void { // check the mute state
-		Serial.printf("Muted state: %d", muted ? 1 : 0);
+	client.setMute(true);			// mute the TV
+	client.getMute([](bool muted) { // check the mute state
+		Serial.print("Muted state: ");
+		Serial.println(muted);
 	});
 
 	client.sendCommand(VieraTV::CommandAction::ACTION_CH_UP);

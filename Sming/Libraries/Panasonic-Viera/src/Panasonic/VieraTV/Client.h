@@ -184,22 +184,6 @@ public:
 	 */
 	bool setMute(bool enable);
 
-	bool formatMessage(SSDP::Message& msg, SSDP::MessageSpec& ms) override;
-
-	void onNotify(SSDP::BasicMessage& msg) override;
-
-	/**
-	 * TODO: Move this method to XML::Document ...
-	 *
-	 * @brief Gets XML node by path
-	 * @param doc the XML document
-	 * @param path the paths that have to be traversed to get the node (excluding the root node).
-	 *
-	 * @retval node
-	 *
-	 */
-	XML::Node* getNode(const XML::Document& doc, const CStringArray& path);
-
 private:
 	SOAP::Envelope envelope;
 	XML::Document paramsDoc;
@@ -212,11 +196,11 @@ private:
 	bool setParams(Command& cmd, const String& text)
 	{
 		cmd.params = &paramsDoc;
-		cmd.params->parse<0>((char*)text.c_str());
+		cmd.params->parse<0>(const_cast<char*>(text.c_str()));
 		return true;
 	}
 
-	XML::Node* getNode(HttpConnection& connection, const CStringArray& path);
+	XML::Node* getNode(HttpConnection& connection, const String& path);
 };
 
 } // namespace VieraTV

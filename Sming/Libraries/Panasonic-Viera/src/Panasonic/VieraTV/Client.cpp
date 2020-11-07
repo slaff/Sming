@@ -37,11 +37,10 @@ bool Client::connect(Connected callback)
 		tvUrl = connection.getRequest()->uri;
 
 		debug_d("Found Viera TV");
+
 		if(callback) {
 			callback(connection, description);
 		}
-
-		callback(*this, connection, description);
 	});
 }
 
@@ -93,13 +92,9 @@ bool Client::getVolume(GetVolume onVolume)
 {
 	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		CStringArray path(F("s:Body"));
-		path.add(F("u:GetVolumeResponse"));
-		path.add(F("CurrentVolume"));
-
-		auto node = this->getNode(connection, path);
+		auto node = this->getNode(connection, F("s:Body/u:GetVolumeResponse/CurrentVolume"));
 		if(node != nullptr) {
-			onVolume((int)node->value());
+			onVolume(atoi(node->value()));
 
 			return true;
 		}
@@ -141,12 +136,9 @@ bool Client::getMute(GetMute onMute)
 {
 	RequestCompletedDelegate requestCallback = [this, onMute](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		CStringArray path("s:Body");
-		path.add(F("u:GetMuteResponse"));
-		path.add(F("CurrentMute"));
-		auto node = this->getNode(connection, path);
+		auto node = this->getNode(connection, F("s:Body/u:GetMuteResponse/CurrentMute"));
 		if(node != nullptr) {
-			onMute(node->value() != nullptr);
+			onMute(atoi(node->value()) != 0);
 
 			return true;
 		}
@@ -208,7 +200,8 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 	if(command.params != nullptr) {
 		auto doc = body->document();
 		// TODO: Can use XML::getNode()
-		auto commandNode = doc->first_node("s:Envelope")->first_node("s:Body")->first_node(tag.c_str());
+		auto commandNode = XML::getNode(doc, F("s:Envelope/s:Body/") + tag);
+		assert(commandNode != nullptr);
 		for(XML::Node* child = command.params->first_node(); child; child = child->next_sibling()) {
 			auto node = doc->clone_node(child);
 			commandNode->append_node(node);
@@ -238,8 +231,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 	return http.send(request);
 }
 
-// XML::getNode() ?
-XML::Node* Client::getNode(HttpConnection& connection, const CStringArray& path)
+XML::Node* Client::getNode(HttpConnection& connection, const String& path)
 {
 	HttpResponse* response = connection.getResponse();
 	if(response->stream == nullptr) {
@@ -247,28 +239,12 @@ XML::Node* Client::getNode(HttpConnection& connection, const CStringArray& path)
 		return nullptr;
 	}
 
-	auto stream = reinterpret_cast<LimitedMemoryStream*>(response->stream);
-	stream->print('\0');
+	String content;
+	response->stream->moveString(content);
 	XML::Document doc;
-	XML::deserialize(doc, stream->getStreamPointer());
+	XML::deserialize(doc, content);
 
-	return getNode(doc, path);
-}
-
-// XML::getNode() ?
-XML::Node* Client::getNode(const XML::Document& doc, const CStringArray& path)
-{
-	auto node = doc.first_node();
-	if(node != nullptr) {
-		for(size_t i = 0; i < path.count(); i++) {
-			node = node->first_node(path[i]);
-			if(node != nullptr) {
-				break;
-			}
-		}
-	}
-
-	return node;
+	return XML::getNode(doc, path);
 }
 
 } // namespace VieraTV
