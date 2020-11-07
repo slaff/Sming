@@ -1,4 +1,5 @@
 #include <SmingCore.h>
+#include <memory>
 #include <Panasonic/VieraTV/Client.h>
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
@@ -7,15 +8,16 @@
 #define WIFI_PWD "PleaseEnterPass"
 #endif
 
-using namespace Panasonic::VieraTV;
+using namespace Panasonic;
+;
 
-Client* client = nullptr;
+VieraTV::Client client;
 
-void onConnected(Client& client, const XML::Document& doc, const HttpHeaders& headers)
+void onConnected(HttpConnection& connection, const XML::Document& description)
 {
-	CStringArray path("device");
-	path.add("friendlyName");
-	auto node = client.getNode(doc, path);
+	CStringArray path = F("device");
+	path.add(F("friendlyName"));
+	auto node = client.getNode(description, path);
 	Serial.println(_F("New Viera TV found."));
 	if(node != nullptr) {
 		Serial.printf(_F("Friendly name: %s.\n"), node->value());
@@ -26,8 +28,8 @@ void onConnected(Client& client, const XML::Document& doc, const HttpHeaders& he
 		Serial.printf("Muted state: %d", muted ? 1 : 0);
 	});
 
-	client.sendCommand(CommandAction::ACTION_CH_UP);
-	client.sendAppCommand(ApplicationId::APP_YOUTUBE);
+	client.sendCommand(VieraTV::CommandAction::ACTION_CH_UP);
+	client.sendAppCommand(VieraTV::ApplicationId::APP_YOUTUBE);
 }
 
 // Will be called when WiFi station was connected to AP
@@ -36,9 +38,7 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 	Serial.print(_F("I'm CONNECTED to "));
 	Serial.println(ip);
 
-	delete client;
-	client = new Client();
-	client->connect(onConnected);
+	client.connect(onConnected);
 }
 
 // Will be called when WiFi station was disconnected

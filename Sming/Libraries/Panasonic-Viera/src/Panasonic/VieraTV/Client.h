@@ -6,8 +6,6 @@
 #include <Network/UPnP/DeviceHost.h>
 #include <Network/UPnP/Soap.h>
 
-using namespace rapidxml;
-
 #define VIERA_COMMAND_MAP(XX)                                                                                          \
 	/* action, description */                                                                                          \
 	XX(CH_DOWN, "channel down")                                                                                        \
@@ -97,15 +95,15 @@ enum class ApplicationId {
 #undef XX
 };
 
-String toString(enum CommandAction a);
-String toString(enum ApplicationId a);
+String toString(CommandAction a);
+String toString(ApplicationId a);
 
 class Client : public UPnP::ControlPoint
 {
 public:
-	using ConnectedCallback = Delegate<void(Client&, const XML::Document& doc, const HttpHeaders& headers)>;
-	using GetMuteCallback = Delegate<void(bool muted)>;
-	using GetVolumeCallback = Delegate<void(int volume)>;
+	using Connected = Delegate<void(HttpConnection& connection, XML::Document& description)>;
+	using GetMute = Delegate<void(bool muted)>;
+	using GetVolume = Delegate<void(int volume)>;
 
 	struct Command {
 		enum class Type {
@@ -118,14 +116,12 @@ public:
 		XML::Document* params;
 	};
 
-	Client(size_t maxDescriptionSize = 4096) : maxDescriptionSize(maxDescriptionSize)
-	{
-	}
+	using ControlPoint::ControlPoint;
 
 	/**
 	 * @brief Searches for Viera TVs and connects to the first that is found.
 	 */
-	bool connect(ConnectedCallback callback);
+	bool connect(Connected callback);
 
 	/**
 	 * Send a command to the TV
@@ -146,7 +142,7 @@ public:
 	 *
 	 * @param id
 	 */
-	bool sendAppCommand(enum ApplicationId id)
+	bool sendAppCommand(ApplicationId id)
 	{
 		return sendAppCommand(toString(id));
 	}
@@ -164,7 +160,7 @@ public:
 	 * @param callback
 	 * @return bool - true on success false otherwise
 	 */
-	bool getVolume(GetVolumeCallback onVolume);
+	bool getVolume(GetVolume onVolume);
 
 	/**
 	 * Set volume
@@ -179,7 +175,7 @@ public:
 	 * @param callback
 	 * @return bool - true on success false otherwise
 	 */
-	bool getMute(GetMuteCallback onMute);
+	bool getMute(GetMute onMute);
 
 	/**
 	 * Set mute to on/off
@@ -205,19 +201,13 @@ public:
 	XML::Node* getNode(const XML::Document& doc, const CStringArray& path);
 
 private:
-	size_t maxDescriptionSize; // <<< Maximum size of TV XML description that is stored.
 	SOAP::Envelope envelope;
-	XML::Node* actionTag = nullptr;
 	XML::Document paramsDoc;
-
-	ConnectedCallback onConnected;
 
 	HttpClient http;
 	Url tvUrl;
 
-	CStringArray locations;
-
-	bool sendRequest(Command command, RequestCompletedDelegate requestCallack = nullptr);
+	bool sendRequest(Command command, RequestCompletedDelegate requestCallback = nullptr);
 
 	bool setParams(Command& cmd, const String& text)
 	{
@@ -225,8 +215,6 @@ private:
 		cmd.params->parse<0>((char*)text.c_str());
 		return true;
 	}
-
-	int onDescription(HttpConnection& conn, bool success);
 
 	XML::Node* getNode(HttpConnection& connection, const CStringArray& path);
 };

@@ -13,102 +13,36 @@ DEFINE_FSTR_LOCAL(vieraCommands, VIERA_COMMAND_MAP(XX))
 DEFINE_FSTR_LOCAL(vieraApps, VIERA_APP_MAP(XX))
 #undef XX
 
-DEFINE_FSTR(panasonicRemoteUrn, "urn:panasonic-com:device:p00RemoteController:1");
+DEFINE_FSTR(domain, "panasonic-com")
+DEFINE_FSTR(device, "p00RemoteController")
+DEFINE_FSTR(service_NetworkControl, "p00NetworkControl")
+DEFINE_FSTR(service_RenderingControl, "RenderingControl")
 
-String toString(enum CommandAction a)
+constexpr uint8_t version{1};
+
+String toString(CommandAction a)
 {
-	return CStringArray(vieraCommands)[(int)a];
+	return CStringArray(vieraCommands)[unsigned(a)];
 }
 
-String toString(enum ApplicationId a)
+String toString(ApplicationId a)
 {
-	return CStringArray(vieraApps)[(int)a];
+	return CStringArray(vieraApps)[unsigned(a)];
 }
 
-bool Client::formatMessage(SSDP::Message& message, SSDP::MessageSpec& ms)
+bool Client::connect(Connected callback)
 {
-	// Override the search target
-	message["ST"] = panasonicRemoteUrn;
-	return true;
-}
+	UPnP::DeviceUrn urn(domain, device, version);
+	return beginSearch(urn, [this, callback](HttpConnection& connection, XML::Document& description) {
+		tvUrl = connection.getRequest()->uri;
 
-void Client::onNotify(SSDP::BasicMessage& message)
-{
-	if(panasonicRemoteUrn != message["NT"] && panasonicRemoteUrn != message["ST"]) {
-		return;
-	}
+		debug_d("Found Viera TV");
+		if(callback) {
+			callback(connection, description);
+		}
 
-	auto location = message[HTTP_HEADER_LOCATION];
-	if(location == nullptr) {
-		debug_d("No valid Location header found.");
-		return;
-	}
-
-	if(locations.contains(location)) {
-		return; // Already found
-	}
-	locations += location;
-
-	debug_d("TV message received:");
-	for(unsigned i = 0; i < message.count(); ++i) {
-		debug_d("%s", message[i]);
-	}
-
-	debug_d("Fetching '%s'", location);
-	Url url(location);
-	auto request = new HttpRequest(url);
-	request->setResponseStream(new LimitedMemoryStream(maxDescriptionSize));
-	request->onRequestComplete(RequestCompletedDelegate(&Client::onDescription, this));
-	http.send(request);
-}
-
-int Client::onDescription(HttpConnection& conn, bool success)
-{
-	if(!success) {
-		debug_e("Fetch failed");
-		return 0;
-	}
-
-	debug_i("Received description");
-	auto response = conn.getResponse();
-	if(response->stream == nullptr) {
-		debug_e("No body");
-		return 0;
-	}
-
-	auto stream = reinterpret_cast<LimitedMemoryStream*>(response->stream);
-	stream->print('\0');
-	XML::Document doc;
-	XML::deserialize(doc, stream->getStreamPointer());
-
-	tvUrl = Url(conn.getRequest()->uri);
-
-	debug_d("Found Viera TV");
-	if(onConnected) {
-		onConnected(*this, doc, response->headers);
-	}
-
-	return 0;
-}
-
-bool Client::connect(ConnectedCallback callback)
-{
-	if(!UPnP::deviceHost.begin()) {
-		debug_e("UPnP initialisation failed");
-		return false;
-	}
-
-	UPnP::deviceHost.registerControlPoint(this);
-
-	auto message = new SSDP::MessageSpec(SSDP::MESSAGE_MSEARCH);
-	message->object = this;
-	message->repeat = 2;
-	message->target = SSDP::TARGET_ROOT;
-	SSDP::server.messageQueue.add(message, 0);
-
-	onConnected = callback;
-
-	return true;
+		callback(*this, connection, description);
+	});
 }
 
 bool Client::sendCommand(CommandAction action)
@@ -146,21 +80,22 @@ bool Client::sendAppCommand(const String& applicationId)
 	cmd.type = Command::Type::REMOTE;
 	cmd.name = F("X_LaunchApp");
 
-	String text =
-		F("<X_AppType>vc_app</X_AppType><X_LaunchKeyword>product_id=") + applicationId + F("</X_LaunchKeyword>");
+	String text = F("<X_AppType>vc_app</X_AppType><X_LaunchKeyword>product_id=");
+	text += applicationId;
+	text += F("</X_LaunchKeyword>");
 
 	setParams(cmd, text);
 
 	return sendRequest(cmd);
 }
 
-bool Client::getVolume(GetVolumeCallback onVolume)
+bool Client::getVolume(GetVolume onVolume)
 {
 	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		CStringArray path("s:Body");
-		path.add("u:GetVolumeResponse");
-		path.add("CurrentVolume");
+		CStringArray path(F("s:Body"));
+		path.add(F("u:GetVolumeResponse"));
+		path.add(F("CurrentVolume"));
 
 		auto node = this->getNode(connection, path);
 		if(node != nullptr) {
@@ -176,7 +111,7 @@ bool Client::getVolume(GetVolumeCallback onVolume)
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetVolume";
 
-	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel>";
+	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel>");
 
 	setParams(cmd, text);
 
@@ -193,7 +128,7 @@ bool Client::setVolume(size_t volume)
 	Command cmd;
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "SetVolume";
-	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume>";
+	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel><DesiredVolume>");
 	text += volume;
 	text += "</DesiredVolume>";
 
@@ -202,16 +137,16 @@ bool Client::setVolume(size_t volume)
 	return sendRequest(cmd);
 }
 
-bool Client::getMute(GetMuteCallback onMute)
+bool Client::getMute(GetMute onMute)
 {
 	RequestCompletedDelegate requestCallback = [this, onMute](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
 		CStringArray path("s:Body");
-		path.add("u:GetMuteResponse");
-		path.add("CurrentMute");
+		path.add(F("u:GetMuteResponse"));
+		path.add(F("CurrentMute"));
 		auto node = this->getNode(connection, path);
 		if(node != nullptr) {
-			onMute((bool)node->value());
+			onMute(node->value() != nullptr);
 
 			return true;
 		}
@@ -223,7 +158,7 @@ bool Client::getMute(GetMuteCallback onMute)
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetMute";
 
-	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel>";
+	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel>");
 
 	setParams(cmd, text);
 
@@ -236,25 +171,26 @@ bool Client::setMute(bool enable)
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "SetMute";
 
-	String text = "<InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>";
-	text += (enable ? '1' : '0');
-	text += "</DesiredMute>";
+	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel><DesiredMute>");
+	text += enable ? '1' : '0';
+	text += F("</DesiredMute>");
 
 	setParams(cmd, text);
 
 	return sendRequest(cmd);
 }
 
-bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallack)
+bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallback)
 {
-	String path = F("/nrc/control_0");
-	String urn = F("panasonic-com:service:p00NetworkControl:1");
+	String path;
+	UPnP::ServiceUrn urn(domain, nullptr, version);
 	if(command.type == Command::Type::RENDER) {
 		path = F("/dmr/control_0");
-		urn = F("schemas-upnp-org:service:RenderingControl:1");
+		urn.type = service_RenderingControl;
+	} else {
+		path = F("/nrc/control_0");
+		urn.type = service_RenderingControl;
 	}
-
-	actionTag = nullptr;
 
 	if(!envelope.initialise()) {
 		return false;
@@ -266,11 +202,12 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallac
 	}
 
 	String tag = "u:" + command.name;
-	actionTag = XML::appendNode(body, tag);
+	auto actionTag = XML::appendNode(body, tag);
 	XML::appendAttribute(actionTag, "xmlns:u", urn);
 
 	if(command.params != nullptr) {
 		auto doc = body->document();
+		// TODO: Can use XML::getNode()
 		auto commandNode = doc->first_node("s:Envelope")->first_node("s:Body")->first_node(tag.c_str());
 		for(XML::Node* child = command.params->first_node(); child; child = child->next_sibling()) {
 			auto node = doc->clone_node(child);
@@ -278,7 +215,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallac
 		}
 	}
 
-	const String content = XML::serialize(envelope.doc, false);
+	String content = XML::serialize(envelope.doc, false);
 
 	debug_d("Content XML: %s\n", content.c_str());
 
@@ -286,7 +223,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallac
 	headers[HTTP_HEADER_CONTENT_TYPE] = F("text/xml; charset=\"utf-8\"");
 	headers["SOAPACTION"] = "\"urn:" + urn + '#' + command.name + '"';
 
-	HttpRequest* request = new HttpRequest;
+	auto request = new HttpRequest;
 	request->method = HTTP_POST;
 	request->headers.setMultiple(headers);
 	request->uri.Path = path;
@@ -294,13 +231,14 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallac
 	request->uri.Host = tvUrl.Host;
 	request->setBody(content);
 
-	if(requestCallack != nullptr) {
-		request->onRequestComplete(requestCallack);
+	if(requestCallback) {
+		request->onRequestComplete(requestCallback);
 	}
 
 	return http.send(request);
 }
 
+// XML::getNode() ?
 XML::Node* Client::getNode(HttpConnection& connection, const CStringArray& path)
 {
 	HttpResponse* response = connection.getResponse();
@@ -317,6 +255,7 @@ XML::Node* Client::getNode(HttpConnection& connection, const CStringArray& path)
 	return getNode(doc, path);
 }
 
+// XML::getNode() ?
 XML::Node* Client::getNode(const XML::Document& doc, const CStringArray& path)
 {
 	auto node = doc.first_node();
