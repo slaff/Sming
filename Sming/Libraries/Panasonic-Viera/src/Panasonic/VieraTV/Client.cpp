@@ -1,5 +1,5 @@
 #include "Client.h"
-#include <Network/SSDP/Server.h>
+#include <Network/UPnP/Soap.h>
 
 namespace Panasonic
 {
@@ -16,8 +16,6 @@ DEFINE_FSTR_LOCAL(vieraApps, VIERA_APP_MAP(XX))
 DEFINE_FSTR(domain, "panasonic-com")
 DEFINE_FSTR(device, "p00RemoteController")
 DEFINE_FSTR(service_NetworkControl, "p00NetworkControl")
-DEFINE_FSTR(service_RenderingControl, "RenderingControl")
-
 constexpr uint8_t version{1};
 
 String toString(CommandAction a)
@@ -54,7 +52,7 @@ bool Client::sendCommand(CommandAction action)
 	text += toString(action);
 	text += F("-ONOFF</X_KeyEvent>");
 
-	setParams(cmd, text);
+	params.set(cmd, text);
 
 	return sendRequest(cmd);
 }
@@ -68,7 +66,7 @@ bool Client::switchToHdmi(size_t input)
 	text += (input - 1);
 	text += F("-ONOFF</X_KeyEvent>");
 
-	setParams(cmd, text);
+	params.set(cmd, text);
 
 	return sendRequest(cmd);
 }
@@ -83,7 +81,7 @@ bool Client::sendAppCommand(const String& applicationId)
 	text += applicationId;
 	text += F("</X_LaunchKeyword>");
 
-	setParams(cmd, text);
+	params.set(cmd, text);
 
 	return sendRequest(cmd);
 }
@@ -106,9 +104,7 @@ bool Client::getVolume(GetVolume onVolume)
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetVolume";
 
-	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel>");
-
-	setParams(cmd, text);
+	params.set(cmd, F("<InstanceID>0</InstanceID><Channel>Master</Channel>"));
 
 	return sendRequest(cmd, requestCallback);
 }
@@ -127,7 +123,7 @@ bool Client::setVolume(size_t volume)
 	text += volume;
 	text += "</DesiredVolume>";
 
-	setParams(cmd, text);
+	params.set(cmd, text);
 
 	return sendRequest(cmd);
 }
@@ -150,9 +146,7 @@ bool Client::getMute(GetMute onMute)
 	cmd.type = Command::Type::RENDER;
 	cmd.name = "GetMute";
 
-	String text = F("<InstanceID>0</InstanceID><Channel>Master</Channel>");
-
-	setParams(cmd, text);
+	params.set(cmd, F("<InstanceID>0</InstanceID><Channel>Master</Channel>"));
 
 	return sendRequest(cmd, requestCallback);
 }
@@ -167,7 +161,7 @@ bool Client::setMute(bool enable)
 	text += enable ? '1' : '0';
 	text += F("</DesiredMute>");
 
-	setParams(cmd, text);
+	params.set(cmd, text);
 
 	return sendRequest(cmd);
 }
@@ -175,15 +169,16 @@ bool Client::setMute(bool enable)
 bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallback)
 {
 	String path;
-	UPnP::ServiceUrn urn(domain, nullptr, version);
+	UPnP::Urn urn;
 	if(command.type == Command::Type::RENDER) {
+		urn = UPnP::ServiceUrn(UPnP::schemas_upnp_org, UPnP::ServiceType::upnp_org::RenderingControl, version);
 		path = F("/dmr/control_0");
-		urn.type = service_RenderingControl;
 	} else {
+		urn = UPnP::ServiceUrn(domain, service_NetworkControl, version);
 		path = F("/nrc/control_0");
-		urn.type = service_RenderingControl;
 	}
 
+	SOAP::Envelope envelope;
 	if(!envelope.initialise()) {
 		return false;
 	}
@@ -233,7 +228,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 
 XML::Node* Client::getNode(HttpConnection& connection, const String& path)
 {
-	HttpResponse* response = connection.getResponse();
+	auto response = connection.getResponse();
 	if(response->stream == nullptr) {
 		debug_e("No body");
 		return nullptr;

@@ -1,10 +1,6 @@
 #pragma once
 
-#include <SmingCore.h>
-#include <Data/CStringArray.h>
 #include <Network/UPnP/ControlPoint.h>
-#include <Network/UPnP/DeviceHost.h>
-#include <Network/UPnP/Soap.h>
 
 #define VIERA_COMMAND_MAP(XX)                                                                                          \
 	/* action, description */                                                                                          \
@@ -185,21 +181,23 @@ public:
 	bool setMute(bool enable);
 
 private:
-	SOAP::Envelope envelope;
-	XML::Document paramsDoc;
+	struct Params {
+		String content;
+		XML::Document doc;
 
+		bool set(Command& cmd, String text)
+		{
+			content = text;
+			cmd.params = &doc;
+			doc.parse<0>(content.begin());
+			return true;
+		}
+	};
+	Params params;
 	HttpClient http;
 	Url tvUrl;
 
 	bool sendRequest(Command command, RequestCompletedDelegate requestCallback = nullptr);
-
-	bool setParams(Command& cmd, const String& text)
-	{
-		cmd.params = &paramsDoc;
-		cmd.params->parse<0>(const_cast<char*>(text.c_str()));
-		return true;
-	}
-
 	XML::Node* getNode(HttpConnection& connection, const String& path);
 };
 
