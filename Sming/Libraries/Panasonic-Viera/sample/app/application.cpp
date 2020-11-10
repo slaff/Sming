@@ -9,7 +9,6 @@
 #endif
 
 using namespace Panasonic;
-;
 
 VieraTV::Client client;
 

@@ -15,7 +15,7 @@ DEFINE_FSTR_LOCAL(vieraApps, VIERA_APP_MAP(XX))
 
 DEFINE_FSTR(domain, "panasonic-com")
 DEFINE_FSTR(device, "p00RemoteController")
-DEFINE_FSTR(service_NetworkControl, "p00NetworkControl")
+DEFINE_FSTR(serviceNetworkControl, "p00NetworkControl")
 constexpr uint8_t version{1};
 
 String toString(CommandAction a)
@@ -174,7 +174,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 		urn = UPnP::ServiceUrn(UPnP::schemas_upnp_org, UPnP::ServiceType::upnp_org::RenderingControl, version);
 		path = F("/dmr/control_0");
 	} else {
-		urn = UPnP::ServiceUrn(domain, service_NetworkControl, version);
+		urn = UPnP::ServiceUrn(domain, serviceNetworkControl, version);
 		path = F("/nrc/control_0");
 	}
 
@@ -190,11 +190,10 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 
 	String tag = "u:" + command.name;
 	auto actionTag = XML::appendNode(body, tag);
-	XML::appendAttribute(actionTag, "xmlns:u", urn);
+	XML::appendAttribute(actionTag, "xmlns:u", urn.toString());
 
 	if(command.params != nullptr) {
 		auto doc = body->document();
-		// TODO: Can use XML::getNode()
 		auto commandNode = XML::getNode(doc, F("s:Envelope/s:Body/") + tag);
 		assert(commandNode != nullptr);
 		for(XML::Node* child = command.params->first_node(); child; child = child->next_sibling()) {

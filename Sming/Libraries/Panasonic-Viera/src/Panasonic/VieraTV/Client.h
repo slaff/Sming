@@ -112,7 +112,9 @@ public:
 		XML::Document* params;
 	};
 
-	using ControlPoint::ControlPoint;
+	Client(size_t maxDescriptionSize = 4096) : UPnP::ControlPoint(maxDescriptionSize)
+	{
+	}
 
 	/**
 	 * @brief Searches for Viera TVs and connects to the first that is found.
