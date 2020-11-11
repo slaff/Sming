@@ -1,5 +1,6 @@
 #include <SmingCore.h>
 #include <memory>
+#include <Network/UPnP/DeviceHost.h>
 #include <Panasonic/VieraTV/Client.h>
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
@@ -36,6 +37,11 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 {
 	Serial.print(_F("I'm CONNECTED to "));
 	Serial.println(ip);
+
+	if(!UPnP::deviceHost.begin()) {
+		debug_e("UPnP initialisation failed");
+		return;
+	}
 
 	client.connect(onConnected);
 }
