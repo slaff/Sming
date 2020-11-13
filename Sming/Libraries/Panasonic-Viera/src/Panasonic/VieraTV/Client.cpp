@@ -99,7 +99,7 @@ bool Client::getVolume(GetVolume onVolume)
 {
 	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		auto node = this->getNode(connection, F("s:Body/u:GetVolumeResponse/CurrentVolume"));
+		auto node = this->getNode(connection, F("/s:Body/u:GetVolumeResponse/CurrentVolume"));
 		if(node != nullptr) {
 			onVolume(atoi(node->value()));
 
@@ -141,7 +141,7 @@ bool Client::getMute(GetMute onMute)
 {
 	RequestCompletedDelegate requestCallback = [this, onMute](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		auto node = this->getNode(connection, F("s:Body/u:GetMuteResponse/CurrentMute"));
+		auto node = this->getNode(connection, F("/s:Body/u:GetMuteResponse/CurrentMute"));
 		if(node != nullptr) {
 			onMute(atoi(node->value()) != 0);
 
@@ -217,7 +217,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 
 	HttpHeaders headers;
 	headers[HTTP_HEADER_CONTENT_TYPE] = F("text/xml; charset=\"utf-8\"");
-	headers["SOAPACTION"] = "\"urn:" + urn + '#' + command.name + '"';
+	headers["SOAPACTION"] = "\"" + urn.toString() + '#' + command.name + '"';
 
 	auto request = new HttpRequest;
 	request->method = HTTP_POST;
