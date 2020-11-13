@@ -42,7 +42,6 @@ bool Client::connect(Connected callback)
 	});
 }
 
-
 bool Client::connect(const Url& descriptionUrl, Connected callback)
 {
 	debug_d("Fetching '%s'", descriptionUrl.toString().c_str());
