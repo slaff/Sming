@@ -122,6 +122,16 @@ public:
 	bool connect(Connected callback);
 
 	/**
+	 * @brief Directly connects to a device's description xml URL.
+	 * @param descriptionUrl the full URL where a description XML can be found.
+	 * 		  For example: http://192.168.22.222:55000/nrc/ddd.xml";
+	 * @param callback will be called once the XML is fetched
+	 *
+	 * @retval true when the connect request can be started
+	 */
+	bool connect(const Url& descriptionUrl, Connected callback);
+
+	/**
 	 * Send a command to the TV
 	 *
 	 * @param action command Command from codes.txt
@@ -196,7 +206,6 @@ private:
 		}
 	};
 	Params params;
-	HttpClient http;
 	Url tvUrl;
 
 	bool sendRequest(Command command, RequestCompletedDelegate requestCallback = nullptr);

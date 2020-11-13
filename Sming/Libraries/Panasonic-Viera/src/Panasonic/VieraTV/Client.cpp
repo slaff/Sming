@@ -42,6 +42,16 @@ bool Client::connect(Connected callback)
 	});
 }
 
+
+bool Client::connect(const Url& descriptionUrl, Connected callback)
+{
+	debug_d("Fetching '%s'", descriptionUrl.toString().c_str());
+	tvUrl = descriptionUrl;
+	return requestDescription(descriptionUrl, [this, callback](HttpConnection& connection, XML::Document& description) {
+		callback(connection, description);
+	});
+}
+
 bool Client::sendCommand(CommandAction action)
 {
 	Command cmd;
@@ -222,7 +232,7 @@ bool Client::sendRequest(Command command, RequestCompletedDelegate requestCallba
 		request->onRequestComplete(requestCallback);
 	}
 
-	return http.send(request);
+	return UPnP::ControlPoint::sendRequest(request);
 }
 
 XML::Node* Client::getNode(HttpConnection& connection, const String& path)

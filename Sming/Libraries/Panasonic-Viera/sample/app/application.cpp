@@ -15,7 +15,7 @@ VieraTV::Client client;
 
 void onConnected(HttpConnection& connection, XML::Document& description)
 {
-	auto node = XML::getNode(description, F("device/friendlyName"));
+	auto node = XML::getNode(description, F("/device/friendlyName"));
 	Serial.println(_F("New Viera TV found."));
 	if(node != nullptr) {
 		Serial.print(_F("Friendly name: "));
