@@ -80,7 +80,7 @@ bool Client::switchToHdmi(size_t input)
 	return sendRequest(cmd);
 }
 
-bool Client::sendAppCommand(const String& applicationId)
+bool Client::launch(const String& applicationId)
 {
 	Command cmd;
 	cmd.type = Command::Type::REMOTE;

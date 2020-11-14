@@ -150,9 +150,9 @@ public:
 	 *
 	 * @param id
 	 */
-	bool sendAppCommand(ApplicationId id)
+	bool launch(ApplicationId id)
 	{
-		return sendAppCommand(toString(id));
+		return launch(toString(id));
 	}
 
 	/**
@@ -160,7 +160,7 @@ public:
 	 *
 	 * @param {String} applicationId appId from codes.txt
 	 */
-	bool sendAppCommand(const String& applicationId);
+	bool launch(const String& applicationId);
 
 	/**
 	 * Get volume from TV

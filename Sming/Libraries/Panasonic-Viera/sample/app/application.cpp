@@ -29,7 +29,7 @@ void onConnected(HttpConnection& connection, XML::Document& description)
 	});
 
 	client.sendCommand(VieraTV::CommandAction::ACTION_CH_UP);
-	client.sendAppCommand(VieraTV::ApplicationId::APP_YOUTUBE);
+	client.launch(VieraTV::ApplicationId::APP_YOUTUBE);
 }
 
 // Will be called when WiFi station was connected to AP
