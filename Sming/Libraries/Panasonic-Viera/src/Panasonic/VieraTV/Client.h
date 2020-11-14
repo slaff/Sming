@@ -50,11 +50,17 @@
 	XX(STOP, "stop")                                                                                                   \
 	XX(REC, "record")
 
+/* A quick way to check if an app is existing on your TV, if it does not support X_GetAppList is to check
+ * whether the application icon is present.
+ *
+ * For example: http://192.168.2.222:55000/nrc/app_icon/0010000100000001 will get the icon for Amazon Prime Video
+ */
 #define VIERA_APP_MAP(XX)                                                                                              \
 	/** id, name, code */                                                                                              \
 	XX(NETFLIX, "Netflix", 0010000200000001)                                                                           \
-	XX(YOUTUBE, "YouTube", 0070000200170001)                                                                           \
-	XX(AMAZON, "Amazon Prime Video", 0010000100170001)                                                                 \
+	XX(YOUTUBE, "YouTube", 0070000200000001)                                                                           \
+	XX(MEDIA_PLAYER, "Media Player", 0387878700000032)                                                                 \
+	XX(AMAZON, "Amazon Prime Video", 0010000100000001)                                                                 \
 	XX(PLEX, "Plex", 0076010507000001)                                                                                 \
 	XX(BBC_IPLAYER, "BBC iPlayer", 0020000A00170010)                                                                   \
 	XX(BBC_NEWS, "BBC News", 0020000A00170006)                                                                         \
@@ -69,7 +75,7 @@
 	XX(STV_PLAYER, "STV Player", 0387878700000132)                                                                     \
 	XX(DIGITAL_CONCERT_HALL, "Digital Concert Hall", 0076002307170001)                                                 \
 	XX(APPS_MARKET, "Apps Market", 0387878700000102)                                                                   \
-	XX(BROWSER, "Browser", 0077777700160002)                                                                           \
+	XX(BROWSER, "Browser", 0077777700140002)                                                                           \
 	XX(CALENDAR, "Calendar", 0387878700150020)                                                                         \
 	XX(VIERA_LINK, "VIERA Link", 0387878700000016)                                                                     \
 	XX(RECORDED_TV, "Recorded TV", 0387878700000013)                                                                   \
