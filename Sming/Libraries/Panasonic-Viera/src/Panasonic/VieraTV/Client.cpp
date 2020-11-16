@@ -99,14 +99,26 @@ bool Client::getVolume(GetVolume onVolume)
 {
 	RequestCompletedDelegate requestCallback = [this, onVolume](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		auto node = this->getNode(connection, F("/s:Body/u:GetVolumeResponse/CurrentVolume"));
-		if(node != nullptr) {
-			onVolume(atoi(node->value()));
-
-			return true;
+		auto node = getNode(connection, F("/Body")); // F("/s:Body/u:GetVolumeResponse/CurrentVolume")
+		if(node == nullptr) {
+			return 1;
 		}
 
-		return false;
+		UPnP::Urn urn =
+			UPnP::ServiceUrn(UPnP::schemas_upnp_org, UPnP::ServiceType::upnp_org::RenderingControl, version);
+		node = XML::getNode(node, F("GetVolumeResponse"), urn.toString());
+		if(node == nullptr) {
+			return 1;
+		}
+
+		node = XML::getNode(node, F("CurrentVolume"), "");
+		if(node != nullptr) {
+			onVolume(atoi(node->value()) != 0);
+
+			return 0;
+		}
+
+		return 1;
 	};
 
 	Command cmd;
@@ -141,14 +153,26 @@ bool Client::getMute(GetMute onMute)
 {
 	RequestCompletedDelegate requestCallback = [this, onMute](HttpConnection& connection, bool successful) -> int {
 		/* @see: docs/RequestResponse.txt for sample communication */
-		auto node = this->getNode(connection, F("/s:Body/u:GetMuteResponse/CurrentMute"));
+		auto node = getNode(connection, F("/Body")); // F("/s:Body/u:GetMuteResponse/CurrentMute")
+		if(node == nullptr) {
+			return 1;
+		}
+
+		UPnP::Urn urn =
+			UPnP::ServiceUrn(UPnP::schemas_upnp_org, UPnP::ServiceType::upnp_org::RenderingControl, version);
+		node = XML::getNode(node, F("GetMuteResponse"), urn.toString());
+		if(node == nullptr) {
+			return 1;
+		}
+
+		node = XML::getNode(node, F("CurrentMute"), "");
 		if(node != nullptr) {
 			onMute(atoi(node->value()) != 0);
 
-			return true;
+			return 0;
 		}
 
-		return false;
+		return 1;
 	};
 
 	Command cmd;
