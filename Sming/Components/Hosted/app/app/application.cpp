@@ -32,13 +32,14 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 
 	tcpServer = new TcpServer([](TcpClient& client, char* data, int size) -> bool {
 		// clientReceiveDataHandler
-		int result = hostedServer.process((const uint8_t*)data, size);
+		int result = hostedServer.process(reinterpret_cast<const uint8_t*>(data), size);
 		if(result != HOSTED_OK) {
 			return result == HOSTED_NO_MEM ? false : true;
 		}
 
-		hostedServer.transfer(
-			[&client](const uint8_t* data, size_t size) -> bool { return client.send((const char*)data, size); });
+		hostedServer.transfer([&client](const uint8_t* data, size_t size) -> bool {
+			return client.send(reinterpret_cast<const char*>(data), size);
+		});
 
 		return true;
 	});

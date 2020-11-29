@@ -16,7 +16,7 @@ typedef Delegate<bool(const uint8_t* data, size_t size)> HostedTransferDelegate;
 class HostedServer
 {
 public:
-	HostedServer(size_t storageSize = 1024) : inputBuffer(new CircularBuffer(storageSize))
+	HostedServer(size_t storageSize = 1024) : inputBuffer(new CircularBuffer(storageSize)), outputBuffer(1024)
 	{
 	}
 
@@ -53,8 +53,8 @@ public:
 		size_t leftBytes = input.bytes_left;
 		do {
 			success = pb_decode_ex(&input, HostedCommand_fields, &request, PB_DECODE_DELIMITED);
-			if(!(success && request.which_payload)) {
-				Serial.printf("Decoding failed: %s\n", PB_GET_ERROR(&input));
+			if(!success || request.which_payload == 0) {
+				debug_e("Decoding failed: %s", PB_GET_ERROR(&input));
 				inputBuffer->seek(inputBuffer->available() - leftBytes);
 				break;
 			}
@@ -91,23 +91,22 @@ public:
 		bool success = pb_encode_ex(&ouput, HostedCommand_fields, message, PB_ENCODE_DELIMITED);
 		if(!success) {
 			debug_e("Encoding failed: %s\n", PB_GET_ERROR(&ouput));
-			return false;
 		}
 
-		return true;
+		return success;
 	}
 
 	bool transfer(HostedTransferDelegate callback)
 	{
 		uint8_t buf[512];
 		while(outputBuffer.available() > 0) {
-			int read = outputBuffer.readMemoryBlock((char*)buf, 512);
+			int read = outputBuffer.readMemoryBlock((char*)buf, sizeof(buf));
 			outputBuffer.seek(read);
 			if(!callback(buf, read)) {
 				return false;
 			}
 
-			if(read < 1024) {
+			if(read != sizeof(buf)) {
 				break;
 			}
 		}
@@ -117,40 +116,38 @@ public:
 private:
 	pb_istream_t newInputStream()
 	{
-		pb_istream_t stream;
-		stream.callback = [](pb_istream_t* stream, pb_byte_t* buf, size_t count) -> bool {
-			CircularBuffer* source = (CircularBuffer*)stream->state;
-			size_t read = source->readMemoryBlock((char*)buf, count);
-			source->seek(read);
+		return pb_istream_t{
+			.callback = [](pb_istream_t* stream, pb_byte_t* buf, size_t count) -> bool {
+				CircularBuffer* source = (CircularBuffer*)stream->state;
+				size_t read = source->readMemoryBlock((char*)buf, count);
+				source->seek(read);
 
-			return true;
+				return true;
+			},
+			.state = inputBuffer,
+			.bytes_left = inputBuffer->available(),
+			.errmsg = nullptr,
 		};
-		stream.state = (void*)inputBuffer;
-		stream.bytes_left = inputBuffer->available();
-		stream.errmsg = nullptr;
-
-		return stream;
 	}
 
 	pb_ostream_t newOutputStream()
 	{
-		pb_ostream_t outputStream;
-		outputStream.callback = [](pb_ostream_t* stream, const pb_byte_t* buf, size_t count) -> bool {
-			CircularBuffer* destination = (CircularBuffer*)stream->state;
-			size_t written = destination->write((const uint8_t*)buf, count);
+		return pb_ostream_t{
+			.callback = [](pb_ostream_t* stream, const pb_byte_t* buf, size_t count) -> bool {
+				CircularBuffer* destination = (CircularBuffer*)stream->state;
+				size_t written = destination->write((const uint8_t*)buf, count);
 
-			return (written == count);
+				return (written == count);
+			},
+			.state = &outputBuffer,
+			.max_size = SIZE_MAX,
+			.bytes_written = 0,
+			.errmsg = nullptr,
 		};
-		outputStream.state = (void*)&this->outputBuffer;
-		outputStream.max_size = SIZE_MAX;
-		outputStream.bytes_written = 0;
-		outputStream.errmsg = nullptr;
-
-		return outputStream;
 	}
 
 private:
-	CircularBuffer* inputBuffer = nullptr;
-	CircularBuffer outputBuffer = CircularBuffer(1024);
+	CircularBuffer* inputBuffer{nullptr};
+	CircularBuffer outputBuffer;
 	HashMap<uint32_t, HostedCommandDelegate> commands;
 };

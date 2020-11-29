@@ -1,8 +1,8 @@
 #include <SmingCore.h>
 #include <HostedClient.h>
-#include "../../src/tcp/HostedTcpStream.h"
+#include "HostedTcpStream.h"
 
-HostedClient* hostedClient = nullptr;
+HostedClient* hostedClient{nullptr};
 
 #ifndef WIFI_SSID
 #define WIFI_SSID "PleaseEnterSSID" // Put your SSID and password here

@@ -30,5 +30,5 @@ uint8_t digitalRead(uint16_t pin)
 	hostedClient->send(&message);
 	HostedCommand response = hostedClient->wait();
 
-	return (uint8_t)response.payload.responseDigitalRead.value;
+	return uint8_t(response.payload.responseDigitalRead.value);
 }

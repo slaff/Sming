@@ -5,7 +5,7 @@
 
 bool pbEncodeData(pb_ostream_t* stream, const pb_field_t* field, void* const* arg)
 {
-	PbData* data = (PbData*)*arg;
+	auto data = static_cast<PbData*>(*arg);
 	if(data == nullptr) {
 		return false;
 	}
@@ -19,10 +19,10 @@ bool pbEncodeData(pb_ostream_t* stream, const pb_field_t* field, void* const* ar
 
 bool pbDecodeData(pb_istream_t* stream, const pb_field_t* field, void** arg)
 {
-	uint8_t buffer[1024] = {0};
+	uint8_t buffer[1024]{};
 
 	/* We could read block-by-block to avoid the large buffer... */
-	if(stream->bytes_left > sizeof(buffer) - 1) {
+	if(stream->bytes_left >= sizeof(buffer)) {
 		return false;
 	}
 
@@ -31,10 +31,10 @@ bool pbDecodeData(pb_istream_t* stream, const pb_field_t* field, void** arg)
 		return false;
 	}
 
-	MemoryDataStream* data = (MemoryDataStream*)*arg;
+	auto data = static_cast<MemoryDataStream*>(*arg);
 	if(data == nullptr) {
 		data = new MemoryDataStream();
-		*arg = (void*)data;
+		*arg = data;
 	}
 	data->write(buffer, available);
 	return true;

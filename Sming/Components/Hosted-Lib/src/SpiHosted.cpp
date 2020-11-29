@@ -19,8 +19,8 @@ void SPIClass::beginTransaction(SPISettings mySettings)
 	NEW_HD_COMMAND(message, SpiBeginTransaction, {
 		command->has_settings = 1;
 		command->settings.speed = mySettings.speed;
-		command->settings.byteOrder = (SpiSettings_ByteOrder)mySettings.byteOrder;
-		command->settings.dataMode = (SpiSettings_DataMode)mySettings.dataMode;
+		command->settings.byteOrder = SpiSettings_ByteOrder(mySettings.byteOrder);
+		command->settings.dataMode = SpiSettings_DataMode(mySettings.dataMode);
 	});
 
 	hostedClient->send(&message);
@@ -39,25 +39,23 @@ void SPIClass::beginTransaction(SPISettings mySettings)
  */
 void SPIClass::transfer(uint8_t* buffer, size_t numberBytes)
 {
-	PbData data;
-	data.value = buffer;
-	data.length = numberBytes;
+	PbData data{buffer, numberBytes};
 
 	NEW_HD_COMMAND(message, SpiTransfer, {
-		command->data.arg = (void*)&data;
+		command->data.arg = &data;
 		command->data.funcs.encode = &pbEncodeData;
 	});
 
 	hostedClient->send(&message);
 	HostedCommand response = hostedClient->wait();
 
-	MemoryDataStream* resultData = (MemoryDataStream*)response.payload.responseSpiTransfer.data.arg;
+	auto resultData = static_cast<MemoryDataStream*>(response.payload.responseSpiTransfer.data.arg);
 	if(resultData == nullptr) {
 		memset(buffer, 0, numberBytes);
 		return;
 	}
 
-	resultData->readBytes((char*)buffer, numberBytes);
+	resultData->readBytes(reinterpret_cast<char*>(buffer), numberBytes);
 	delete resultData;
 }
 

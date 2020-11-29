@@ -6,9 +6,9 @@
 #include "hosted.pb.h"
 #include "HostedUtils.h"
 
-constexpr int HOSTED_OK = 0;
-constexpr int HOSTED_FAIL = -1;
-constexpr int HOSTED_NO_MEM = -2;
+constexpr int HOSTED_OK{0};
+constexpr int HOSTED_FAIL{-1};
+constexpr int HOSTED_NO_MEM{-2};
 
 typedef Delegate<int(HostedCommand* request, HostedCommand* response)> HostedCommandDelegate;
 
@@ -24,10 +24,9 @@ typedef Delegate<int(HostedCommand* request, HostedCommand* response)> HostedCom
 class HostedCommon
 {
 public:
-	virtual bool onData(const char* at, size_t length) = 0;
 	virtual ~HostedCommon()
 	{
 	}
 
-private:
+	virtual bool onData(const char* at, size_t length) = 0;
 };

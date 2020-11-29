@@ -27,7 +27,7 @@ public:
 		pb_ostream_t ouput = newOutputStream();
 		bool success = pb_encode_ex(&ouput, HostedCommand_fields, message, PB_ENCODE_DELIMITED);
 		if(!success) {
-			debug_e("Encoding failed: %s\n", PB_GET_ERROR(&ouput));
+			debug_e("Encoding failed: %s", PB_GET_ERROR(&ouput));
 			return false;
 		}
 
@@ -70,39 +70,37 @@ public:
 private:
 	pb_istream_t newInputStream()
 	{
-		pb_istream_t stream;
-		stream.callback = [](pb_istream_t* stream, pb_byte_t* buf, size_t count) -> bool {
-			ReadWriteStream* source = (ReadWriteStream*)stream->state;
-			size_t read = source->readMemoryBlock((char*)buf, count);
-			source->seek(read);
+		return pb_istream_t{
+			.callback = [](pb_istream_t* stream, pb_byte_t* buf, size_t count) -> bool {
+				auto source = static_cast<ReadWriteStream*>(stream->state);
+				size_t read = source->readMemoryBlock(reinterpret_cast<char*>(buf), count);
+				source->seek(read);
 
-			return true;
+				return true;
+			},
+			.state = this->stream,
+			.bytes_left = this->stream->available(),
+			.errmsg = nullptr,
 		};
-		stream.state = (void*)this->stream;
-		stream.bytes_left = this->stream->available();
-		stream.errmsg = nullptr;
-
-		return stream;
 	}
 
 	pb_ostream_t newOutputStream()
 	{
-		pb_ostream_t outputStream;
-		outputStream.callback = [](pb_ostream_t* stream, const pb_byte_t* buf, size_t count) -> bool {
-			ReadWriteStream* destination = (ReadWriteStream*)stream->state;
-			size_t written = destination->write((const uint8_t*)buf, count);
+		return pb_ostream_t{
+			.callback = [](pb_ostream_t* stream, const pb_byte_t* buf, size_t count) -> bool {
+				auto destination = static_cast<ReadWriteStream*>(stream->state);
+				size_t written = destination->write(reinterpret_cast<const uint8_t*>(buf), count);
 
-			return (written == count);
+				return written == count;
+			},
+			.state = stream,
+			.max_size = SIZE_MAX,
+			.bytes_written = 0,
+			.errmsg = nullptr,
 		};
-		outputStream.state = (void*)this->stream;
-		outputStream.max_size = SIZE_MAX;
-		outputStream.bytes_written = 0;
-		outputStream.errmsg = nullptr;
-
-		return outputStream;
 	}
 
 private:
 	HashMap<uint32_t, HostedCommandDelegate> responseCallbacks;
-	ReadWriteStream* stream = nullptr;
+	ReadWriteStream* stream{nullptr};
 };
