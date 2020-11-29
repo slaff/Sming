@@ -9,9 +9,7 @@ SPIClass SPI;
 
 void SPIClass::begin()
 {
-	NEW_HD_COMMAND(message, SpiBeginTransaction, {
-			command->has_settings = 0;
-	});
+	NEW_HD_COMMAND(message, SpiBeginTransaction, { command->has_settings = 0; });
 
 	hostedClient->send(&message);
 }
@@ -19,10 +17,10 @@ void SPIClass::begin()
 void SPIClass::beginTransaction(SPISettings mySettings)
 {
 	NEW_HD_COMMAND(message, SpiBeginTransaction, {
-			command->has_settings = 1;
-			command->settings.speed = mySettings.speed;
-			command->settings.byteOrder = (SpiSettings_ByteOrder)mySettings.byteOrder;
-			command->settings.dataMode = (SpiSettings_DataMode)mySettings.dataMode;
+		command->has_settings = 1;
+		command->settings.speed = mySettings.speed;
+		command->settings.byteOrder = (SpiSettings_ByteOrder)mySettings.byteOrder;
+		command->settings.dataMode = (SpiSettings_DataMode)mySettings.dataMode;
 	});
 
 	hostedClient->send(&message);
@@ -46,8 +44,8 @@ void SPIClass::transfer(uint8_t* buffer, size_t numberBytes)
 	data.length = numberBytes;
 
 	NEW_HD_COMMAND(message, SpiTransfer, {
-			command->data.arg = (void*)&data;
-			command->data.funcs.encode = &pbEncodeData;
+		command->data.arg = (void*)&data;
+		command->data.funcs.encode = &pbEncodeData;
 	});
 
 	hostedClient->send(&message);
@@ -59,10 +57,9 @@ void SPIClass::transfer(uint8_t* buffer, size_t numberBytes)
 		return;
 	}
 
-	resultData->readBytes((char *)buffer, numberBytes);
+	resultData->readBytes((char*)buffer, numberBytes);
 	delete resultData;
 }
-
 
 uint32_t SPIClass::transfer32(uint32_t val, uint8_t bits)
 {

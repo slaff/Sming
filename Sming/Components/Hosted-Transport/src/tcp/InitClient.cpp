@@ -9,8 +9,6 @@ HostedClient* hostedClient = nullptr;
 #define WIFI_PWD "PleaseEnterPass"
 #endif
 
-
-
 #ifndef HOSTED_SERVER_IP
 #define REMOTE_IP IpAddress("192.168.13.1")
 #else

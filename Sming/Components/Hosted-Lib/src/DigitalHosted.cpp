@@ -25,9 +25,7 @@ void digitalWrite(uint16_t pin, uint8_t val)
 
 uint8_t digitalRead(uint16_t pin)
 {
-	NEW_HD_COMMAND(message, DigitalRead, {
-		command->pin = pin;
-	});
+	NEW_HD_COMMAND(message, DigitalRead, { command->pin = pin; });
 
 	hostedClient->send(&message);
 	HostedCommand response = hostedClient->wait();
