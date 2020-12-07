@@ -12,25 +12,6 @@
 
 #include "HttpResourceTree.h"
 
-class HttpCompatResource : public HttpResource
-{
-public:
-	explicit HttpCompatResource(const HttpPathDelegate& callback) : callback(callback)
-	{
-		onRequestComplete = HttpResourceDelegate(&HttpCompatResource::requestComplete, this);
-	}
-
-private:
-	int requestComplete(HttpServerConnection& connection, HttpRequest& request, HttpResponse& response)
-	{
-		callback(request, response);
-		return 0;
-	}
-
-private:
-	HttpPathDelegate callback;
-};
-
 /* HttpResourceTree */
 
 void HttpResourceTree::set(String path, const HttpPathDelegate& callback)
