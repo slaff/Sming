@@ -1,5 +1,5 @@
-Configuring your Esp8266 device
--------------------------------
+Configuring your device
+-----------------------
 
 .. highlight:: bash
 
@@ -22,15 +22,14 @@ You can set these initially on the command line, like this::
 
    make SMING_ARCH=Esp8266 SPI_MODE=dio SPI_SIZE=4M COM_SPEED_ESPTOOL=921600
 
-Once you're happy with the settings, you can add them to your ``project.mk`` file.
-
-You can list the current set of configuration variables like this::
-
-   make list-config
-
-If you want to reset back to default values, do this::
+Once you're happy with the settings, you can add them to your project's ``component.mk`` file.
+You may need to do this to reset the cached values::
 
    make config-clean
+
+The current set of configuration variables can be seen thus::
+
+   make list-config
 
 .. note::
 
