@@ -112,7 +112,7 @@ SAMPLE_NAMES		= $(shell ls -1 $(SAMPLES_DIR))
 samples: | $(SAMPLE_NAMES) ##Build all sample applications
 
 $(SAMPLE_NAMES):
-	$(Q) $(MAKE) --no-print-directory -C $(SAMPLES_DIR)/$@
+	$(Q) $(MAKE) --no-print-directory -C $(SAMPLES_DIR)/$@ python-requirements all
 
 
 TESTS_COMPLETED = $(addsuffix /.complete,$(call ListSubDirs,$(TESTS_DIR)))
