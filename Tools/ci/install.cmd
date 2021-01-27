@@ -1,5 +1,7 @@
 REM Windows install script
 
+set SMINGTOOLS=https://github.com/SmingHub/SmingTools/releases/download/1.0
+
 python -m pip install --upgrade pip
 
 rmdir /s /q c:\MinGW
