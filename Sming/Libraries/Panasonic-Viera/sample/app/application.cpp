@@ -7,26 +7,19 @@
 #define WIFI_PWD "PleaseEnterPass"
 #endif
 
-using namespace Panasonic::VieraTV;
+using namespace Panasonic;
 
-Client* client = nullptr;
+VieraTV::Client client;
+NtpClient* ntpClient;
 
-void onConnected(Client& client, const XML::Document& doc, const HttpHeaders& headers)
+void onConnected(VieraTV::Client& client)
 {
-	CStringArray path("device");
-	path.add("friendlyName");
-	auto node = client.getNode(doc, path);
-	Serial.println(_F("New Viera TV found."));
-	if(node != nullptr) {
-		Serial.printf(_F("Friendly name: %s.\n"), node->value());
-	}
-
 	client.setMute(true);					// mute the TV
 	client.getMute([](bool muted) -> void { // check the mute state
 		Serial.printf("Muted state: %d", muted ? 1 : 0);
 	});
-	client.sendCommand(CommandAction::ACTION_CH_UP);
-	client.sendAppCommand(ApplicationId::APP_YOUTUBE);
+	client.sendCommand(VieraTV::CommandAction::ACTION_CH_UP);
+	client.launchApp(VieraTV::ApplicationId::APP_YOUTUBE);
 }
 
 void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
@@ -34,17 +27,8 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 	Serial.print(_F("I'm CONNECTED to "));
 	Serial.println(ip);
 
-	delete client;
-	client = new Client();
 	/* The command below will use UPnP to auto-discover a Viera TV */
-	client->connect(onConnected);
-
-	/* Alternatevely one can use the commands below when auto-discovery is not working */
-	/*
-	Url descriptionUrl{"192.168.22.222:55000/nrc/ddd.xml"};
-
-	client->connect(descriptionUrl, onConnected);
-	*/
+	client.connect(onConnected);
 }
 
 void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason)

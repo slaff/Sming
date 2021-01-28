@@ -3,8 +3,8 @@
 #include <SmingCore.h>
 #include <Data/CStringArray.h>
 #include <Network/UPnP/ControlPoint.h>
-#include <Network/UPnP/DeviceHost.h>
-#include <Network/UPnP/Soap.h>
+#include <Network/UPnP/schemas-upnp-org/ClassGroup.h>
+#include <Network/UPnP/panasonic-com/ClassGroup.h>
 
 using namespace rapidxml;
 
@@ -100,25 +100,19 @@ enum class ApplicationId {
 String toString(enum CommandAction a);
 String toString(enum ApplicationId a);
 
+using namespace UPnP::schemas_upnp_org::device;
+using namespace UPnP::schemas_upnp_org::service;
+using namespace UPnP::panasonic_com::device;
+using namespace UPnP::panasonic_com::service;
+
 class Client : public UPnP::ControlPoint
 {
 public:
-	using ConnectedCallback = Delegate<void(Client&, const XML::Document& doc, const HttpHeaders& headers)>;
+	using ConnectedCallback = Delegate<void(Client&)>;
 	using GetMuteCallback = Delegate<void(bool muted)>;
 	using GetVolumeCallback = Delegate<void(int volume)>;
 
-	struct Command {
-		enum class Type {
-			REMOTE,
-			RENDER,
-		};
-
-		Type type;
-		String name; // How device identifies itself
-		XML::Document* params;
-	};
-
-	Client(size_t maxDescriptionSize = 4096) : maxDescriptionSize(maxDescriptionSize)
+	Client(size_t maxDescriptionSize = 4096) : ControlPoint(maxDescriptionSize)
 	{
 	}
 
@@ -130,20 +124,19 @@ public:
 	bool connect(ConnectedCallback callback);
 
 	/**
-	 * @brief Directly connects to a TV with the provided description xml URL.
-	 * @param descriptionUrl the full URL where a description XML can be found.
-	 * 		  For example: http://192.168.22.222:55000/nrc/ddd.xml";
-	 * @param callback will be called once the XML is fetched
-	 * @retval true when the connect request can be started
-	 */
-	bool connect(const Url& descriptionUrl, ConnectedCallback callback);
-
-	/**
 	 * Send a command to the TV
 	 *
 	 * @param action command Command from codes.txt
 	 */
-	bool sendCommand(CommandAction action);
+	bool sendCommand(CommandAction action, p00NetworkControl1::SendKey::Callback callback = nullptr);
+
+	/**
+	 * Send a command to the TV
+	 *
+	 * @param action in free form
+	 *
+	 */
+	bool sendCommand(const String& action, p00NetworkControl1::SendKey::Callback callback = nullptr);
 
 	/**
 	 * Send a change HDMI input to the TV
@@ -157,9 +150,9 @@ public:
 	 *
 	 * @param id
 	 */
-	bool sendAppCommand(enum ApplicationId id)
+	bool launchApp(enum ApplicationId id, p00NetworkControl1::LaunchApp::Callback callback = nullptr)
 	{
-		return sendAppCommand(toString(id));
+		return launchApp(toString(id), callback);
 	}
 
 	/**
@@ -167,7 +160,7 @@ public:
 	 *
 	 * @param {String} applicationId appId from codes.txt
 	 */
-	bool sendAppCommand(const String& applicationId);
+	bool launchApp(const String& applicationId, p00NetworkControl1::LaunchApp::Callback callback = nullptr);
 
 	/**
 	 * Get volume from TV
@@ -175,14 +168,16 @@ public:
 	 * @param callback
 	 * @return bool - true on success false otherwise
 	 */
-	bool getVolume(GetVolumeCallback onVolume);
+	bool getVolume(GetVolumeCallback onVolume, uint32_t instanceId = 0,
+				   const String& channel = RenderingControl1::Channel::fs_Master);
 
 	/**
 	 * Set volume
 	 *
 	 * @param {Int} volume Desired volume in range from 0 to 100
 	 */
-	bool setVolume(size_t volume);
+	bool setVolume(size_t volume, uint32_t instanceId = 0,
+				   const String& channel = RenderingControl1::Channel::fs_Master);
 
 	/**
 	 * Get the current mute setting
@@ -190,56 +185,24 @@ public:
 	 * @param callback
 	 * @return bool - true on success false otherwise
 	 */
-	bool getMute(GetMuteCallback onMute);
+	bool getMute(GetMuteCallback onMute, uint32_t instanceId = 0,
+				 const String& channel = RenderingControl1::Channel::fs_Master);
 
 	/**
 	 * Set mute to on/off
 	 *
 	 * @param {Boolean} enable The value to set mute to
 	 */
-	bool setMute(bool enable);
-
-	bool formatMessage(SSDP::Message& msg, SSDP::MessageSpec& ms) override;
-
-	void onNotify(SSDP::BasicMessage& msg) override;
-
-	/**
-	 * TODO: Move this method to XML::Document ...
-	 *
-	 * @brief Gets XML node by path
-	 * @param doc the XML document
-	 * @param path the paths that have to be traversed to get the node (excluding the root node).
-	 *
-	 * @retval node
-	 *
-	 */
-	XML::Node* getNode(const XML::Document& doc, const CStringArray& path);
+	bool setMute(bool enable, uint32_t instanceId = 0, const String& channel = RenderingControl1::Channel::fs_Master);
 
 private:
-	size_t maxDescriptionSize; // <<< Maximum size of TV XML description that is stored.
-	SOAP::Envelope envelope;
-	XML::Node* actionTag = nullptr;
-	XML::Document paramsDoc;
-
 	ConnectedCallback onConnected;
 
-	HttpClient http;
-	Url tvUrl;
+	// TODO: Move this as protected method in the ControlPoint class
+	bool checkResponse(UPnP::ActionResponse& response);
 
-	CStringArray locations;
-
-	bool sendRequest(Command command, RequestCompletedDelegate requestCallack = nullptr);
-
-	bool setParams(Command& cmd, const String& text)
-	{
-		cmd.params = &paramsDoc;
-		cmd.params->parse<0>((char*)text.c_str());
-		return true;
-	}
-
-	int onDescription(HttpConnection& conn, bool success);
-
-	XML::Node* getNode(HttpConnection& connection, const CStringArray& path);
+	UPnP::schemas_upnp_org::service::RenderingControl1* renderService = nullptr;
+	UPnP::panasonic_com::service::p00NetworkControl1* remoteControlService = nullptr;
 };
 
 } // namespace VieraTV
