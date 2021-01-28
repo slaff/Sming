@@ -36,7 +36,8 @@ RUN apt-get -y update \
 
 ARG SMING_BRANCH=develop
 ARG SMING_REPO=SmingHub/Sming
+ARG INSTALL_ARGS=all
 
 RUN git clone -b $SMING_BRANCH -- https://github.com/$SMING_REPO $(readlink -m $SMING_HOME/..)
 
-RUN $SMING_HOME/../Tools/install.sh
+RUN $SMING_HOME/../Tools/install.sh $INSTALL_ARGS
