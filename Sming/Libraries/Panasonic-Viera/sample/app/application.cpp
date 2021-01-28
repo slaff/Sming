@@ -27,8 +27,22 @@ void connectOk(IpAddress ip, IpAddress mask, IpAddress gateway)
 	Serial.print(_F("I'm CONNECTED to "));
 	Serial.println(ip);
 
-	/* The command below will use UPnP to auto-discover a Viera TV */
+	if(ntpClient == nullptr) {
+		ntpClient = new NtpClient([](NtpClient& client, time_t timestamp) {
+			SystemClock.setTime(timestamp, eTZ_UTC);
+			Serial.print("Time synchronized: ");
+			Serial.println(SystemClock.getSystemTimeString());
+		});
+	};
+
+	/* The command below will use UPnP to auto-discover and control all Panasonic TVs in your local network */
 	client.connect(onConnected);
+
+	/* If it is desired to connect only to one TV then you can specify
+	 * the Unique Device Name(UDN) as a second parameter to connect(), as shown below:
+	 *
+	 * client.connect(onConnected,"<paste-here-unique-device-name>");
+	 */
 }
 
 void connectFail(const String& ssid, MacAddress bssid, WifiDisconnectReason reason)

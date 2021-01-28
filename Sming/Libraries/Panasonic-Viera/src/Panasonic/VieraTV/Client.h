@@ -112,6 +112,13 @@ public:
 	using GetMuteCallback = Delegate<void(bool muted)>;
 	using GetVolumeCallback = Delegate<void(int volume)>;
 
+	struct Device {
+		UPnP::schemas_upnp_org::service::RenderingControl1* render = nullptr;
+		UPnP::panasonic_com::service::p00NetworkControl1* control = nullptr;
+	};
+
+	using Devices = HashMap<String, Device>;
+
 	Client(size_t maxDescriptionSize = 4096) : ControlPoint(maxDescriptionSize)
 	{
 	}
@@ -121,7 +128,7 @@ public:
 	 * @param callback will be called once a TV is auto-discovered
 	 * @retval true when the connect request can be started
 	 */
-	bool connect(ConnectedCallback callback);
+	bool connect(ConnectedCallback callback, const String& id = nullptr);
 
 	/**
 	 * Send a command to the TV
@@ -195,14 +202,21 @@ public:
 	 */
 	bool setMute(bool enable, uint32_t instanceId = 0, const String& channel = RenderingControl1::Channel::fs_Master);
 
+	virtual ~Client()
+	{
+		for(size_t i = 0; i < devices.count(); i++) {
+			auto& device = devices.valueAt(i);
+			delete device.render;
+			delete device.control;
+		}
+	}
+
 private:
-	ConnectedCallback onConnected;
+	bool initialized{false};
+	Devices devices;
 
 	// TODO: Move this as protected method in the ControlPoint class
 	bool checkResponse(UPnP::ActionResponse& response);
-
-	UPnP::schemas_upnp_org::service::RenderingControl1* renderService = nullptr;
-	UPnP::panasonic_com::service::p00NetworkControl1* remoteControlService = nullptr;
 };
 
 } // namespace VieraTV
