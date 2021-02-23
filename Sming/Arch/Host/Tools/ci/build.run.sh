@@ -17,3 +17,39 @@ fi
 # Build and run tests
 export SMING_TARGET_OPTIONS='--flashfile=$(FLASH_BIN) --flashsize=$(SPI_SIZE)'
 $MAKE_PARALLEL tests
+
+# Do integration test
+
+echo "INTEGRATION TESTS";
+
+# Check server headers
+cd $SMING_PROJECTS_DIR/samples/HttpServer_Bootstrap
+make
+make flash
+nohup make run &
+
+sleep 10 # wait for the HttpServer to start accepting connections...
+
+cat nohup.out
+
+RESPONSE_HEADERS=$(curl -s -D - -o /dev/null http://192.168.13.10/bootstrap.css)
+
+echo "Got headers: [$RESPONSE_HEADERS]"
+
+# Content-Type: text/css
+if ! [[ $RESPONSE_HEADERS == *"Content-Length: "* ]]; then
+  echo "Missing content length!"
+  exit 1;
+fi
+
+# Content-Encoding: gzip
+if ! [[ $RESPONSE_HEADERS == *"Content-Encoding: gzip"* ]]; then
+  echo "Missing or Invalid Content-Encoding!"
+  exit 1;
+fi
+
+# Content-Type: text/css
+if ! [[ $RESPONSE_HEADERS == *"Content-Type: text/css"* ]]; then
+  echo "Missing or Invalid Content-Type!"
+  exit 1;
+fi
