@@ -1,5 +1,8 @@
 # Host build.run.sh
 
+
+if [ "1" = "0" ];  then
+
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
@@ -18,17 +21,20 @@ fi
 export SMING_TARGET_OPTIONS='--flashfile=$(FLASH_BIN) --flashsize=$(SPI_SIZE)'
 $MAKE_PARALLEL tests
 
+fi
+
+
 # Do integration test
 
 echo "INTEGRATION TESTS";
 
 # Check server headers
 cd $SMING_PROJECTS_DIR/samples/HttpServer_Bootstrap
-make
+make WIFI_SSID=Dentist WIFI_PWD=fillings
 make flash
 nohup make run &
 
-sleep 10 # wait for the HttpServer to start accepting connections...
+sleep 30 # wait for the HttpServer to start accepting connections...
 
 cat nohup.out
 
