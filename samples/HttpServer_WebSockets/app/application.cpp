@@ -1,6 +1,8 @@
 #include <SmingCore.h>
 #include <Network/Http/Websocket/WebsocketResource.h>
-#include <Network/Http/Auth/HttpAuthBasicResource.h>
+#include <Network/Http/Auth/HttpAuthBasic.h>
+#include <Network/Http/Auth/HttpAuthIp.h>
+#include <Network/Http/Auth/HttpAuthChain.h>
 #include "CUserData.h"
 
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
@@ -110,9 +112,13 @@ void startWebServer()
 	wsResource->setDisconnectionHandler(wsDisconnected);
 
 	server.paths.set("/ws", wsResource);
+	server.paths.set("/protected", onIndex, HttpAuthBasic("realm", "username", "password"));
+	server.paths.set("/ip", onIndex, HttpAuthIp(IpAddress("192.168.13.0"), IpAddress("255.255.255.0")));
 
-	auto basicAuthResource = new HttpAuthBasicResource(onIndex, "Protected Area", "secretuser", "complexpassword");
-	server.paths.set("/protected", basicAuthResource);
+	HttpAuthChain chain;
+	chain.add(HttpAuthIp(IpAddress("192.168.13.0"), IpAddress("255.255.255.0")));
+	chain.add(HttpAuthBasic("realm", "username", "password"));
+	server.paths.set("/ipauth", onIndex, chain);
 
 	Serial.println(F("\r\n=== WEB SERVER STARTED ==="));
 	Serial.println(WifiStation.getIP());

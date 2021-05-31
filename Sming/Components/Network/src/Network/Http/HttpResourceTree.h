@@ -65,12 +65,7 @@ public:
 	 * @note Path should start with slash. Trailing slashes will be removed.
 	 * @note Any existing handler for this path is replaced
 	 */
-	void set(const String& path, const HttpResourceDelegate& onRequestComplete)
-	{
-		HttpResource* resource = new HttpResource;
-		resource->onRequestComplete = onRequestComplete;
-		set(path, resource);
-	}
+	void set(const String& path, const HttpResourceDelegate& onRequestComplete, const HttpResourceDelegate& onHeadersComplete = nullptr);
 
 	/**
 	 * @brief Add a new path resource with a callback
@@ -79,7 +74,7 @@ public:
 	 * @note Path should start with slash. Trailing slashes will be removed
 	 * @note Any existing handler for this path is replaced
 	 */
-	void set(String path, const HttpPathDelegate& callback);
+	void set(String path, const HttpPathDelegate& callback, const HttpResourceDelegate& onHeadersComplete = nullptr);
 };
 
 
