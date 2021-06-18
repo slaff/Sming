@@ -223,6 +223,14 @@
 	path = Sming/Libraries/LittleFS
 	url = https://github.com/mikee47/Sming-LittleFS
 	ignore = dirty
+[submodule "Libraries.lvgl"]
+	path = Sming/Libraries/LVGL/lvgl
+	url = https://github.com/lvgl/lvgl.git
+	ignore = dirty
+[submodule "Libraries.lvgl.drivers"]
+	path = Sming/Libraries/LVGL_Drivers/lv_drivers
+	url = https://github.com/lvgl/lv_drivers
+	ignore = dirty	
 [submodule "Libraries.MDNS"]
 	path = Sming/Libraries/MDNS
 	url = https://github.com/mikee47/Sming-MDNS
