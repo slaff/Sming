@@ -13,28 +13,8 @@
 Timer ticker;
 bool state = true;
 
-constexpr int MONITOR_HOR_RES = 240;
-constexpr int MONITOR_VER_RES = 320;
-
-void setPixel(int32_t x, int32_t y, lv_color_t color)
-{
-	debug_d("%d:%d=>%d", x, y, color.full);
-}
-
-void flushDisplay(lv_disp_drv_t* disp, const lv_area_t* area, lv_color_t* color_p)
-{
-	int32_t x, y;
-	/*It's a very slow but simple implementation.
-	 *`set_pixel` needs to be written by you to a set pixel on the screen*/
-	for(y = area->y1; y <= area->y2; y++) {
-		for(x = area->x1; x <= area->x2; x++) {
-			setPixel(x, y, *color_p);
-			color_p++;
-		}
-	}
-
-	lv_disp_flush_ready(disp); /* Indicate you are ready with the flushing*/
-}
+constexpr int MONITOR_HOR_RES = 20;
+constexpr int MONITOR_VER_RES = 30;
 
 void blink()
 {
@@ -43,8 +23,8 @@ void blink()
 
 void tick()
 {
-	lv_tick_inc(
-		100); // Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
+	// Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
+	lv_tick_inc(100);
 	lv_timer_handler();
 }
 
@@ -84,7 +64,7 @@ void initHal()
 
 	auto label1 = lv_label_create(scr);
 	lv_label_set_text(label1, "DODO");
-	lv_obj_set_pos(label1, 30, 30); // position, position);
+	lv_obj_set_pos(label1, 0, 0); // position, position);
 
 	lv_group_t* g = lv_group_create();
 	lv_group_set_default(g);
@@ -97,7 +77,7 @@ void initHal()
 
 	/*This function will be called periodically (by the library) to get the mouse position and state*/
 	indev_drv_1.read_cb = lvgl::driver::read;
-	lv_indev_t *mouse_indev = lv_indev_drv_register(&indev_drv_1);
+	lv_indev_t* mouse_indev = lv_indev_drv_register(&indev_drv_1);
 
 #if 0
 	keyboard_init();

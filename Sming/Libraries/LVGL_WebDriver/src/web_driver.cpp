@@ -39,7 +39,7 @@ void onConnected(WebsocketConnection& socket)
 		usersList.addElement(&socket);
 	}
 	lv_obj_invalidate(lv_disp_get_scr_act(lv_disp_get_default()));
-	debug_d("Got new user. Resetting display");
+	debug_d("Got new user. Total users: %d", usersList.count());
 }
 
 void onInput(WebsocketConnection& socket, uint8_t* data, size_t size)
@@ -52,6 +52,8 @@ void onInput(WebsocketConnection& socket, uint8_t* data, size_t size)
 	pointer.flag = (uint8_t)data[0];
 	pointer.x = ((uint8_t)data[1] << 8) | (uint8_t)data[2];
 	pointer.y = ((uint8_t)data[3] << 8) | (uint8_t)data[4];
+
+	debug_d("%s @ %d x %d", pointer.flag ? _F("pressed"): _F("released"), pointer.x, pointer.y);
 }
 
 void onDisconnected(WebsocketConnection& socket)

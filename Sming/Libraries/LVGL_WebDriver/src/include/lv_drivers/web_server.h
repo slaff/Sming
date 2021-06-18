@@ -2,12 +2,10 @@
 
 #include <Network/Http/Websocket/WebsocketConnection.h>
 
-
 namespace lvgl
 {
 namespace driver
 {
-
 /**
  * @brief Starts a web server from where the display content can be seen
  * @param port server port
