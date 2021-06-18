@@ -58,7 +58,6 @@ void initHal()
 	lv_group_set_default(g);
 
 #if 0
-
 	/* Add the mouse as input device
 	 * Use the 'mouse' driver which reads the PC's mouse*/
 	static lv_indev_drv_t indev_drv_1;
@@ -66,7 +65,7 @@ void initHal()
 	indev_drv_1.type = LV_INDEV_TYPE_POINTER;
 
 	/*This function will be called periodically (by the library) to get the mouse position and state*/
-	indev_drv_1.read_cb = lvgl::driver::read;
+	indev_drv_1.read_cb = mouse_read;
 	lv_indev_t* mouse_indev = lv_indev_drv_register(&indev_drv_1);
 
 	keyboard_init();
