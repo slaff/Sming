@@ -2,6 +2,10 @@
 #include <lvgl.h>
 #include <lv_drivers/web_driver.h>
 
+#ifdef ARCH_HOST
+#include <hostlib/emu.h>
+#endif
+
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
 #define WIFI_SSID "PleaseEnterSSID" // Put your SSID and password here
@@ -13,8 +17,8 @@
 Timer ticker;
 bool state = true;
 
-constexpr int MONITOR_HOR_RES = 20;
-constexpr int MONITOR_VER_RES = 30;
+constexpr int MONITOR_HOR_RES = 240;
+constexpr int MONITOR_VER_RES = 320;
 
 void blink()
 {
@@ -24,7 +28,7 @@ void blink()
 void tick()
 {
 	// Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
-	lv_tick_inc(100);
+	lv_tick_inc(500);
 	lv_timer_handler();
 }
 
@@ -33,23 +37,25 @@ void initHal()
 {
 	/*Create a display buffer*/
 	static lv_disp_draw_buf_t disp_buf1;
-	constexpr int DISPLAY_BUFFER_LENGTH = 8 * 1024;
+	constexpr int DISPLAY_BUFFER_LENGTH = MONITOR_HOR_RES * 20;
 	static lv_color_t buf1_1[DISPLAY_BUFFER_LENGTH];
-	static lv_color_t buf1_2[DISPLAY_BUFFER_LENGTH];
-	lv_disp_draw_buf_init(&disp_buf1, buf1_1, buf1_2, DISPLAY_BUFFER_LENGTH);
+	lv_disp_draw_buf_init(&disp_buf1, buf1_1, nullptr, DISPLAY_BUFFER_LENGTH);
 
-	lvgl::driver::init(80, DISPLAY_BUFFER_LENGTH, sizeof(lv_color_t));
+	lvgl::driver::init(80, DISPLAY_BUFFER_LENGTH, LV_COLOR_DEPTH);
 
 	/* Tick init.
 	 * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
 	 * how much time were elapsed Create an SDL thread to do this*/
-	ticker.initializeMs(100, tick).start();
+	ticker.initializeMs(500, tick).start();
 
 	/*Create a display*/
 	static lv_disp_drv_t disp_drv;
 	lv_disp_drv_init(&disp_drv); /*Basic initialization*/
 	disp_drv.draw_buf = &disp_buf1;
 	disp_drv.flush_cb = lvgl::driver::flush;
+#ifdef ARCH_HOST
+	disp_drv.wait_cb = [](lv_disp_drv_t* drv) { host_main_loop(); };
+#endif
 	disp_drv.hor_res = MONITOR_HOR_RES;
 	disp_drv.ver_res = MONITOR_VER_RES;
 	disp_drv.antialiasing = 1;
@@ -110,12 +116,19 @@ void gotIP(IpAddress ip, IpAddress netmask, IpAddress gateway)
 	initHal();
 }
 
+void log(const char* buf)
+{
+	Serial.print(buf);
+}
+
 void init()
 {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial.systemDebugOutput(true); // Enable debug output to serial
 
 	lv_init();
+
+	lv_log_register_print_cb(log);
 
 	// The web driver requires WIFI to be enabled
 	WifiStation.enable(true);

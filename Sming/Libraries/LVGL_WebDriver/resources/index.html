@@ -17,8 +17,6 @@ var websocket;
 var ws_connected;
 
 var pointerDown;
-var canvas_left;
-var canvas_top;
 
 function init() {
 	canvas = document.getElementById("canvas");
@@ -27,9 +25,6 @@ function init() {
 	height = canvas.height;
 	
 	pointerDown = false;
-	const rect = canvas.getBoundingClientRect();
-	canvas_left = rect.left;
-	canvas_top = rect.top;
 	if (window.PointerEvent) {
 		canvas.addEventListener('pointerdown', onPointerDown);
 		canvas.addEventListener('pointermove', onPointerMove);
@@ -145,27 +140,47 @@ function onError(evt) {
     console.log("ERROR: " + evt);
 }
 
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    var point = {
+        x: (evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+        y: (evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+    };
+    
+    if (point.x >= canvas.width) {
+    	point.x = canvas.width -1;
+    }
+    if(point.x < 0) {
+    	point.x = 0;
+    }
+    if (point.y >= canvas.height) {
+    	point.y = canvas.height -1 ;
+    }
+    if(point.y < 0) {
+    	point.y = 0;
+    }
+    
+    return point;
+}
+
 function onPointerDown(evt) {
 	pointerDown = true;
-	var x = evt.clientX - canvas_left;
-	var y = evt.clientY - canvas_top;
-	wsSend(1, x, y);
+	var pos = getMousePos(canvas, evt);
+	wsSend(1, pos.x, pos.y);
 }
 
 function onPointerMove(evt) {
 	if (pointerDown) {
 		evt.preventDefault();
-		var x = evt.clientX - canvas_left;
-		var y = evt.clientY - canvas_top;
-		wsSend(1, x, y);
+		var pos = getMousePos(canvas, evt);
+		wsSend(1, pos.x, pos.y);
 	}
 }
 
 function onPointerUp(evt) {
 	pointerDown = false;
-	var x = evt.clientX - canvas_left;
-	var y = evt.clientY - canvas_top;
-	wsSend(0, x, y);
+	var pos = getMousePos(canvas, evt);
+	wsSend(0, pos.x, pos.y);
 }
 
 window.addEventListener("load", init, false);
