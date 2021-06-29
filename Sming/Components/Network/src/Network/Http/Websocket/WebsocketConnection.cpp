@@ -283,7 +283,10 @@ bool WebsocketConnection::send(IDataSourceStream* source, ws_frame_type_t type, 
 		return false;
 	}
 
-	return connection->send(source);
+	bool success = connection->send(source);
+	connection->commit();
+
+	return success;
 }
 
 void WebsocketConnection::broadcast(const char* message, size_t length, ws_frame_type_t type)
