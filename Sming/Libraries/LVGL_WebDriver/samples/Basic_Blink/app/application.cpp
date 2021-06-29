@@ -20,6 +20,8 @@ bool state = true;
 constexpr int MONITOR_HOR_RES = 240;
 constexpr int MONITOR_VER_RES = 320;
 
+static lv_style_t style;
+
 void blink()
 {
 	state = !state;
@@ -30,6 +32,11 @@ void tick()
 	// Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
 	lv_tick_inc(500);
 	lv_timer_handler();
+}
+
+void onClick(lv_event_t * e)
+{
+	Serial.println("Clicked!");
 }
 
 // Initialize the Hardware Abstraction Layer (HAL) for the LVGL graphics
@@ -68,12 +75,21 @@ void initHal()
 
 	lv_obj_t* scr = lv_disp_get_scr_act(NULL);
 
-	auto label1 = lv_label_create(scr);
-	lv_label_set_text(label1, "DODO");
-	lv_obj_set_pos(label1, 0, 0); // position, position);
 
-	lv_group_t* g = lv_group_create();
-	lv_group_set_default(g);
+	// Style
+	lv_style_init(&style);
+	lv_style_set_bg_color(&style, lv_color_hex(0x83));
+	lv_style_set_bg_opa(&style, LV_OPA_COVER);
+
+	lv_obj_t * btn = lv_btn_create(scr);                   /*Add a button to the current screen*/
+	lv_obj_set_pos(btn, 10, 10);                                    /*Set its position*/
+	lv_obj_set_size(btn, 100, 50);                                  /*Set its size*/
+	lv_obj_add_event_cb(btn, onClick, LV_EVENT_CLICKED, NULL); /*Assign a callback to the button*/
+
+	lv_obj_t * label = lv_label_create(btn);                        /*Add a label to the button*/
+	lv_label_set_text(label, "Button");                             /*Set the labels text*/
+	lv_obj_center(label);
+	lv_obj_add_style(label, &style, LV_STATE_PRESSED);
 
 	/* Add the mouse as input device
 	 * Use the 'mouse' driver which reads the PC's mouse*/

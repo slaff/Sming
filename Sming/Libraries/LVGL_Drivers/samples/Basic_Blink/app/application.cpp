@@ -1,11 +1,14 @@
 #include <SmingCore.h>
 #include <lvgl.h>
 #include <lv_drivers/display/monitor.h>
+#include <lv_drivers/indev/mouse.h>
 
 #define LED_PIN 2 // GPIO2
 
 Timer ticker;
 bool state = true;
+
+static lv_style_t style;
 
 void blink()
 {
@@ -17,6 +20,11 @@ void tick()
 	lv_tick_inc(
 		100); // Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
 	lv_timer_handler();
+}
+
+void onClick(lv_event_t * e)
+{
+	Serial.println("Clicked!");
 }
 
 // Initialize the Hardware Abstraction Layer (HAL) for the LVGL graphics
@@ -50,14 +58,22 @@ void initHal()
 
 	lv_obj_t* scr = lv_disp_get_scr_act(NULL);
 
-	auto label1 = lv_label_create(scr);
-	lv_label_set_text(label1, "DODO");
-	lv_obj_set_pos(label1, 30, 30); // position, position);
+	// Style
+	lv_style_init(&style);
+	lv_style_set_bg_color(&style, lv_color_hex(0x83));
+	lv_style_set_bg_opa(&style, LV_OPA_COVER);
 
-	lv_group_t* g = lv_group_create();
-	lv_group_set_default(g);
+	lv_obj_t * btn = lv_btn_create(scr);                   /*Add a button to the current screen*/
+	lv_obj_set_pos(btn, 10, 10);                                    /*Set its position*/
+	lv_obj_set_size(btn, 100, 50);                                  /*Set its size*/
+	lv_obj_add_event_cb(btn, onClick, LV_EVENT_CLICKED, NULL); /*Assign a callback to the button*/
 
-#if 0
+	lv_obj_t * label = lv_label_create(btn);                        /*Add a label to the button*/
+	lv_label_set_text(label, "Button");                             /*Set the labels text*/
+	lv_obj_center(label);
+	lv_obj_add_style(label, &style, LV_STATE_PRESSED);
+
+	mouse_init();
 	/* Add the mouse as input device
 	 * Use the 'mouse' driver which reads the PC's mouse*/
 	static lv_indev_drv_t indev_drv_1;
@@ -68,6 +84,7 @@ void initHal()
 	indev_drv_1.read_cb = mouse_read;
 	lv_indev_t* mouse_indev = lv_indev_drv_register(&indev_drv_1);
 
+#if 0
 	keyboard_init();
 	static lv_indev_drv_t indev_drv_2;
 	lv_indev_drv_init(&indev_drv_2); /*Basic initialization*/
@@ -92,12 +109,19 @@ void initHal()
 #endif
 }
 
+void log(const char* buf)
+{
+	Serial.print(buf);
+}
+
 void init()
 {
 	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
 	Serial.systemDebugOutput(true); // Enable debug output to serial
 
 	lv_init();
+
+	lv_log_register_print_cb(log);
 
 	initHal();
 }
