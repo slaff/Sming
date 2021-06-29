@@ -1,8 +1,7 @@
 #include "include/lv_drivers/web_driver.h"
 #include "include/lv_drivers/web_server.h"
-#include "include/Data/CallbackStream.h"
 
-#include <Data/Stream/LimitedMemoryStream.h>
+#include <Data/Stream/SharedMemoryStream.h>
 
 namespace lvgl
 {
@@ -17,7 +16,7 @@ typedef struct {
 } pointer_t;
 
 // Pre-allocated websocket buffer containing pixel data
-uint8_t* buf = nullptr;
+char* buf = nullptr;
 static size_t bufLength = 0;
 
 // Pixel depth in bits
@@ -28,7 +27,6 @@ static pointer_t pointer;
 
 // List of all connected users
 static WebsocketList usersList;
-static size_t pendingUsers = 0;
 
 void onConnected(WebsocketConnection& socket)
 {
@@ -62,7 +60,7 @@ bool init(uint32_t port, uint32_t displayBufferSize, uint8_t colorDepth)
 {
 	delete buf;
 	bufLength = displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN;
-	buf = new uint8_t[displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN];
+	buf = new char[displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN];
 	if(buf == nullptr) {
 		bufLength = 0;
 		return false;
@@ -139,18 +137,14 @@ void flush(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_map)
 		}
 	}
 
-	auto totalUsers = usersList.count();
-
 	// Send the buffer to the web page for display
-	for(i = 0; i < totalUsers; i++) {
-		pendingUsers++;
-		auto dataStream = new LimitedMemoryStream(buf, pos, pos, false);
-		auto stream = new CallbackStream(dataStream, [drv]() {
-			if(--pendingUsers < 1) {
-				debug_d("Display is flushed!");
-				lv_disp_flush_ready(drv);
-			}
-		});
+	std::shared_ptr<const char> data(buf, [drv](char* p) {
+		debug_d("Display is flushed!");
+		lv_disp_flush_ready(drv);
+	});
+
+	for(i = 0; i < usersList.count(); i++) {
+		auto stream = new SharedMemoryStream(data, pos);
 		usersList[i]->send(stream, WS_FRAME_BINARY);
 	}
 }
