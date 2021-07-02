@@ -3,6 +3,10 @@
 
 #include <Data/Stream/SharedMemoryStream.h>
 
+extern "C" {
+#include <heatshrink/heatshrink_encoder.h>
+}
+
 namespace lvgl
 {
 namespace driver
@@ -16,7 +20,7 @@ typedef struct {
 } pointer_t;
 
 // Pre-allocated websocket buffer containing pixel data
-char* buf = nullptr;
+uint8_t* buf = nullptr;
 static size_t bufLength = 0;
 
 // Pixel depth in bits
@@ -27,6 +31,8 @@ static pointer_t pointer;
 
 // List of all connected users
 static WebsocketList usersList;
+
+static heatshrink_encoder* compressor;
 
 void onConnected(WebsocketConnection& socket)
 {
@@ -60,7 +66,7 @@ bool init(uint32_t port, uint32_t displayBufferSize, uint8_t colorDepth)
 {
 	delete buf;
 	bufLength = displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN;
-	buf = new char[displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN];
+	buf = new uint8_t[displayBufferSize * colorDepth + PIXEL_BUF_HEADER_LEN];
 	if(buf == nullptr) {
 		bufLength = 0;
 		return false;
@@ -91,7 +97,7 @@ void flush(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_map)
 
 	debug_d("Flushing data. Area %d x %d with size %d ...", width, height, size);
 
-	int pos = 0;
+	uint32_t pos = 0;
 	unsigned i = 0;
 
 	// Add a binary message containing the coordinates and 32-bit pixel
@@ -137,16 +143,67 @@ void flush(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_map)
 		}
 	}
 
+	size_t dataSize = pos;
+	uint8_t *compressedData = new uint8_t[dataSize];
+	memset(compressedData, 0, dataSize);
+
+	if(compressor == nullptr) {
+		compressor = heatshrink_encoder_alloc(10, 4);
+	}
+	heatshrink_encoder_reset(compressor);
+
+	uint32_t consumed = 0;
+	uint32_t compressedLength = 0;
+	while (consumed < pos) {
+		size_t count = 0;
+		if(heatshrink_encoder_sink(compressor, &buf[consumed], pos - consumed, &count) < 0) {
+			debug_e("Unable to compress bytes");
+		}
+		consumed += count;
+		if (consumed == pos) {
+			if(heatshrink_encoder_finish(compressor) != HSER_FINISH_MORE) {
+				debug_e("Invalid compressor state!");
+			}
+		}
+
+		HSE_poll_res pres;
+		do {
+			pres = heatshrink_encoder_poll(compressor, compressedData + compressedLength, dataSize - compressedLength, &count);
+			if(pres <  0) {
+				debug_e("Invalid compressor pres state!");
+			}
+			compressedLength += count;
+		} while (pres == HSER_POLL_MORE);
+
+		if(pres != HSER_POLL_EMPTY) {
+			debug_e("Invalid compressor final pres state!");
+		}
+
+
+		if (compressedLength >= dataSize) {
+			debug_e("compression should never expand that much");
+			delete compressedData;
+			return;
+		}
+
+		if (consumed == pos) {
+			if(heatshrink_encoder_finish(compressor) != HSER_FINISH_DONE) {
+				debug_e("Invalid compressor state!");
+			}
+		}
+	}
+
 	// Send the buffer to the web page for display
-	std::shared_ptr<const char> data(buf, [drv](char* p) {
-		debug_d("Display is flushed!");
-		lv_disp_flush_ready(drv);
+	std::shared_ptr<const char> sharedData(reinterpret_cast<char *>(compressedData), [drv](char* p) {
+		delete[] p;
 	});
 
 	for(i = 0; i < usersList.count(); i++) {
-		auto stream = new SharedMemoryStream(data, pos);
+		auto stream = new SharedMemoryStream(sharedData, compressedLength);
 		usersList[i]->send(stream, WS_FRAME_BINARY);
 	}
+
+	lv_disp_flush_ready(drv);
 }
 
 void read(lv_indev_drv_t* drv, lv_indev_data_t* data)
@@ -159,6 +216,7 @@ void read(lv_indev_drv_t* drv, lv_indev_data_t* data)
 void deinit()
 {
 	delete buf;
+	delete compressor;
 	bufLength = 0;
 	usersList.clear();
 	stopWebServer();

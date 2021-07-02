@@ -12,6 +12,7 @@ static HttpServer server;
 
 IMPORT_FSTR(index_html, COMPONENT_PATH "/resources/index.html")
 IMPORT_FSTR(favicon_ico, COMPONENT_PATH "/resources/favicon.ico")
+IMPORT_FSTR(heatshrink_js, COMPONENT_PATH "/resources/heatshrink.js")
 
 void onIndex(HttpRequest& request, HttpResponse& response)
 {
@@ -27,6 +28,14 @@ void onFavicon(HttpRequest& request, HttpResponse& response)
 	response.sendNamedStream(source);
 }
 
+void onHeatshrink(HttpRequest& request, HttpResponse& response)
+{
+	auto source = new FlashMemoryStream(heatshrink_js);
+	response.setCache(86400, true);
+	response.headers[HTTP_HEADER_CONTENT_TYPE] = "application/javascript";
+	response.sendNamedStream(source);
+}
+
 void startWebServer(uint32_t port, WebsocketDelegate onConnect, WebsocketBinaryDelegate onInput,
 					WebsocketDelegate onDisconnect)
 {
@@ -34,6 +43,7 @@ void startWebServer(uint32_t port, WebsocketDelegate onConnect, WebsocketBinaryD
 	server.paths.set("/", onIndex);
 	server.paths.set("/index.html", onIndex);
 	server.paths.set("/favicon.ico", onFavicon);
+	server.paths.set("/heatshrink.js", onHeatshrink);
 	server.paths.setDefault(onIndex);
 
 	// Web Sockets configuration

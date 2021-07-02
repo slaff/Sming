@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>LittleVGL Screen</title>
+	<script src="heatshrink.js"></script>
 </head>
 
 <script language="javascript" type="text/javascript">
@@ -77,9 +78,14 @@ function onClose(evt) {
 }
 
 function onMessage(evt) {
-	var buffer = evt.data;
+	var encodedInput = evt.data;
+	var decoder = new HeatshrinkDecoder(10, 4, encodedInput.byteLength);
+	decoder.process(encodedInput);
+	
+	var buffer = decoder.getOutput();
 	var header = new Uint8Array(buffer, 0, 13);
 	var pixels = new Uint8Array(buffer, 13);
+	 
 	var pixel_depth = header[0];
 	var w  = (header[1] << 8) | header[2];
 	var h  = (header[3] << 8) | header[4];
