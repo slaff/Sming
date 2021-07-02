@@ -82,9 +82,9 @@ function onMessage(evt) {
 	var decoder = new HeatshrinkDecoder(10, 4, encodedInput.byteLength);
 	decoder.process(encodedInput);
 	
-	var buffer = decoder.getOutput();
-	var header = new Uint8Array(buffer, 0, 13);
-	var pixels = new Uint8Array(buffer, 13);
+	var data = decoder.getOutput();
+	var header = new Uint8Array(data.buffer, 0, 13);
+	var pixels = new Uint8Array(data.buffer, 13);
 	 
 	var pixel_depth = header[0];
 	var w  = (header[1] << 8) | header[2];

@@ -2,10 +2,6 @@
 #include <lvgl.h>
 #include <lv_drivers/web_driver.h>
 
-#ifdef ARCH_HOST
-#include <hostlib/emu.h>
-#endif
-
 // If you want, you can define WiFi settings globally in Eclipse Environment Variables
 #ifndef WIFI_SSID
 #define WIFI_SSID "PleaseEnterSSID" // Put your SSID and password here
@@ -20,6 +16,8 @@ bool state = true;
 constexpr int MONITOR_HOR_RES = 240;
 constexpr int MONITOR_VER_RES = 320;
 
+constexpr int tickTimeMs = 50;
+
 static lv_style_t style;
 
 void blink()
@@ -30,7 +28,7 @@ void blink()
 void tick()
 {
 	// Call lv_tick_inc(x) every x milliseconds in a Timer or Task (x should be between 1 and 10). It is required for the internal timing of LVGL.
-	lv_tick_inc(500);
+	lv_tick_inc(tickTimeMs);
 	lv_timer_handler();
 }
 
@@ -53,16 +51,13 @@ void initHal()
 	/* Tick init.
 	 * You have to call 'lv_tick_inc()' in periodically to inform LittelvGL about
 	 * how much time were elapsed Create an SDL thread to do this*/
-	ticker.initializeMs(500, tick).start();
+	ticker.initializeMs(tickTimeMs, tick).start();
 
 	/*Create a display*/
 	static lv_disp_drv_t disp_drv;
 	lv_disp_drv_init(&disp_drv); /*Basic initialization*/
 	disp_drv.draw_buf = &disp_buf1;
 	disp_drv.flush_cb = lvgl::driver::flush;
-#ifdef ARCH_HOST
-	disp_drv.wait_cb = [](lv_disp_drv_t* drv) { host_main_loop(); };
-#endif
 	disp_drv.hor_res = MONITOR_HOR_RES;
 	disp_drv.ver_res = MONITOR_VER_RES;
 	disp_drv.antialiasing = 1;

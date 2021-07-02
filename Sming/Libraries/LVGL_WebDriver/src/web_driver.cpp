@@ -95,7 +95,7 @@ void flush(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_map)
 	int width = lv_disp_get_hor_res(NULL);
 	int height = lv_disp_get_ver_res(NULL);
 
-	debug_d("Flushing data. Area %d x %d with size %d ...", width, height, size);
+	debug_d("Flushing data. Area from %d,%d to %d,%d ...", area->x1, area->y1, area->x2, area->y2);
 
 	uint32_t pos = 0;
 	unsigned i = 0;
