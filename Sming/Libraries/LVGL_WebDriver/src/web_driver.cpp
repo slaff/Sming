@@ -199,7 +199,7 @@ void flush(lv_disp_drv_t* drv, const lv_area_t* area, lv_color_t* color_map)
 	});
 
 	for(i = 0; i < usersList.count(); i++) {
-		auto stream = new SharedMemoryStream(sharedData, compressedLength);
+		auto stream = new SharedMemoryStream<const char>(sharedData, compressedLength);
 		usersList[i]->send(stream, WS_FRAME_BINARY);
 	}
 
