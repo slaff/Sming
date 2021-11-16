@@ -17,6 +17,9 @@ enum sleep_type {
 bool system_deep_sleep(uint32_t time_in_us);
 bool system_deep_sleep_set_option(uint8_t option);
 
+bool system_deep_sleep_enable_wakeup(uint8_t pins[], size_t pinCount, uint8_t mode);
+int system_deep_sleep_wakeup_reason();
+
 /* These aren't defined in the RTOS SDK */
 
 enum sleep_level {
@@ -30,6 +33,8 @@ bool wifi_set_sleep_level(enum sleep_level level);
 enum sleep_level wifi_get_sleep_level(void);
 bool wifi_set_listen_interval(uint8_t interval);
 uint8_t wifi_get_listen_interval(void);
+
+bool esp_sleep_is_valid_wakeup_gpio(gpio_num_t gpio_num);
 
 #ifdef __cplusplus
 }

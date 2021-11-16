@@ -13,6 +13,30 @@ bool system_deep_sleep_set_option(uint8_t option)
 	return true;
 }
 
+bool system_deep_sleep_enable_wakeup(uint8_t pins[], size_t pinCount, uint8_t mode)
+{
+	for(unsigned i = 0; i < pinCount; i++) {
+		uint64_t pin = pins[i];
+		if(pin < 32) {
+			pin = BIT(pin);
+		} else {
+			pin = ((uint64_t)(((uint64_t)1) << pin));
+		}
+
+		int err = esp_sleep_enable_ext1_wakeup(pin, mode);
+		if(err != ESP_OK) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+int system_deep_sleep_wakeup_reason()
+{
+	return esp_sleep_get_wakeup_cause();
+}
+
 /* GPIO */
 
 void wifi_enable_gpio_wakeup(uint32_t i, GPIO_INT_TYPE intr_status)
