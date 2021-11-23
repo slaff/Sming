@@ -5,7 +5,7 @@
 namespace
 {
 Jsvm jsVm;
-JsvmTask* jsTask;
+JsvmTask jsTask(jsVm);
 
 constexpr char MAIN_JS_FILE[]{"main.js.snap"};
 
@@ -23,8 +23,7 @@ void startJsvm()
 	}
 
 	// And run the loop JavaScript function in the background as a Sming task.
-	jsTask = new JsvmTask(jsVm);
-	jsTask->resume();
+	jsTask.resume();
 }
 
 } // namespace
