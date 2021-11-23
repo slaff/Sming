@@ -1,0 +1,14 @@
+version:                              '3'
+
+services:
+  emscripten:
+    build: .
+    image:                            ukit/jerryscript-emscripten:latest
+    container_name:                   ukit-jerryscript-emscripten
+    volumes:
+        - ./jerryscript:/jerryscript
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"

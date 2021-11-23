@@ -1,0 +1,6 @@
+menu "JerryScript"
+    config JERRY_GLOBAL_HEAP_SIZE
+        int "The size in bytes of the JerryScript heap"
+    config JERRY_COMPACT_PROFILE
+    	bool "Use compact profile - no built-ins, no ES2015 and no unicode case conversion support."
+endmenu
