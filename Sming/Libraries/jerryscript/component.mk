@@ -15,13 +15,13 @@ ifeq ($(SMING_ARCH),Esp8266)
 	COMPONENT_CFLAGS += -mlongcalls  -mno-text-section-literals
 endif
 
-# The size of the JerryScript engine heap. The size is allocated once and defined at compile time.
+# The size of the JerryScript engine heap. The size in kilobytes is allocated once and defined at compile time.
 COMPONENT_VARS := JERRY_GLOBAL_HEAP_SIZE
-JERRY_GLOBAL_HEAP_SIZE := 512
+JERRY_GLOBAL_HEAP_SIZE ?= 1
 
 # Compact compilation profile makes the JerryScript library smaller
 COMPONENT_VARS += JERRY_COMPACT_PROFILE  
-JERRY_COMPACT_PROFILE := 1
+JERRY_COMPACT_PROFILE ?= 1
 
 # COMPONENT_CFLAGS += -fno-builtin -fno-stack-protector -g -gdwarf-4 -Wall -Werror=all -Wextra -Werror=extra -Wformat-nonliteral -Werror=format-nonliteral -Winit-self -Werror=init-self -Wconversion -Werror=conversion -Wsign-conversion -Werror=sign-conversion -Wformat-security -Werror=format-security -Wmissing-declarations -Werror=missing-declarations -Wno-stack-protector -Wno-attributes -Wlogical-op -Werror=logical-op  -D__attr_always_inline___= -Wl,-EL -fno-inline-functions -ffunction-sections -fdata-sections -mlongcalls -mtext-section-literals -mno-serialize-volatile -pedantic -Os
 ifeq ($(JERRY_COMPACT_PROFILE), 1)

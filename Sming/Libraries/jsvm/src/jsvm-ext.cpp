@@ -1,6 +1,6 @@
 #include "jsvm-ext.h"
 
-#include "m_printf.h"
+#include <m_printf.h>
 
 #define jerryx_port_handler_print_char(A) m_putc(A)
 
