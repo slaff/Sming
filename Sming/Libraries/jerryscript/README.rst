@@ -3,6 +3,8 @@ JerryScript
 
 .. highlight:: bash
 
+A JavaScript Virtual Machine based on JerryScript.
+
 Status
 ------
 

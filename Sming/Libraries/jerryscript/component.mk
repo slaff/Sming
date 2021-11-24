@@ -2,8 +2,8 @@
 COMPONENT_SUBMODULES := jerryscript
 
 JERRYSCRIPT_CORE := $(COMPONENT_PATH)/jerryscript/jerry-core
-COMPONENT_SRCDIRS := $(call ListAllSubDirs,$(JERRYSCRIPT_CORE))
-COMPONENT_INCDIRS := jerryscript $(JERRYSCRIPT_CORE) $(COMPONENT_SRCDIRS)
+COMPONENT_SRCDIRS := src $(call ListAllSubDirs,$(JERRYSCRIPT_CORE))
+COMPONENT_INCDIRS := src jerryscript $(JERRYSCRIPT_CORE) $(COMPONENT_SRCDIRS)
 
 # The size of the JerryScript engine heap. The size in kilobytes is allocated once and defined at compile time.
 COMPONENT_VARS := JERRY_GLOBAL_HEAP_SIZE
