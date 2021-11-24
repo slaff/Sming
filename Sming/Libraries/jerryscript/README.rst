@@ -48,3 +48,24 @@ That will require also precompilation of the main.js file.
 Inside the container this can be done with the following command::
 
     node /jerryscript/build/bin/jsc.js -o /web/build/main.js.snap /web/dev/main.js
+
+
+Configuration variables
+-----------------------
+
+.. envvar:: APP_JS_SOURCE_DIR
+
+    default: undefined
+
+    Snap files can be created during the build stage by setting this variable in your project's component.mk file::
+
+        APP_JS_SOURCE_DIR := files
+
+    All ``.js`` files will be compiled into ``.snap`` files and written to :envvar:`APP_JS_SNAPDIR`.
+
+
+.. envvar:: APP_JS_SNAP_DIR
+
+    default: ``out/jerryscript``
+
+    Location to write generated .snap files.

@@ -1,5 +1,8 @@
 COMPONENT_DEPENDS := jerryscript
 
-SPIFF_FILES := files/build
+APP_JS_SOURCE_DIR := files
+APP_JS_SNAP_DIR := out/jerryscript
+
+SPIFF_FILES := $(APP_JS_SNAP_DIR)
 
 HWCONFIG := spiffs
