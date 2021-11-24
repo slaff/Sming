@@ -7,13 +7,12 @@ namespace
 Jsvm jsVm;
 JsvmTask jsTask(jsVm);
 
-constexpr char MAIN_JS_FILE[]{"main.js.snap"};
+IMPORT_FSTR(main_snap, PROJECT_DIR "/out/jerryscript/main.js.snap")
 
 void startJsvm()
 {
-	// Load the snapshot file
-	if(!jsVm.loadFromFile(MAIN_JS_FILE)) {
-		debug_e("Failed executing the following script: %s", MAIN_JS_FILE);
+	if(!jsVm.load(main_snap)) {
+		debug_e("Failed to load snapshot");
 		return;
 	}
 
@@ -30,14 +29,8 @@ void startJsvm()
 
 void init()
 {
-	Serial.begin(SERIAL_BAUD_RATE); // 115200 by default
-	Serial.systemDebugOutput(true); // Enable debug output to serial
-
-	// Mount file system, in order to work with files
-	if(!spiffs_mount()) {
-		Serial.println("Unable to mount the file system!");
-		return;
-	}
+	Serial.begin(SERIAL_BAUD_RATE);
+	Serial.systemDebugOutput(true);
 
 	startJsvm();
 }
