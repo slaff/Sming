@@ -10,7 +10,7 @@
 class JsvmTask : public Task
 {
 public:
-	JsvmTask(Jsvm& jsvm) : jsvm(jsvm)
+	JsvmTask(Jsvm& jsvm, unsigned intervalMs = 500) : jsvm(jsvm), intervalMs(intervalMs)
 	{
 	}
 
@@ -19,6 +19,11 @@ public:
 		if(!jsvm.runFunction("loop")) {
 			error = F("Failed running loop function. Suspending task");
 			suspend();
+			return;
+		}
+
+		if(intervalMs != 0) {
+			sleep(intervalMs);
 		}
 	}
 
@@ -34,5 +39,6 @@ public:
 
 private:
 	Jsvm& jsvm;
+	unsigned intervalMs;
 	String error;
 };
