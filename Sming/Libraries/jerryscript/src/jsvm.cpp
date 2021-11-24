@@ -8,8 +8,6 @@
 #include "jsvm.h"
 #include "jsvm-ext.h"
 
-#include <FileSystem.h>
-
 Jsvm::Jsvm(jerry_init_flag_t flags /* =JERRY_INIT_EMPTY */)
 {
 	jerry_init(flags);
@@ -34,33 +32,16 @@ bool Jsvm::eval(const String& jsCode)
 	return !is_error;
 }
 
-int Jsvm::exec(const String& fileName)
-{
-	File f;
-	if(!f.open(fileName)) {
-		return f.getLastError();
-	}
-
-	String s = f.getContent();
-	if(s.length() == 0) {
-		debug_e("File has zero size");
-		return -1;
-	}
-
-	bool success = exec(reinterpret_cast<const uint32_t*>(s.c_str()), s.length());
-	if(success) {
-		return 0;
-	}
-
-	debug_e("Unable to execute the snapshot");
-	return -2;
-}
-
-bool Jsvm::exec(const uint32_t* snapshot, size_t size)
+bool Jsvm::load(const uint32_t* snapshot, size_t size)
 {
 	jerry_value_t ret_code = jerry_exec_snapshot(snapshot, size, 0, JERRY_SNAPSHOT_EXEC_COPY_DATA);
 	bool is_error = jerry_value_is_error(ret_code);
 	jerry_release_value(ret_code);
+
+	if(is_error) {
+		debug_e("Unable to execute the snapshot");
+	}
+
 	return !is_error;
 }
 

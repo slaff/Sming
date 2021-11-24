@@ -9,6 +9,7 @@
 
 #include <WString.h>
 #include <jerry-core/include/jerryscript.h>
+#include <FileSystem.h>
 
 /**
  * @brief JavaScriptVM for Sming
@@ -25,30 +26,43 @@ public:
 
 	/*
 	 * @brief Parses the JavaScript code and prepares it for execution
+	 * @retval bool true on success
 	 */
 	bool eval(const String& jsCode);
 
 	/**
 	 * @brief Loads a snapshot from file and executes it.
-	 * @return 0 on success
-	 * 		   negative on error
+	 * @param fileName Path to snapshot file
+	 * @retval bool true on success
 	 */
-	int exec(const String& fileName);
+	bool loadFromFile(const String& fileName)
+	{
+		return load(fileGetContent(fileName));
+	}
 
 	/**
-	 * @brief Executes a snapshot file
+	 * @brief Executes a snapshot
+	 * @param snapshot Points to snapshot content
+	 * @param snapshotSize Number of bytes in snapshot
+	 * @retval bool true on success
 	 */
-	bool exec(const uint32_t* snapshot, size_t snapshot_size);
+	bool load(const uint32_t* snapshot, size_t snapshotSize);
+
+	bool load(const String& snapshot)
+	{
+		return load(reinterpret_cast<const uint32_t*>(snapshot.c_str()), snapshot.length());
+	}
 
 	/**
 	 * @brief Runs a specified JavaScript function
-	 *
-	 * @return true if the function exists and was called successfully
+	 * @param functionName Name of function to run
+	 * @retval bool true if the function exists and was called successfully
 	 */
 	bool runFunction(const String& functionName);
 
 	/**
 	 * @brief Runs the loop JavaScript function
+	 * @retval bool true on success
 	 */
 	bool runLoop();
 
