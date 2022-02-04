@@ -1,0 +1,723 @@
+diff --git a/src/FastLED.cpp b/src/FastLED.cpp
+index 255dcfa..2a4f623 100644
+--- a/src/FastLED.cpp
++++ b/src/FastLED.cpp
+@@ -233,7 +233,7 @@ void CFastLED::setMaxRefreshRate(uint16_t refresh, bool constrain) {
+ 	}
+ }
+ 
+-extern "C" int atexit(void (* /*func*/ )()) { return 0; }
++//extern "C" int atexit(void (* /*func*/ )()) { return 0; }
+ 
+ #ifdef FASTLED_NEEDS_YIELD
+ extern "C" void yield(void) { }
+diff --git a/src/chipsets.h b/src/chipsets.h
+index 6045725..323e0a5 100644
+--- a/src/chipsets.h
++++ b/src/chipsets.h
+@@ -85,7 +85,7 @@ class LPD8806Controller : public CPixelLEDController<RGB_ORDER> {
+ 	class LPD8806_ADJUST {
+ 	public:
+ 		// LPD8806 spec wants the high bit of every rgb data byte sent out to be set.
+-		__attribute__((always_inline)) inline static uint8_t adjust(register uint8_t data) { return ((data>>1) | 0x80) + ((data && (data<254)) & 0x01); }
++		__attribute__((always_inline)) inline static uint8_t adjust(uint8_t data) { return ((data>>1) | 0x80) + ((data && (data<254)) & 0x01); }
+ 		__attribute__((always_inline)) inline static void postBlock(int len) {
+ 			SPI::writeBytesValueRaw(0, ((len*3+63)>>6));
+ 		}
+@@ -172,7 +172,7 @@ protected:
+ 
+ 		startBoundary();
+ 		while(pixels.has(1)) {
+-            register uint16_t command;
++            uint16_t command;
+             command = 0x8000;
+             command |= (pixels.loadAndScale0() & 0xF8) << 7; // red is the high 5 bits
+             command |= (pixels.loadAndScale1() & 0xF8) << 2; // green is the middle 5 bits
+@@ -346,7 +346,7 @@ class P9813Controller : public CPixelLEDController<RGB_ORDER> {
+ 	void writeBoundary() { mSPI.writeWord(0); mSPI.writeWord(0); }
+ 
+ 	inline void writeLed(uint8_t r, uint8_t g, uint8_t b) __attribute__((always_inline)) {
+-		register uint8_t top = 0xC0 | ((~b & 0xC0) >> 2) | ((~g & 0xC0) >> 4) | ((~r & 0xC0) >> 6);
++		uint8_t top = 0xC0 | ((~b & 0xC0) >> 2) | ((~g & 0xC0) >> 4) | ((~r & 0xC0) >> 6);
+ 		mSPI.writeByte(top); mSPI.writeByte(b); mSPI.writeByte(g); mSPI.writeByte(r);
+ 	}
+ 
+diff --git a/src/colorpalettes.cpp b/src/colorpalettes.cpp
+index 68e42f0..ac930ed 100644
+--- a/src/colorpalettes.cpp
++++ b/src/colorpalettes.cpp
+@@ -17,7 +17,7 @@ FASTLED_USING_NAMESPACE
+ // use each one, so you only 'pay for' those you actually use.
+ 
+ 
+-extern const TProgmemRGBPalette16 CloudColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 CloudColors_p FL_PROGMEM =
+ {
+     CRGB::Blue,
+     CRGB::DarkBlue,
+@@ -40,7 +40,7 @@ extern const TProgmemRGBPalette16 CloudColors_p FL_PROGMEM =
+     CRGB::SkyBlue
+ };
+ 
+-extern const TProgmemRGBPalette16 LavaColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 LavaColors_p FL_PROGMEM =
+ {
+     CRGB::Black,
+     CRGB::Maroon,
+@@ -63,7 +63,7 @@ extern const TProgmemRGBPalette16 LavaColors_p FL_PROGMEM =
+ };
+ 
+ 
+-extern const TProgmemRGBPalette16 OceanColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 OceanColors_p FL_PROGMEM =
+ {
+     CRGB::MidnightBlue,
+     CRGB::DarkBlue,
+@@ -86,7 +86,7 @@ extern const TProgmemRGBPalette16 OceanColors_p FL_PROGMEM =
+     CRGB::LightSkyBlue
+ };
+ 
+-extern const TProgmemRGBPalette16 ForestColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 ForestColors_p FL_PROGMEM =
+ {
+     CRGB::DarkGreen,
+     CRGB::DarkGreen,
+@@ -110,7 +110,7 @@ extern const TProgmemRGBPalette16 ForestColors_p FL_PROGMEM =
+ };
+ 
+ /// HSV Rainbow
+-extern const TProgmemRGBPalette16 RainbowColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 RainbowColors_p FL_PROGMEM =
+ {
+     0xFF0000, 0xD52A00, 0xAB5500, 0xAB7F00,
+     0xABAB00, 0x56D500, 0x00FF00, 0x00D52A,
+@@ -120,7 +120,7 @@ extern const TProgmemRGBPalette16 RainbowColors_p FL_PROGMEM =
+ 
+ /// HSV Rainbow colors with alternatating stripes of black
+ #define RainbowStripesColors_p RainbowStripeColors_p
+-extern const TProgmemRGBPalette16 RainbowStripeColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 RainbowStripeColors_p FL_PROGMEM =
+ {
+     0xFF0000, 0x000000, 0xAB5500, 0x000000,
+     0xABAB00, 0x000000, 0x00FF00, 0x000000,
+@@ -132,7 +132,7 @@ extern const TProgmemRGBPalette16 RainbowStripeColors_p FL_PROGMEM =
+ /// Basically, everything but the greens, which tend to make
+ /// people's skin look unhealthy.  This palette is good for
+ /// lighting at a club or party, where it'll be shining on people.
+-extern const TProgmemRGBPalette16 PartyColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 PartyColors_p FL_PROGMEM =
+ {
+     0x5500AB, 0x84007C, 0xB5004B, 0xE5001B,
+     0xE81700, 0xB84700, 0xAB7700, 0xABAB00,
+@@ -146,7 +146,7 @@ extern const TProgmemRGBPalette16 PartyColors_p FL_PROGMEM =
+ /// the usual 0-255, as the last 15 colors will be
+ /// 'wrapping around' from the hot end to the cold end,
+ /// which looks wrong.
+-extern const TProgmemRGBPalette16 HeatColors_p FL_PROGMEM =
++const TProgmemRGBPalette16 HeatColors_p FL_PROGMEM =
+ {
+     0x000000,
+     0x330000, 0x660000, 0x990000, 0xCC0000, 0xFF0000,
+diff --git a/src/fastpin.h b/src/fastpin.h
+index 085a7d1..d1138e5 100644
+--- a/src/fastpin.h
++++ b/src/fastpin.h
+@@ -58,11 +58,11 @@ public:
+ 	inline void strobe() __attribute__ ((always_inline)) { toggle(); toggle(); }
+ 	inline void toggle() __attribute__ ((always_inline)) { *mInPort = mPinMask; }
+ 
+-	inline void hi(register port_ptr_t port) __attribute__ ((always_inline)) { *port |= mPinMask; }
+-	inline void lo(register port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~mPinMask; }
+-	inline void set(register port_t val) __attribute__ ((always_inline)) { *mPort = val; }
++	inline void hi(port_ptr_t port) __attribute__ ((always_inline)) { *port |= mPinMask; }
++	inline void lo(port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~mPinMask; }
++	inline void set(port_t val) __attribute__ ((always_inline)) { *mPort = val; }
+ 
+-	inline void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { *port  = val; }
++	inline void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { *port  = val; }
+ 
+ 	port_t hival() __attribute__ ((always_inline)) { return *mPort | mPinMask;  }
+ 	port_t loval() __attribute__ ((always_inline)) { return *mPort & ~mPinMask; }
+@@ -117,11 +117,11 @@ public:
+ 	inline void strobe() __attribute__ ((always_inline)) { toggle(); toggle(); }
+ 	inline void toggle() __attribute__ ((always_inline)) { *mInPort = mPinMask; }
+ 
+-	inline void hi(register port_ptr_t port) __attribute__ ((always_inline)) { *port |= mPinMask; }
+-	inline void lo(register port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~mPinMask; }
+-	inline void set(register port_t val) __attribute__ ((always_inline)) { *mPort = val; }
++	inline void hi(port_ptr_t port) __attribute__ ((always_inline)) { *port |= mPinMask; }
++	inline void lo(port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~mPinMask; }
++	inline void set(port_t val) __attribute__ ((always_inline)) { *mPort = val; }
+ 
+-	inline void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { *port  = val; }
++	inline void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { *port  = val; }
+ 
+ 	port_t hival() __attribute__ ((always_inline)) { return *mPort | mPinMask;  }
+ 	port_t loval() __attribute__ ((always_inline)) { return *mPort & ~mPinMask; }
+@@ -186,11 +186,11 @@ public:
+ 
+ 	inline static void toggle() __attribute__ ((always_inline)) { *sInPort = sPinMask; }
+ 
+-	inline static void hi(register port_ptr_t port) __attribute__ ((always_inline)) { *port |= sPinMask; }
+-	inline static void lo(register port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~sPinMask; }
+-	inline static void set(register port_t val) __attribute__ ((always_inline)) { *sPort = val; }
++	inline static void hi(port_ptr_t port) __attribute__ ((always_inline)) { *port |= sPinMask; }
++	inline static void lo(port_ptr_t port) __attribute__ ((always_inline)) { *port &= ~sPinMask; }
++	inline static void set(port_t val) __attribute__ ((always_inline)) { *sPort = val; }
+ 
+-	inline static void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { *port  = val; }
++	inline static void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { *port  = val; }
+ 
+ 	static port_t hival() __attribute__ ((always_inline)) { return *sPort | sPinMask;  }
+ 	static port_t loval() __attribute__ ((always_inline)) { return *sPort & ~sPinMask; }
+@@ -225,11 +225,11 @@ public:
+ 
+ 	inline static void toggle() __attribute__ ((always_inline)) { }
+ 
+-	inline static void hi(register port_ptr_t port) __attribute__ ((always_inline)) { }
+-	inline static void lo(register port_ptr_t port) __attribute__ ((always_inline)) { }
+-	inline static void set(register port_t val) __attribute__ ((always_inline)) { }
++	inline static void hi(port_ptr_t port) __attribute__ ((always_inline)) { }
++	inline static void lo(port_ptr_t port) __attribute__ ((always_inline)) { }
++	inline static void set(port_t val) __attribute__ ((always_inline)) { }
+ 
+-	inline static void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { }
++	inline static void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { }
+ 
+ 	static port_t hival() __attribute__ ((always_inline)) { return 0; }
+ 	static port_t loval() __attribute__ ((always_inline)) { return 0;}
+diff --git a/src/fastspi_bitbang.h b/src/fastspi_bitbang.h
+index 86663f1..451fd24 100644
+--- a/src/fastspi_bitbang.h
++++ b/src/fastspi_bitbang.h
+@@ -229,26 +229,26 @@ public:
+ 			writeByte(value);
+ 		}
+ #else
+-		register data_ptr_t datapin = FastPin<DATA_PIN>::port();
++		data_ptr_t datapin = FastPin<DATA_PIN>::port();
+ 
+ 		if(FastPin<DATA_PIN>::port() != FastPin<CLOCK_PIN>::port()) {
+ 			// If data and clock are on different ports, then writing a bit will consist of writing the value foor
+ 			// the bit (hi or low) to the data pin port, and then two writes to the clock port to strobe the clock line
+-			register clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
+-			register data_t datahi = FastPin<DATA_PIN>::hival();
+-			register data_t datalo = FastPin<DATA_PIN>::loval();
+-			register clock_t clockhi = FastPin<CLOCK_PIN>::hival();
+-			register clock_t clocklo = FastPin<CLOCK_PIN>::loval();
++			clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
++			data_t datahi = FastPin<DATA_PIN>::hival();
++			data_t datalo = FastPin<DATA_PIN>::loval();
++			clock_t clockhi = FastPin<CLOCK_PIN>::hival();
++			clock_t clocklo = FastPin<CLOCK_PIN>::loval();
+ 			while(len--) {
+ 				writeByte(value, clockpin, datapin, datahi, datalo, clockhi, clocklo);
+ 			}
+ 
+ 		} else {
+ 			// If data and clock are on the same port then we can combine setting the data and clock pins
+-			register data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
+ 
+ 			while(len--) {
+ 				writeByte(value, datapin, datahi_clockhi, datalo_clockhi, datahi_clocklo, datalo_clocklo);
+@@ -259,7 +259,7 @@ public:
+ 
+ 	// write a block of len uint8_ts out.  Need to type this better so that explicit casts into the call aren't required.
+ 	// note that this template version takes a class parameter for a per-byte modifier to the data.
+-	template <class D> void writeBytes(register uint8_t *data, int len) {
++	template <class D> void writeBytes(uint8_t *data, int len) {
+ 		select();
+ #ifdef FAST_SPI_INTERRUPTS_WRITE_PINS
+ 		uint8_t *end = data + len;
+@@ -267,16 +267,16 @@ public:
+ 			writeByte(D::adjust(*data++));
+ 		}
+ #else
+-		register clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
+-		register data_ptr_t datapin = FastPin<DATA_PIN>::port();
++		clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
++		data_ptr_t datapin = FastPin<DATA_PIN>::port();
+ 
+ 		if(FastPin<DATA_PIN>::port() != FastPin<CLOCK_PIN>::port()) {
+ 			// If data and clock are on different ports, then writing a bit will consist of writing the value foor
+ 			// the bit (hi or low) to the data pin port, and then two writes to the clock port to strobe the clock line
+-			register data_t datahi = FastPin<DATA_PIN>::hival();
+-			register data_t datalo = FastPin<DATA_PIN>::loval();
+-			register clock_t clockhi = FastPin<CLOCK_PIN>::hival();
+-			register clock_t clocklo = FastPin<CLOCK_PIN>::loval();
++			data_t datahi = FastPin<DATA_PIN>::hival();
++			data_t datalo = FastPin<DATA_PIN>::loval();
++			clock_t clockhi = FastPin<CLOCK_PIN>::hival();
++			clock_t clocklo = FastPin<CLOCK_PIN>::loval();
+ 			uint8_t *end = data + len;
+ 
+ 			while(data != end) {
+@@ -286,10 +286,10 @@ public:
+ 		} else {
+ 			// FastPin<CLOCK_PIN>::hi();
+ 			// If data and clock are on the same port then we can combine setting the data and clock pins
+-			register data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
+ 
+ 			uint8_t *end = data + len;
+ 
+@@ -304,7 +304,7 @@ public:
+ 	}
+ 
+ 	// default version of writing a block of data out to the SPI port, with no data modifications being made
+-	void writeBytes(register uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
++	void writeBytes(uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
+ 
+ 
+ 	// write a block of uint8_ts out in groups of three.  len is the total number of uint8_ts to write out.  The template
+@@ -330,16 +330,16 @@ public:
+ #else
+ 		// If we can guaruntee that no one else will be writing data while we are running (namely, changing the values of the PORT/PDOR pins)
+ 		// then we can use a bunch of optimizations in here
+-		register data_ptr_t datapin = FastPin<DATA_PIN>::port();
++		data_ptr_t datapin = FastPin<DATA_PIN>::port();
+ 
+ 		if(FastPin<DATA_PIN>::port() != FastPin<CLOCK_PIN>::port()) {
+-			register clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
++			clock_ptr_t clockpin = FastPin<CLOCK_PIN>::port();
+ 			// If data and clock are on different ports, then writing a bit will consist of writing the value foor
+ 			// the bit (hi or low) to the data pin port, and then two writes to the clock port to strobe the clock line
+-			register data_t datahi = FastPin<DATA_PIN>::hival();
+-			register data_t datalo = FastPin<DATA_PIN>::loval();
+-			register clock_t clockhi = FastPin<CLOCK_PIN>::hival();
+-			register clock_t clocklo = FastPin<CLOCK_PIN>::loval();
++			data_t datahi = FastPin<DATA_PIN>::hival();
++			data_t datalo = FastPin<DATA_PIN>::loval();
++			clock_t clockhi = FastPin<CLOCK_PIN>::hival();
++			clock_t clocklo = FastPin<CLOCK_PIN>::loval();
+ 
+ 			while(pixels.has(1)) {
+ 				if(FLAGS & FLAG_START_BIT) {
+@@ -354,10 +354,10 @@ public:
+ 
+ 		} else {
+ 			// If data and clock are on the same port then we can combine setting the data and clock pins
+-			register data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
+-			register data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
+-			register data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clockhi = FastPin<DATA_PIN>::hival() | FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clockhi = FastPin<DATA_PIN>::loval() | FastPin<CLOCK_PIN>::mask();
++			data_t datahi_clocklo = FastPin<DATA_PIN>::hival() & ~FastPin<CLOCK_PIN>::mask();
++			data_t datalo_clocklo = FastPin<DATA_PIN>::loval() & ~FastPin<CLOCK_PIN>::mask();
+ 
+ 			while(pixels.has(1)) {
+ 				if(FLAGS & FLAG_START_BIT) {
+diff --git a/src/fastspi_ref.h b/src/fastspi_ref.h
+index a12a962..feede21 100644
+--- a/src/fastspi_ref.h
++++ b/src/fastspi_ref.h
+@@ -48,7 +48,7 @@ public:
+ 	}
+ 
+ 	// A full cycle of writing a value for len bytes, including select, release, and waiting
+-	template <class D> void writeBytes(register uint8_t *data, int len) {
++	template <class D> void writeBytes(uint8_t *data, int len) {
+ 		uint8_t *end = data + len;
+ 		select();
+ 		// could be optimized to write 16bit words out instead of 8bit bytes
+@@ -61,7 +61,7 @@ public:
+ 	}
+ 
+ 	// A full cycle of writing a value for len bytes, including select, release, and waiting
+-	void writeBytes(register uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
++	void writeBytes(uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
+ 
+ 	// write a single bit out, which bit from the passed in byte is determined by template parameter
+ 	template <uint8_t BIT> inline static void writeBit(uint8_t b) { /* TODO */ }
+diff --git a/src/fastspi_types.h b/src/fastspi_types.h
+index ea7d46c..c66ac57 100644
+--- a/src/fastspi_types.h
++++ b/src/fastspi_types.h
+@@ -19,8 +19,8 @@ FASTLED_NAMESPACE_BEGIN
+ /// TODO: Convinience macro for building these
+ class DATA_NOP {
+ public:
+-    static __attribute__((always_inline)) inline uint8_t adjust(register uint8_t data) { return data; }
+-    static __attribute__((always_inline)) inline uint8_t adjust(register uint8_t data, register uint8_t scale) { return scale8(data, scale); }
++    static __attribute__((always_inline)) inline uint8_t adjust(uint8_t data) { return data; }
++    static __attribute__((always_inline)) inline uint8_t adjust(uint8_t data, uint8_t scale) { return scale8(data, scale); }
+     static __attribute__((always_inline)) inline void postBlock(int /* len */) { }
+ };
+ 
+diff --git a/src/noise.h b/src/noise.h
+index 8a0db3f..79d0dcd 100644
+--- a/src/noise.h
++++ b/src/noise.h
+@@ -18,18 +18,18 @@ FASTLED_NAMESPACE_BEGIN
+ /// bits and fractional in the low 16 bits, and the function takes 1d, 2d, and 3d coordinate
+ /// values.  These functions are scaled to return 0-65535
+ 
+-extern uint16_t inoise16(uint32_t x, uint32_t y, uint32_t z);
+-extern uint16_t inoise16(uint32_t x, uint32_t y);
+-extern uint16_t inoise16(uint32_t x);
++uint16_t inoise16(uint32_t x, uint32_t y, uint32_t z);
++uint16_t inoise16(uint32_t x, uint32_t y);
++uint16_t inoise16(uint32_t x);
+ ///@}
+ 
+ /// @name raw 16 bit noise functions
+ //@{
+ /// 16 bit raw versions of the noise functions.  These values are not scaled/altered and have
+ /// output values roughly in the range (-18k,18k)
+-extern int16_t inoise16_raw(uint32_t x, uint32_t y, uint32_t z);
+-extern int16_t inoise16_raw(uint32_t x, uint32_t y);
+-extern int16_t inoise16_raw(uint32_t x);
++int16_t inoise16_raw(uint32_t x, uint32_t y, uint32_t z);
++int16_t inoise16_raw(uint32_t x, uint32_t y);
++int16_t inoise16_raw(uint32_t x);
+ ///@}
+ 
+ /// @name 8 bit scaled noise functions
+@@ -38,18 +38,18 @@ extern int16_t inoise16_raw(uint32_t x);
+ /// 8.8 fixed point values, 16 bit integers with integral coordinates in the high 8
+ /// bits and fractional in the low 8 bits, and the function takes 1d, 2d, and 3d coordinate
+ /// values.  These functions are scaled to return 0-255
+-extern uint8_t inoise8(uint16_t x, uint16_t y, uint16_t z);
+-extern uint8_t inoise8(uint16_t x, uint16_t y);
+-extern uint8_t inoise8(uint16_t x);
++uint8_t inoise8(uint16_t x, uint16_t y, uint16_t z);
++uint8_t inoise8(uint16_t x, uint16_t y);
++uint8_t inoise8(uint16_t x);
+ ///@}
+ 
+ /// @name 8 bit raw noise functions
+ ///@{
+ /// 8 bit raw versions of the noise functions.  These values are not scaled/altered and have
+ /// output values roughly in the range (-70,70)
+-extern int8_t inoise8_raw(uint16_t x, uint16_t y, uint16_t z);
+-extern int8_t inoise8_raw(uint16_t x, uint16_t y);
+-extern int8_t inoise8_raw(uint16_t x);
++int8_t inoise8_raw(uint16_t x, uint16_t y, uint16_t z);
++int8_t inoise8_raw(uint16_t x, uint16_t y);
++int8_t inoise8_raw(uint16_t x);
+ ///@}
+ 
+ ///@name raw fill functions
+diff --git a/src/platforms/esp/32/clockless_block_esp32.h b/src/platforms/esp/32/clockless_block_esp32.h
+index 3e3c139..a5c864d 100644
+--- a/src/platforms/esp/32/clockless_block_esp32.h
++++ b/src/platforms/esp/32/clockless_block_esp32.h
+@@ -82,14 +82,14 @@ public:
+ 
+ #define ESP_ADJUST 0 // (2*(F_CPU/24000000))
+ #define ESP_ADJUST2 0
+-    template<int BITS,int PX> __attribute__ ((always_inline)) inline static void writeBits(register uint32_t & last_mark, register Lines & b, PixelController<RGB_ORDER, LANES, PORT_MASK> &pixels) { // , register uint32_t & b2)  {
++    template<int BITS,int PX> __attribute__ ((always_inline)) inline static void writeBits(uint32_t & last_mark, Lines & b, PixelController<RGB_ORDER, LANES, PORT_MASK> &pixels) { // , register uint32_t & b2)  {
+ 	Lines b2 = b;
+ 	transpose8x1_noinline(b.bytes,b2.bytes);
+ 	
+-	register uint8_t d = pixels.template getd<PX>(pixels);
+-	register uint8_t scale = pixels.template getscale<PX>(pixels);
++	uint8_t d = pixels.template getd<PX>(pixels);
++	uint8_t scale = pixels.template getscale<PX>(pixels);
+ 	
+-	for(register uint32_t i = 0; i < USED_LANES; ++i) {
++	for(uint32_t i = 0; i < USED_LANES; ++i) {
+ 	    while((__clock_cycles() - last_mark) < (T1+T2+T3));
+ 	    last_mark = __clock_cycles();
+ 	    *FastPin<FIRST_PIN>::sport() = PORT_MASK << REAL_FIRST_PIN;
+@@ -104,7 +104,7 @@ public:
+ 	    b.bytes[i] = pixels.template loadAndScale<PX>(pixels,i,d,scale);
+ 	}
+ 
+-	for(register uint32_t i = USED_LANES; i < 8; ++i) {
++	for(uint32_t i = USED_LANES; i < 8; ++i) {
+ 	    while((__clock_cycles() - last_mark) < (T1+T2+T3));
+ 	    last_mark = __clock_cycles();
+ 	    *FastPin<FIRST_PIN>::sport() = PORT_MASK << REAL_FIRST_PIN;
+diff --git a/src/platforms/esp/32/clockless_rmt_esp32.cpp b/src/platforms/esp/32/clockless_rmt_esp32.cpp
+index 0f8ad9b..578db8e 100644
+--- a/src/platforms/esp/32/clockless_rmt_esp32.cpp
++++ b/src/platforms/esp/32/clockless_rmt_esp32.cpp
+@@ -486,22 +486,22 @@ void IRAM_ATTR ESP32RMTController::fillNext(bool check_time)
+     mLastFill = now;
+ 
+     // -- Get the zero and one values into local variables
+-    register uint32_t one_val = mOne.val;
+-    register uint32_t zero_val = mZero.val;
++    uint32_t one_val = mOne.val;
++    uint32_t zero_val = mZero.val;
+ 
+     // -- Use locals for speed
+-    volatile register uint32_t * pItem =  mRMT_mem_ptr;
++    volatile uint32_t * pItem =  mRMT_mem_ptr;
+ 
+-    for (register int i = 0; i < PULSES_PER_FILL/8; i++) {
++    for (int i = 0; i < PULSES_PER_FILL/8; i++) {
+         if (mCur < mSize) {
+ 
+             // -- Get the next four bytes of pixel data
+-            register uint32_t pixeldata = mPixelData[mCur] << 24;
++            uint32_t pixeldata = mPixelData[mCur] << 24;
+             mCur++;
+             
+             // Shift bits out, MSB first, setting RMTMEM.chan[n].data32[x] to the 
+             // rmt_item32_t value corresponding to the buffered bit value
+-            for (register uint32_t j = 0; j < 8; j++) {
++            for (uint32_t j = 0; j < 8; j++) {
+                 *pItem++ = (pixeldata & 0x80000000L) ? one_val : zero_val;
+                 // Replaces: RMTMEM.chan[mRMT_channel].data32[mCurPulse].val = val;
+ 
+@@ -545,7 +545,7 @@ void ESP32RMTController::convertByte(uint32_t byteval)
+ {
+     // -- Write one byte's worth of RMT pulses to the big buffer
+     byteval <<= 24;
+-    for (register uint32_t j = 0; j < 8; j++) {
++    for (uint32_t j = 0; j < 8; j++) {
+         mBuffer[mCurPulse] = (byteval & 0x80000000L) ? mOne : mZero;
+         byteval <<= 1;
+         mCurPulse++;
+diff --git a/src/platforms/esp/32/fastpin_esp32.h b/src/platforms/esp/32/fastpin_esp32.h
+index 7c77a73..52125e8 100644
+--- a/src/platforms/esp/32/fastpin_esp32.h
++++ b/src/platforms/esp/32/fastpin_esp32.h
+@@ -33,7 +33,7 @@ public:
+       *cport() = MASK;
+   }
+ 
+-  inline static void set(register port_t val) __attribute__ ((always_inline)) {
++  inline static void set(port_t val) __attribute__ ((always_inline)) {
+       *port() = val;
+   }
+ 
+@@ -43,9 +43,9 @@ public:
+       *port() ^= MASK;
+   }
+ 
+-  inline static void hi(register port_ptr_t port) __attribute__ ((always_inline)) { hi(); }
+-  inline static void lo(register port_ptr_t port) __attribute__ ((always_inline)) { lo(); }
+-  inline static void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { *port = val; }
++  inline static void hi(port_ptr_t port) __attribute__ ((always_inline)) { hi(); }
++  inline static void lo(port_ptr_t port) __attribute__ ((always_inline)) { lo(); }
++  inline static void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { *port = val; }
+ 
+   inline static port_t hival() __attribute__ ((always_inline)) {
+       return (*port()) | MASK;
+diff --git a/src/platforms/esp/32/fastspi_esp32.h b/src/platforms/esp/32/fastspi_esp32.h
+index d69bc52..be749df 100644
+--- a/src/platforms/esp/32/fastspi_esp32.h
++++ b/src/platforms/esp/32/fastspi_esp32.h
+@@ -130,7 +130,7 @@ public:
+ 
+ 	// write a block of len uint8_ts out.  Need to type this better so that explicit casts into the call aren't required.
+ 	// note that this template version takes a class parameter for a per-byte modifier to the data.
+-	template <class D> void writeBytes(register uint8_t *data, int len) {
++	template <class D> void writeBytes(uint8_t *data, int len) {
+ 		select();
+ 		uint8_t *end = data + len;
+ 		while(data != end) {
+@@ -141,7 +141,7 @@ public:
+ 	}
+ 
+ 	// default version of writing a block of data out to the SPI port, with no data modifications being made
+-	void writeBytes(register uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
++	void writeBytes(uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
+ 
+ 	// write a single bit out, which bit from the passed in byte is determined by template parameter
+ 	template <uint8_t BIT> inline void writeBit(uint8_t b) {
+@@ -169,4 +169,4 @@ public:
+ 	}
+ };
+ 
+-FASTLED_NAMESPACE_END
+\ No newline at end of file
++FASTLED_NAMESPACE_END
+diff --git a/src/platforms/esp/8266/clockless_block_esp8266.h b/src/platforms/esp/8266/clockless_block_esp8266.h
+index 9cd53be..c0b0c63 100644
+--- a/src/platforms/esp/8266/clockless_block_esp8266.h
++++ b/src/platforms/esp/8266/clockless_block_esp8266.h
+@@ -32,12 +32,12 @@ public:
+ 		/*uint32_t clocks = */
+ 		int cnt=FASTLED_INTERRUPT_RETRY_COUNT;
+ 		while(!showRGBInternal(pixels) && cnt--) {
+-      		os_intr_unlock();
++      		ets_intr_unlock();
+ 			#ifdef FASTLED_DEBUG_COUNT_FRAME_RETRIES
+ 			++_retry_cnt;
+ 			#endif
+ 			delayMicroseconds(WAIT_TIME * 10);
+-			os_intr_lock();
++			ets_intr_lock();
+ 		}
+ 		// #if FASTLED_ALLOW_INTTERUPTS == 0
+ 		// Adjust the timer
+@@ -70,14 +70,14 @@ public:
+ 
+ #define ESP_ADJUST 0 // (2*(F_CPU/24000000))
+ #define ESP_ADJUST2 0
+-  	template<int BITS,int PX> __attribute__ ((always_inline)) inline static void writeBits(register uint32_t & last_mark, register Lines & b, PixelController<RGB_ORDER, LANES, PORT_MASK> &pixels) { // , register uint32_t & b2)  {
++  	template<int BITS,int PX> __attribute__ ((always_inline)) inline static void writeBits(uint32_t & last_mark, Lines & b, PixelController<RGB_ORDER, LANES, PORT_MASK> &pixels) { // , register uint32_t & b2)  {
+ 	  	Lines b2 = b;
+ 		transpose8x1_noinline(b.bytes,b2.bytes);
+ 
+-		register uint8_t d = pixels.template getd<PX>(pixels);
+-		register uint8_t scale = pixels.template getscale<PX>(pixels);
++		uint8_t d = pixels.template getd<PX>(pixels);
++		uint8_t scale = pixels.template getscale<PX>(pixels);
+ 
+-		for(register uint32_t i = 0; i < USED_LANES; ++i) {
++		for(uint32_t i = 0; i < USED_LANES; ++i) {
+ 			while((__clock_cycles() - last_mark) < (T1+T2+T3));
+ 			last_mark = __clock_cycles();
+ 			*FastPin<FIRST_PIN>::sport() = PIN_MASK;
+@@ -92,7 +92,7 @@ public:
+ 			b.bytes[i] = pixels.template loadAndScale<PX>(pixels,i,d,scale);
+ 		}
+ 
+-		for(register uint32_t i = USED_LANES; i < 8; ++i) {
++		for(uint32_t i = USED_LANES; i < 8; ++i) {
+ 			while((__clock_cycles() - last_mark) < (T1+T2+T3));
+ 			last_mark = __clock_cycles();
+ 			*FastPin<FIRST_PIN>::sport() = PIN_MASK;
+@@ -118,7 +118,7 @@ public:
+ 		}
+ 		allpixels.preStepFirstByteDithering();
+ 
+-		os_intr_lock();
++		ets_intr_lock();
+ 		uint32_t _start = __clock_cycles();
+ 		uint32_t last_mark = _start;
+ 
+@@ -134,21 +134,21 @@ public:
+ 			writeBits<8+XTRA0,0>(last_mark, b0, allpixels);
+ 
+ 		#if (FASTLED_ALLOW_INTERRUPTS == 1)
+-			os_intr_unlock();
++			ets_intr_unlock();
+ 		#endif
+ 
+ 			allpixels.stepDithering();
+ 
+ 		#if (FASTLED_ALLOW_INTERRUPTS == 1)
+-			os_intr_lock();
++			ets_intr_lock();
+ 			// if interrupts took longer than 45µs, punt on the current frame
+ 			if((int32_t)(__clock_cycles()-last_mark) > 0) {
+-				if((int32_t)(__clock_cycles()-last_mark) > (T1+T2+T3+((WAIT_TIME-INTERRUPT_THRESHOLD)*CLKS_PER_US))) { os_intr_unlock(); return 0; }
++				if((int32_t)(__clock_cycles()-last_mark) > (T1+T2+T3+((WAIT_TIME-INTERRUPT_THRESHOLD)*CLKS_PER_US))) { ets_intr_unlock(); return 0; }
+ 			}
+ 		#endif
+ 		};
+ 
+-		os_intr_unlock();
++		ets_intr_unlock();
+ 		#ifdef FASTLED_DEBUG_COUNT_FRAME_RETRIES
+ 		++_frame_cnt;
+ 		#endif
+diff --git a/src/platforms/esp/8266/clockless_esp8266.h b/src/platforms/esp/8266/clockless_esp8266.h
+index ca2a606..be62a8e 100644
+--- a/src/platforms/esp/8266/clockless_esp8266.h
++++ b/src/platforms/esp/8266/clockless_esp8266.h
+@@ -50,11 +50,13 @@ protected:
+ #define _ESP_ADJ (0)
+ #define _ESP_ADJ2 (0)
+ 
+-	template<int BITS> __attribute__ ((always_inline)) inline static bool writeBits(register uint32_t & last_mark, register uint32_t b)  {
++	template<int BITS> __attribute__ ((always_inline)) inline static bool writeBits(uint32_t & last_mark, uint32_t b)  {
+     b <<= 24; b = ~b;
+-    for(register uint32_t i = BITS; i > 0; --i) {
+-      while((__clock_cycles() - last_mark) < (T1+T2+T3));
+-			last_mark = __clock_cycles();
++    for(uint32_t i = BITS; i > 0; --i) {
++      while((__clock_cycles() - last_mark) < (T1+T2+T3)) {
++      }
++
++      last_mark = __clock_cycles();
+       FastPin<DATA_PIN>::hi();
+ 
+       while((__clock_cycles() - last_mark) < T1);
+@@ -80,7 +82,7 @@ protected:
+ 	static uint32_t ICACHE_RAM_ATTR showRGBInternal(PixelController<RGB_ORDER> pixels) {
+ 		// Setup the pixel controller and load/scale the first byte
+ 		pixels.preStepFirstByteDithering();
+-		register uint32_t b = pixels.loadAndScale0();
++		uint32_t b = pixels.loadAndScale0();
+ 		pixels.preStepFirstByteDithering();
+ 		uint32_t start;
+ 		
+@@ -90,16 +92,15 @@ protected:
+ 		// unlocking and relocking interrupts temporarily.
+ 		struct InterruptLock {
+ 			InterruptLock() {
+-				os_intr_lock();
++				ets_intr_lock();
+ 			}
+ 			~InterruptLock() {
+-				os_intr_unlock();
++				ets_intr_unlock();
+ 			}
+ 			void Unlock() {
+-				os_intr_unlock();
+-			}
++				ets_intr_unlock();
+ 			void Lock() {
+-				os_intr_lock();
++				ets_intr_lock();
+ 			}
+ 		};
+ 
+diff --git a/src/platforms/esp/8266/fastpin_esp8266.h b/src/platforms/esp/8266/fastpin_esp8266.h
+index d64119f..a72ab5a 100644
+--- a/src/platforms/esp/8266/fastpin_esp8266.h
++++ b/src/platforms/esp/8266/fastpin_esp8266.h
+@@ -21,15 +21,15 @@ public:
+ 
+     inline static void hi() __attribute__ ((always_inline)) { if(PIN < 16) { _GPB._GPOS = MASK; } else { GP16O = 1; } }
+     inline static void lo() __attribute__ ((always_inline)) { if(PIN < 16) { _GPB._GPOC = MASK; } else { GP16O = 0; } }
+-    inline static void set(register port_t val) __attribute__ ((always_inline)) { if(PIN < 16) { _GPB._GPO = val; } else { GP16O = val; }}
++    inline static void set(port_t val) __attribute__ ((always_inline)) { if(PIN < 16) { _GPB._GPO = val; } else { GP16O = val; }}
+ 
+     inline static void strobe() __attribute__ ((always_inline)) { toggle(); toggle(); }
+ 
+     inline static void toggle() __attribute__ ((always_inline)) { if(PIN < 16) { _GPB._GPO ^= MASK; } else { GP16O ^= MASK; } }
+ 
+-    inline static void hi(register port_ptr_t port) __attribute__ ((always_inline)) { hi(); }
+-    inline static void lo(register port_ptr_t port) __attribute__ ((always_inline)) { lo(); }
+-    inline static void fastset(register port_ptr_t port, register port_t val) __attribute__ ((always_inline)) { *port = val; }
++    inline static void hi(port_ptr_t port) __attribute__ ((always_inline)) { hi(); }
++    inline static void lo(port_ptr_t port) __attribute__ ((always_inline)) { lo(); }
++    inline static void fastset(port_ptr_t port, port_t val) __attribute__ ((always_inline)) { *port = val; }
+ 
+     inline static port_t hival() __attribute__ ((always_inline)) { if (PIN<16) { return GPO | MASK;  } else { return GP16O | MASK; } }
+     inline static port_t loval() __attribute__ ((always_inline)) { if (PIN<16) { return GPO & ~MASK; } else { return GP16O & ~MASK; } }
+diff --git a/src/platforms/fastspi_ardunio_core.h b/src/platforms/fastspi_ardunio_core.h
+index a0f9228..a2f3922 100644
+--- a/src/platforms/fastspi_ardunio_core.h
++++ b/src/platforms/fastspi_ardunio_core.h
+@@ -53,7 +53,7 @@ public:
+ 	}
+ 
+ 	// A full cycle of writing a value for len bytes, including select, release, and waiting
+-	template <class D> void writeBytes(register uint8_t *data, int len) {
++	template <class D> void writeBytes(uint8_t *data, int len) {
+ 		uint8_t *end = data + len;
+ 		select();
+ 		// could be optimized to write 16bit words out instead of 8bit bytes
+@@ -66,7 +66,7 @@ public:
+ 	}
+ 
+ 	// A full cycle of writing a value for len bytes, including select, release, and waiting
+-	void writeBytes(register uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
++	void writeBytes(uint8_t *data, int len) { writeBytes<DATA_NOP>(data, len); }
+ 
+ 	// write a single bit out, which bit from the passed in byte is determined by template parameter
+ 	template <uint8_t BIT> inline void writeBit(uint8_t b) {
