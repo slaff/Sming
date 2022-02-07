@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "author": "Sming Contributors",
+  "editor": "",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": -43.49, "left": -56.03, "attrs": {} },
+    {
+      "type": "wokwi-ssd1306",
+      "id": "ssd1306",
+      "top": 230,
+      "left": 100,
+      "attrs": { "i2c-address": "0x3D" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-up",
+      "top": 350,
+      "left": 140,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-down",
+      "top": 450,
+      "left": 140,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-left",
+      "top": 400,
+      "left": 90,
+      "attrs": { "color": "red" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn-right",
+      "top": 400,
+      "left": 190,
+      "attrs": { "color": "red" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+    [ "esp:GND.1", "ssd1306:GND", "black", [ "v12", "*", "h0" ] ],
+    [ "esp:VIN", "ssd1306:VIN", "red", [ "v16", "*", "h0" ] ],
+    [ "esp:D21", "ssd1306:DATA", "blue", [ "v20", "*", "h0" ] ],
+    [ "esp:D22", "ssd1306:CLK", "purple", [ "v24", "*", "h0" ] ],
+    [ "esp:D26", "btn-up:2.r", "yellow", [ "v-20", "*", "h100" ] ],
+    [ "esp:GND.2", "btn-up:1.l", "black", [ "v-20", "*", "h-140" ] ],
+    [ "esp:D23", "btn-down:2.r", "orange", [ "v-30", "*", "h110" ] ],
+    [ "esp:GND.2", "btn-down:1.l", "black", [ "v-20", "*", "h-140" ] ],
+    [ "esp:D27", "btn-left:2.r", "red", [ "v-40", "*", "h170", "v11" ] ],
+    [ "esp:GND.2", "btn-left:1.l", "black", [ "v-20", "*", "h-90" ] ],
+    [ "esp:D25", "btn-right:2.r", "purple", [ "v-50", "*", "h80" ] ],
+    [ "esp:GND.2", "btn-right:1.l", "black", [ "v-20", "*", "h-190", "v-11" ] ],
+    [ "esp:GND.2", "ssd1306:GND", "black", [ "h0" ] ]
+  ]
+}
