@@ -1,0 +1,1 @@
+COMPONENT_DEPENDS := Adafruit_GFX Adafruit_SSD1306
