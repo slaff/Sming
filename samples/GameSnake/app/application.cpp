@@ -7,17 +7,22 @@ Timer loopTimer;
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-#define OLED_RESET 4 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-const byte buttonPins[] = {27, 26, 25, 23}; // LEFT, UP, RIGHT, DOWN
+const uint8_t LEFT_BUTTON_PIN = 27;
+const uint8_t UP_BUTTON_PIN = 26;
+const uint8_t RIGHT_BUTTON_PIN = 25;
+const uint8_t DOWN_BUTTON_PIN = 23;
+
+const byte buttonPins[] = {LEFT_BUTTON_PIN, UP_BUTTON_PIN, RIGHT_BUTTON_PIN, DOWN_BUTTON_PIN}; // LEFT, UP, RIGHT, DOWN
 
 typedef enum { START, RUNNING, GAMEOVER } State;
 
 typedef enum { LEFT, UP, RIGHT, DOWN } Direction;
 
 #define SNAKE_PIECE_SIZE 3
-#define MAX_SANKE_LENGTH 165
+#define MAX_SNAKE_LENGTH 165
 #define MAP_SIZE_X 20
 #define MAP_SIZE_Y 20
 #define STARTING_SNAKE_SIZE 5
@@ -25,7 +30,7 @@ typedef enum { LEFT, UP, RIGHT, DOWN } Direction;
 
 State gameState;
 
-int8_t snake[MAX_SANKE_LENGTH][2];
+int8_t snake[MAX_SNAKE_LENGTH][2];
 uint8_t snakeLength;
 Direction dir;
 Direction newDir;
@@ -43,25 +48,34 @@ void resetSnake()
 
 int moveTime = 0;
 
-bool buttonPress()
+bool buttonPressed = false;
+
+bool isButtonPressed()
 {
-	for(byte i = 0; i < 4; i++) {
-		byte buttonPin = buttonPins[i];
-		if(digitalRead(buttonPin) == LOW) {
-			return true;
-		}
+	if(buttonPressed) {
+		buttonPressed = false;
+		return true;
 	}
+
 	return false;
 }
 
-void readDirection()
+void IRAM_ATTR readDirection()
 {
 	for(byte i = 0; i < 4; i++) {
-		byte buttonPin = buttonPins[i];
-		if(digitalRead(buttonPin) == LOW && i != ((int)dir + 2) % 4) {
+		if((digitalRead(buttonPins[i]) == LOW) && (i != ((int)dir + 2) % 4)) {
 			newDir = (Direction)i;
+			debug_d("New Dir: %d", i);
+			buttonPressed = true;
 			return;
 		}
+	}
+}
+
+void setupButtons()
+{
+	for(byte i = 0; i < 4; i++) {
+		attachInterrupt(buttonPins[i], readDirection, LOW);
 	}
 }
 
@@ -128,7 +142,7 @@ void generateFruit()
 void checkFruit()
 {
 	if(fruit[0] == snake[0][0] && fruit[1] == snake[0][1]) {
-		if(snakeLength + 1 <= MAX_SANKE_LENGTH)
+		if(snakeLength + 1 <= MAX_SNAKE_LENGTH)
 			snakeLength++;
 		generateFruit();
 	}
@@ -174,31 +188,18 @@ void drawGameover()
 	display.println(F("GAMEOVER"));
 }
 
-void setupGame()
-{
-	gameState = START;
-	dir = RIGHT;
-	newDir = RIGHT;
-	resetSnake();
-	generateFruit();
-	display.clearDisplay();
-	drawMap();
-	drawScore();
-	drawPressToStart();
-	display.display();
-}
+void setupGame(); // Forward declaration
 
 void loop()
 {
 	switch(gameState) {
 	case START:
-		if(buttonPress())
+		if(isButtonPressed())
 			gameState = RUNNING;
 		break;
 
 	case RUNNING:
 		moveTime++;
-		readDirection();
 		if(moveTime >= SNAKE_MOVE_DELAY) {
 			dir = newDir;
 			display.clearDisplay();
@@ -216,13 +217,30 @@ void loop()
 		break;
 
 	case GAMEOVER:
-		if(buttonPress()) {
+		if(isButtonPressed()) {
 			delay(500);
 			setupGame();
 			gameState = START;
 		}
 		break;
 	}
+}
+
+void setupGame()
+{
+	gameState = START;
+	dir = RIGHT;
+	newDir = RIGHT;
+	resetSnake();
+	generateFruit();
+	display.clearDisplay();
+	drawMap();
+	drawScore();
+	drawPressToStart();
+	display.display();
+	setupButtons();
+
+	loopTimer.initializeMs(100, loop).start();
 }
 
 void init()
@@ -245,6 +263,4 @@ void init()
 	randomSeed(analogRead(A0));
 
 	setupGame();
-
-	loopTimer.initializeMs(100, loop).start();
 }
