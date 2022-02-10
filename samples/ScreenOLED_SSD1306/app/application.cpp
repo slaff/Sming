@@ -23,7 +23,12 @@
 
 //* For I2C mode:
 // Default I2C pins 0 (SCL) and 2 (SDA). Pin 4 - optional reset
-Adafruit_SSD1306 display(-1); // reset Pin required but later ignored if set to False
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 64 // OLED display height, in pixels
+
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 Timer DemoTimer;
 
@@ -68,7 +73,11 @@ void init()
 	// by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
 	// initialize with the I2C addr 0x3c (for the 128x64)
 	// bool:reset set to TRUE or FALSE depending on your display
-	display.begin(SSD1306_SWITCHCAPVCC, 0x3c, false);
+	if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3D)) {
+		Serial.println(F("SSD1306 allocation failed"));
+		for(;;)
+			;
+	}
 	display.display();
 	DemoTimer.initializeMs(2000, Demo1).start();
 }
