@@ -11,22 +11,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [Esp8266, Host, Esp32, Rp2040]
-        variant: [""]
         os: [ubuntu-latest, windows-latest]
+        variant: [""]
         include:
-        - arch: Esp32
+        - arch:  Host
+        - arch:  Esp8266
+        - arch:  Esp32
+          variant: esp32
+        - arch:  Esp32
           variant: esp32s2
-          os: ubuntu-latest
-        - arch: Esp32
-          variant: esp32s2
-          os: windows-latest
-        - arch: Esp32
+        - arch:  Esp32
           variant: esp32c3
-          os: ubuntu-latest
-        - arch: Esp32
-          variant: esp32c3
-          os: windows-latest
+        - arch:  Rp2040
           
     continue-on-error: ${{ matrix.arch == 'Host' && matrix.os == 'windows-latest' }}
     
