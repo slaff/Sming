@@ -12,16 +12,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        variant: [""]
+        arch: [""]
         include:
         - arch:  Host
         - arch:  Esp8266
         - arch:  Esp32
-          variant: esp32
-        - arch:  Esp32
-          variant: esp32s2
-        - arch:  Esp32
-          variant: esp32c3
         - arch:  Rp2040
           
     continue-on-error: ${{ matrix.arch == 'Host' && matrix.os == 'windows-latest' }}
