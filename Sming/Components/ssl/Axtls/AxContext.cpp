@@ -75,6 +75,14 @@ bool AxContext::init()
 		return false;
 	}
 
+	auto caCert = session.caCert;
+	if(caCert.isValid()) {
+		if(!load(SSL_OBJ_X509_CACERT, caCert.getCertificate(), caCert.getCertificateLength(), nullptr)) {
+			debug_e("SSL: Error loading CA certificate");
+			return false;
+		}
+	}
+
 	return true;
 }
 

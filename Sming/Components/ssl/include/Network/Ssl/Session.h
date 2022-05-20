@@ -12,6 +12,7 @@
 
 #include "Context.h"
 #include "KeyCertPair.h"
+#include "CaCert.h"
 #include "ValidatorList.h"
 #include <Platform/System.h>
 
@@ -87,6 +88,11 @@ public:
 	 * @brief Required for server, optional for client
 	 */
 	KeyCertPair keyCert;
+
+	/**
+	 * @brief Certificate Authority(CA) certificate
+	 */
+	CaCert caCert;
 
 	/**
 	 * @brief Various connection options
